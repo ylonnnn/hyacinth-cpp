@@ -1,0 +1,76 @@
+#include <sstream>
+#include <string>
+
+#include "diagnostic/Diagnostic.hpp"
+#include "utils/control.hpp"
+#include "utils/style.hpp"
+
+namespace Diagnostic
+{
+    std::string line_at(Program::ProgramFile &program, size_t line)
+    {
+        std::stringstream stream(program.source());
+        std::string curr_line;
+
+        size_t line_count = 0;
+        while (std::getline(stream, curr_line, '\n'))
+        {
+            line_count++;
+
+            if (line_count == line)
+                return curr_line;
+        }
+
+        Utils::terminate("Invalid line number provided. Line does not exist!",
+                         EXIT_FAILURE);
+        return nullptr;
+    }
+
+    Diagnostic::Diagnostic(std::unique_ptr<AST::Node> node,
+                           std::string &&message,
+                           std::string &&emphasis_message)
+        : node_(std::move(node)), message_(std::move(message)),
+          emphasis_message_(std::move(emphasis_message))
+    {
+    }
+
+    void Diagnostic::emphasize_position(DiagnosticEmphasis &&options)
+    {
+        auto &[message, position, length, emphasis, trace, pointer] = options;
+        auto &[row, col, program] = position;
+
+        size_t end_pos = node_->end_pos();
+
+        constexpr size_t tab_size = 3;
+        std::string tab = Utils::tab(tab_size),
+                    row_string = std::to_string(row);
+
+        std::string prefix = tab + row_string + "  | " + tab;
+        size_t prefix_len = prefix.size();
+
+        std::string display_line = prefix + line_at(program, row) + " \n";
+
+        display_line.insert(prefix_len + end_pos - 1, Utils::Styles::Reset);
+        display_line.insert(prefix_len + col - 1, emphasis);
+
+        display_line.insert(tab_size + row_string.size(), Utils::Styles::Reset);
+        display_line.insert(tab_size, Utils::Colors::Yellow);
+
+        std::cout << display_line;
+
+        std::string offset = Utils::tab((prefix.size() + col) - 1);
+        std::cout << offset << pointer << "^"
+                  << std::string(end_pos - (col + 1), '~')
+                  << Utils::Styles::Reset << "\n";
+
+        if (!message.empty())
+            std::cout << offset << pointer << "|  " << message
+                      << Utils::Styles::Reset << "\n";
+
+        std::cout << "\n\t\t" << trace << "at " << program.path().string()
+                  << ":" << row << ":" << col << Utils::Styles::Reset << "\n\n";
+    }
+
+    AST::Node &Diagnostic::node() { return *node_; }
+
+} // namespace Diagnostic

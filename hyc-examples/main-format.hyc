@@ -1,0 +1,36 @@
+import stdtstd.io;
+
+fn main -> void (argc: i32, argv: str[]) {
+    some_var: i32 = 123;
+
+    io.writeln("Hello, World");
+
+    if some_var >= 150 {
+        io.writeln("some_var is greater than or equal to 150");
+    } else
+        io.writeln("some_var is lower than 150");
+
+    n: i8 = 1, m: i8 = 15;
+
+    for i : (n, m, 1) {
+        io.write("Enter a number: ");
+        some_num: i32 = io.read();
+
+        io.write("Enter your name: ");
+        input_name: str = io.readln();
+    }
+
+    some_bool: bool = false;
+
+    while some_bool != false {
+        io.writeln("something");
+
+        if (some_var < 125)
+            exit;
+
+        else
+            proceed;
+    }
+    
+    return;
+}
