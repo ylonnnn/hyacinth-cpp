@@ -5,8 +5,9 @@
 
 namespace AST
 {
-    CollectionExpr::CollectionExpr(Program::Position &&position,
-                                   std::vector<Expr *> &&collection)
+    CollectionExpr::CollectionExpr(
+        Program::Position &&position,
+        std::vector<std::unique_ptr<Expr>> &&collection)
         : NodeCollection<Expr>(std::move(position), std::move(collection))
     {
     }
@@ -22,9 +23,9 @@ namespace AST
         os << "\n" << less_indented << "}";
     }
 
-    CollectionExpr &CollectionExpr::push_expr(Expr *expr)
+    CollectionExpr &CollectionExpr::push_expr(std::unique_ptr<Expr> expr)
     {
-        collection_.push_back(expr);
+        collection_.push_back(std::move(expr));
 
         return *this;
     }

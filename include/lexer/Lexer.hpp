@@ -24,6 +24,7 @@ namespace Lexer
       public:
         Program::ProgramFile &program();
         size_t position();
+        size_t size();
 
         void tokenize();
         bool eof();

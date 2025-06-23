@@ -21,6 +21,8 @@ namespace Lexer
 
     size_t Lexer::position() { return position_; }
 
+    size_t Lexer::size() { return tokens_.size(); }
+
     void Lexer::tokenize()
     {
         std::string_view source = program_.source();
@@ -100,12 +102,14 @@ namespace Lexer
 
     void Lexer::skip(LexerTokenSkipPredicate predicate)
     {
-        while (!eof())
+        Token *next_token = peek();
+        while (next_token != nullptr)
         {
-            Token &current = *next();
-
-            if (predicate(current))
+            next_token = peek();
+            if (next_token == nullptr || predicate(*next_token))
                 break;
+
+            next();
         }
     }
 

@@ -18,19 +18,18 @@ namespace Parser
         Lexer::Lexer &lexer = parser.lexer();
         if (lexer.eof())
             return result;
-        // Utils::terminate("Lexer has reached the EOF!", EXIT_FAILURE);
 
         Lexer::Token *token = lexer.next();
 
-        // std::cout << *token << " | " << Lexer::type_to_string(token_type_)
-        //           << "\n";
-
         if (token->type == token_type_)
         {
-            parser.update_state(ParserState::Synchronized);
+            if (parser.state() == ParserState::Panic)
+                parser.update_state(ParserState::Synchronized);
+
             return result;
         }
 
+        // Skip tokens if the parser is in Panic Mode
         if (parser.state() == ParserState::Panic)
             return result;
 
@@ -48,7 +47,12 @@ namespace Parser
             std::string("Received ") + Lexer::type_to_string(token->type) +
                 " instead."));
 
-        std::cout << "failed matching: " << *token << "\n";
+        // std::cout << "failed matching: " << *token
+        //           << " | expects: " << Lexer::type_to_string(token_type_)
+        //           << "\n";
+
+        // Update the state of the parser to Panic Mode to consume unmeaningful
+        // tokens
         parser.update_state(ParserState::Panic);
 
         return result;

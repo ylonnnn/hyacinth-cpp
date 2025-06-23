@@ -1,4 +1,5 @@
-// fn main -> i32 (a i32, b false) {}
-fn true -> i32 (a: i32, b  d, c: str) {
+fn main -> void (a: bool, b: some_type) {}
 
- // fn true -> false () {
+fn do_something -> void () {
+    x: i32 = 0;
+}

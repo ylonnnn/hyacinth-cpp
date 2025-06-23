@@ -5,6 +5,7 @@
 #include "parser/grammar/rule/LiteralRule.hpp"
 #include "parser/grammar/rule/NonTerminalRule.hpp"
 #include "parser/grammar/rule/OptionalRule.hpp"
+#include "parser/grammar/rule/RepetitionRule.hpp"
 
 namespace Parser::Hyacinth
 {
@@ -56,16 +57,11 @@ namespace Parser::Hyacinth
             std::make_unique<FunctionTailingParameter>(), 0, SIZE_MAX,
             Lexer::TokenTypes::Delimeter::ParenthesisClose);
     }
-    
-    static size_t id = 0;
 
     ParseResult FunctionParameterList::parse(Parser &parser)
     {
-        std::cout << id++ << "\n";
         ParseResult result;
-        // std::cout << "start of param list\n";
         auto [nodes, errors] = unbuilt_parse(parser);
-        // std::cout << "end of param list\n";
 
         result.errors = std::move(errors);
 
@@ -89,9 +85,7 @@ namespace Parser::Hyacinth
     ParseResult FunctionParameter::parse(Parser &parser)
     {
         ParseResult result;
-        std::cout << "start of param\n";
         auto [nodes, errors] = unbuilt_parse(parser);
-        std::cout << "end of param\n";
 
         result.errors = std::move(errors);
 

@@ -1,46 +1,61 @@
 #include "parser/grammar/rule/OptionalRule.hpp"
 #include "ast/NodeCollection.hpp"
 #include "parser/Parser.hpp"
+#include "parser/grammar/GrammarRuleSet.hpp"
 #include <iostream>
 
 namespace Parser
 {
+    OptionalGrammarRuleSet::OptionalGrammarRuleSet()
+        : GrammarRuleSet(Lexer::TokenTypes::Miscellaneous::EndOfFile)
+    {
+    }
+
+    void OptionalGrammarRuleSet::initialize_rules() {}
+
+    ParseResult OptionalGrammarRuleSet::parse(Parser &parser)
+    {
+        auto [nodes, errors] = unbuilt_parse(parser);
+
+        return {std::make_unique<AST::NodeCollection<AST::Node>>(
+                    Program::Position(parser.lexer().peek()->position),
+                    std::move(nodes)),
+                std::move(errors)};
+    }
+
     OptionalGrammarRule::OptionalGrammarRule(
         std::unique_ptr<GrammarRuleSet> rule_set)
-        : RepetitionGrammarRule(std::move(rule_set), 0, 1)
+        : rule_set_(std::move(rule_set))
     {
+    }
+
+    OptionalGrammarRule::OptionalGrammarRule(
+        std::vector<std::unique_ptr<GrammarRule>> &&rules)
+        : rule_set_(std::make_unique<OptionalGrammarRuleSet>())
+    {
+        for (auto &rule : rules)
+            rule_set_->add_rule(std::move(rule));
     }
 
     ParseResult OptionalGrammarRule::parse(Parser &parser)
     {
-        ParseResult result;
-        auto [node, errors] = RepetitionGrammarRule::parse(parser);
+        auto &lexer = parser.lexer();
 
-        if (!errors.empty())
-            result.errors.insert(result.errors.end(),
-                                 std::make_move_iterator(errors.begin()),
-                                 std::make_move_iterator(errors.end()));
+        size_t initial_pos = lexer.position();
+        ParseResult result = rule_set_->parse(parser);
 
-        if (auto *node_ptr =
-                dynamic_cast<AST::NodeCollection<AST::Node> *>(node.get()))
+        if (!result.errors.empty())
         {
-            std::vector<std::unique_ptr<AST::Node>> &collection =
-                node_ptr->collection();
+            result.node = nullptr;
 
-            std::cout << "collection.size(): " << collection.size() << "\n";
-
-            if (collection.empty())
+            // If the current position and the initial position are the same,
+            // the parser did not meaningfully moved forward. Potentially due to
+            // absence of the provided rule set.
+            if (lexer.position() == initial_pos)
             {
                 result.errors.clear();
                 parser.update_state(ParserState::Normal);
-
-                return result;
             }
-
-            std::cout << "(optional) has value\n";
-            result.node = std::move(collection.front());
-
-            return result;
         }
 
         return result;

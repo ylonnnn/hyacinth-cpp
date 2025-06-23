@@ -28,24 +28,26 @@ namespace Parser
         result.nodes.reserve(rule_count);
         result.errors.reserve(rule_count);
 
-        // std::cout << "[[[START]]] set {\n";
-        // std::cout << "rules: " << rule_count << "\n";
+        auto &lexer = parser.lexer();
+        size_t prev_pos = lexer.position();
 
         for (auto &rule : rules_)
         {
             auto [node, errors] = rule->parse(parser);
-            if (errors.empty())
-            {
-                result.nodes.push_back(std::move(node));
-                continue;
-            }
 
             result.errors.insert(result.errors.end(),
                                  std::make_move_iterator(errors.begin()),
                                  std::make_move_iterator(errors.end()));
+
+            if (errors.empty() && parser.state() != ParserState::Panic)
+            {
+                prev_pos = lexer.position();
+                result.nodes.push_back(std::move(node));
+            }
         }
 
-        // std::cout << "[[[END]]] set }\n";
+        if (!result.errors.empty())
+            lexer.rewind(prev_pos);
 
         return result;
     }

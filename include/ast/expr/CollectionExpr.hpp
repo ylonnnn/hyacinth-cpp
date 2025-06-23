@@ -12,12 +12,12 @@ namespace AST
     {
       public:
         CollectionExpr(Program::Position &&position,
-                       std::vector<Expr *> &&collection);
+                       std::vector<std::unique_ptr<Expr>> &&collection);
         ~CollectionExpr() override = default;
 
       public:
         void print(std::ostream &os, uint8_t tab) const override;
 
-        CollectionExpr &push_expr(Expr *expr);
+        CollectionExpr &push_expr(std::unique_ptr<Expr> expr);
     };
 } // namespace AST

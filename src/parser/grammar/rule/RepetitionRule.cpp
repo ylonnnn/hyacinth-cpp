@@ -13,8 +13,6 @@ namespace Parser
         : rule_set_(std::move(rule_set)), min_(min), max_(max),
           stop_token_(std::move(stop_token))
     {
-        if (stop_token_)
-            std::cout << Lexer::type_to_string(*stop_token_) << "\n";
     }
 
     ParseResult RepetitionGrammarRule::parse(Parser &parser)
@@ -50,6 +48,7 @@ namespace Parser
             if (lexer.position() == initial_pos)
                 break;
 
+            // if (errors.empty() && parser.state() != ParserState::Panic)
             if (errors.empty())
             {
                 collection.push_back(std::move(node));
@@ -58,29 +57,33 @@ namespace Parser
                 continue;
             }
 
-            // lexer.rewind(initial_pos);
-
             result.errors.insert(result.errors.end(),
                                  std::make_move_iterator(errors.begin()),
                                  std::make_move_iterator(errors.end()));
 
-            if (stop_token_)
-            {
-                while (!lexer.eof() && lexer.peek()->type != *stop_token_)
-                {
-                    lexer.next();
-                }
+            std::cout << !!stop_token_ << "\n";
+            if (!stop_token_)
+                continue;
 
-                std::cout << "exit: " << *lexer.peek()<< "\n";
+            // Rewind to prevent the parser from going over the "Stop Token"
+            lexer.rewind(initial_pos);
 
-                break;
-            }
+            lexer.skip([&](Lexer::Token &token)
+                       { return stop_token_ && token.type == *stop_token_; });
+
+            // If the lexer reached did not reach EOF, the terminator token was
+            // found, update the parser state to Synchronized
+            if (!lexer.eof())
+                parser.update_state(ParserState::Synchronized);
+
+            // Otherwise, rewind to the initial position
+            else
+                lexer.rewind(initial_pos);
+
+            break;
         }
 
         result.node = std::move(collection_node);
-
-        std::cout << "errors: " << result.errors.size()
-                  << " | pos: " << lexer.position() << "\n";
 
         return result;
     }

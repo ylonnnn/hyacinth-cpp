@@ -3,6 +3,7 @@
 #include "lexer/Token.hpp"
 #include "parser/grammar/rule/GrammarRule.hpp"
 #include "parser/typedef.hpp"
+#include <type_traits>
 
 namespace Parser
 {
@@ -36,6 +37,13 @@ namespace Parser
         {
             rules_.push_back(std::make_unique<T>(std::forward<Args>(args)...));
             return *this;
+        }
+
+        template <typename T, typename = std::enable_if<
+                                  std::is_base_of<GrammarRule, T>::value>>
+        void add_rule(std::unique_ptr<T> rule)
+        {
+            rules_.push_back(std::move(rule));
         }
 
         UnbuiltParseResult unbuilt_parse(Parser &parser);
