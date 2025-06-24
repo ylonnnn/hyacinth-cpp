@@ -1,5 +1,6 @@
-fn main -> void (a: bool, b: some_type) {}
-
-fn do_something -> void () {
-    x: i32 = 0;
+class Test {
+    some_member: i32;
+    some_member: bool;
 }
+
+fn main -> void (argc: i32, argv!: str) {}

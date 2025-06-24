@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unordered_map>
 
+#include "ast/expr/LiteralExpr.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "utils/control.hpp"
 #include "utils/style.hpp"
@@ -9,7 +10,7 @@ namespace Diagnostic
 {
     std::unordered_map<ErrorType, const char *> ERROR_CODES;
 
-    void initialize_codes()
+    static void initialize_codes()
     {
         ERROR_CODES.reserve(32);
 
@@ -30,7 +31,7 @@ namespace Diagnostic
             "HYC::UNINITIALIZED_IMMUTABLE";
     }
 
-    bool initialized_codes = (initialize_codes(), true);
+    static bool initialized_codes = (initialize_codes(), true);
 
     Utils::TextStyle ERROR_GENERAL = Utils::Colors::Red,
                      ERROR_EMPHASIS = Utils::Colors::BrightRed;
@@ -59,7 +60,6 @@ namespace Diagnostic
     void ErrorDiagnostic::report()
     {
         const Program::Position &position = node_->position();
-        auto &[row, col, program] = node_->position();
 
         std::cout << "\n\n";
 
@@ -80,6 +80,29 @@ namespace Diagnostic
         {
             detail->report();
         }
+    }
+
+    std::unique_ptr<ErrorDiagnostic>
+    create_syntax_error(Lexer::Token *token,
+                        std::optional<Lexer::TokenType> expected)
+    {
+        if (token == nullptr)
+            Utils::terminate("Token cannot be a nullptr!", EXIT_FAILURE);
+
+        bool expects = !!expected;
+
+        return std::make_unique<ErrorDiagnostic>(
+            std::make_unique<AST::LiteralExpr>(*token),
+            ErrorTypes::General::Syntax,
+            std::string("Unexpected \"") + ERROR_EMPHASIS +
+                std::string(token->value) + Utils::Styles::Reset + "\"." +
+                (expects ? std::string(" Expected \"") + ERROR_EMPHASIS +
+                               Lexer::type_to_string(*expected) +
+                               Utils::Styles::Reset + "."
+                         : ""),
+            ERROR_GENERAL + std::string("Received ") +
+                Lexer::type_to_string(token->type) +
+                (expects ? " instead" : "") + ".");
     }
 
 } // namespace Diagnostic

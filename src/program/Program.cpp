@@ -1,3 +1,4 @@
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -7,6 +8,7 @@
 #include "parser/Parser.hpp"
 #include "program/Program.hpp"
 #include "utils/control.hpp"
+#include "utils/style.hpp"
 
 namespace Program
 {
@@ -59,6 +61,8 @@ namespace Program
 
     void ProgramFile::execute()
     {
+        auto start = std::chrono::high_resolution_clock::now();
+
         read();
 
         Lexer::Lexer lexer(*this);
@@ -73,7 +77,20 @@ namespace Program
         lexer.rewind();
 
         Parser::Parser parser(*this, lexer);
-        parser.parse();
+        bool parsed = parser.parse();
+
+        auto microseconds =
+            std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::high_resolution_clock::now() - start);
+
+        Utils::TextStyle color =
+            parsed ? Utils::Colors::Green : Utils::Colors::Red;
+
+        std::cout << "\n\n"
+                  << Utils::tab(3) << color << "[" << (parsed ? "/" : "X")
+                  << "]" << Utils::Styles::Reset << " Program Executed ("
+                  << color << (double)microseconds.count() / 1'000 << "ms"
+                  << Utils::Styles::Reset << ")\n\n";
     }
 
 } // namespace Program

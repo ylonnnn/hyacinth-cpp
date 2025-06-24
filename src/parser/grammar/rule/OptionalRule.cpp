@@ -15,12 +15,13 @@ namespace Parser
 
     ParseResult OptionalGrammarRuleSet::parse(Parser &parser)
     {
-        auto [nodes, errors] = unbuilt_parse(parser);
+        auto [status, nodes, diagnostics] = unbuilt_parse(parser);
 
-        return {std::make_unique<AST::NodeCollection<AST::Node>>(
+        return {status,
+                std::make_unique<AST::NodeCollection<AST::Node>>(
                     Program::Position(parser.lexer().peek()->position),
                     std::move(nodes)),
-                std::move(errors)};
+                std::move(diagnostics)};
     }
 
     OptionalGrammarRule::OptionalGrammarRule(
@@ -44,7 +45,7 @@ namespace Parser
         size_t initial_pos = lexer.position();
         ParseResult result = rule_set_->parse(parser);
 
-        if (!result.errors.empty())
+        if (result.status == ParseResultStatus::Failed)
         {
             result.node = nullptr;
 
@@ -53,7 +54,7 @@ namespace Parser
             // absence of the provided rule set.
             if (lexer.position() == initial_pos)
             {
-                result.errors.clear();
+                result.diagnostics.clear();
                 parser.update_state(ParserState::Normal);
             }
         }

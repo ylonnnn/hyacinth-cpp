@@ -6,7 +6,6 @@ namespace Parser::Hyacinth
 {
     constexpr auto FUNCTION_PARAMETER_LIST = Lexer::TokenTypes::Primary::Identifier;
     constexpr auto FUNCTION_PARAMETER = Lexer::TokenTypes::Primary::Identifier;
-    constexpr auto FUNCTION_TAILING_PARAMETER = Lexer::TokenTypes::Delimeter::Comma;
 
     class FunctionDefinition : public GrammarRuleSet
     {
@@ -30,15 +29,6 @@ namespace Parser::Hyacinth
     {
       public:
         FunctionParameter();
-
-        void initialize_rules() override;
-        ParseResult parse(Parser &parser) override;
-    };
-
-    class FunctionTailingParameter : public GrammarRuleSet
-    {
-      public:
-        FunctionTailingParameter();
 
         void initialize_rules() override;
         ParseResult parse(Parser &parser) override;

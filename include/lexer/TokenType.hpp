@@ -10,6 +10,7 @@ namespace Lexer
             Public,
             Private,
             Protected,
+            Class,
             Function,
             Return,
             If,
@@ -117,7 +118,8 @@ namespace Lexer
         inline const char *to_string(TokenTypes::Reserved value)
         {
             switch (value)
-            { case TokenTypes::Reserved::Import:
+            {
+                case TokenTypes::Reserved::Import:
                     return "Reserved::Import";
                 case TokenTypes::Reserved::Public:
                     return "Reserved::Public";
@@ -125,6 +127,8 @@ namespace Lexer
                     return "Reserved::Private";
                 case TokenTypes::Reserved::Protected:
                     return "Reserved::Protected";
+                case TokenTypes::Reserved::Class:
+                    return "Reserved::Class";
                 case TokenTypes::Reserved::Function:
                     return "Reserved::Function";
                 case TokenTypes::Reserved::Return:

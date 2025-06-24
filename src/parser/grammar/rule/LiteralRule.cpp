@@ -13,7 +13,7 @@ namespace Parser
 
     ParseResult LiteralGrammarRule::parse(Parser &parser)
     {
-        ParseResult result;
+        ParseResult result = {.status = ParseResultStatus::Failed};
 
         Lexer::Lexer &lexer = parser.lexer();
         if (lexer.eof())
@@ -23,29 +23,44 @@ namespace Parser
 
         if (token->type == token_type_)
         {
+            result.status = ParseResultStatus::Success;
+
             if (parser.state() == ParserState::Panic)
                 parser.update_state(ParserState::Synchronized);
 
             return result;
         }
 
+        std::cout << "token: " << *token << " | "
+                  << Lexer::type_to_string(token_type_) << "\n";
+        std::cout << "status: " << static_cast<int>(result.status)
+                  << " | parser.state: " << static_cast<int>(parser.state())
+                  << "\n";
+
         // Skip tokens if the parser is in Panic Mode
         if (parser.state() == ParserState::Panic)
             return result;
 
-        result.errors.push_back(Diagnostic::ErrorDiagnostic(
-            std::make_unique<AST::LiteralExpr>(*token),
-            Diagnostic::ErrorTypes::General::Syntax,
+        result.status = ParseResultStatus::Failed;
+        result.diagnostics.push_back(
+            Diagnostic::create_syntax_error(token, token_type_));
 
-            // Error Message
-            std::string() + "Unexpected \"" + Utils::Colors::Red +
-                std::string(token->value) + Utils::Styles::Reset +
-                "\". Expected " + Utils::Colors::Red +
-                Lexer::type_to_string(token_type_) + Utils::Styles::Reset,
+        // result.diagnostics.push_back(
+        //     std::make_unique<Diagnostic::ErrorDiagnostic>(
+        //         std::make_unique<AST::LiteralExpr>(*token),
+        //         Diagnostic::ErrorTypes::General::Syntax,
 
-            // Emphasis Label
-            std::string("Received ") + Lexer::type_to_string(token->type) +
-                " instead."));
+        //         // Error Message
+        //         std::string("Unexpected \"") + Utils::Colors::Red +
+        //             std::string(token->value) + Utils::Styles::Reset +
+        //             "\". Expected " + Utils::Colors::Red +
+        //             Lexer::type_to_string(token_type_) +
+        //             Utils::Styles::Reset,
+
+        //         // Emphasis Label
+        //         std::string("Received ") + Lexer::type_to_string(token->type)
+        //         +
+        //             " instead."));
 
         // std::cout << "failed matching: " << *token
         //           << " | expects: " << Lexer::type_to_string(token_type_)

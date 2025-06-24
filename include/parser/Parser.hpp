@@ -68,7 +68,7 @@ namespace Parser
         ParserState state();
         void update_state(ParserState state);
 
-        void parse();
+        bool parse();
     };
 
 } // namespace Parser

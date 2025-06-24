@@ -23,30 +23,40 @@ namespace Parser
     {
         size_t rule_count = rules_.size();
 
-        UnbuiltParseResult result;
+        UnbuiltParseResult result = {.status = ParseResultStatus::Success};
 
         result.nodes.reserve(rule_count);
-        result.errors.reserve(rule_count);
+        result.diagnostics.reserve(rule_count);
 
         auto &lexer = parser.lexer();
         size_t prev_pos = lexer.position();
 
         for (auto &rule : rules_)
         {
-            auto [node, errors] = rule->parse(parser);
+            auto [status, node, diagnostics] = rule->parse(parser);
 
-            result.errors.insert(result.errors.end(),
-                                 std::make_move_iterator(errors.begin()),
-                                 std::make_move_iterator(errors.end()));
+            result.diagnostics.insert(
+                result.diagnostics.end(),
+                std::make_move_iterator(diagnostics.begin()),
+                std::make_move_iterator(diagnostics.end()));
 
-            if (errors.empty() && parser.state() != ParserState::Panic)
+            std::cout << "status: " << static_cast<int>(status)
+                      << " | state: " << static_cast<int>(parser.state())
+                      << "\n";
+            if (status == ParseResultStatus::Success &&
+                parser.state() != ParserState::Panic)
             {
                 prev_pos = lexer.position();
                 result.nodes.push_back(std::move(node));
+
+                continue;
             }
+
+            result.status = status;
         }
 
-        if (!result.errors.empty())
+        if (result.status == ParseResultStatus::Failed &&
+            parser.state() == ParserState::Panic)
             lexer.rewind(prev_pos);
 
         return result;

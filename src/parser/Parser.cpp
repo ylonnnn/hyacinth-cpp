@@ -1,11 +1,13 @@
 #include <iostream>
 
+#include "diagnostic/WarningDiagnostic.hpp"
 #include "lexer/Lexer.hpp"
 #include "parser/Parser.hpp"
 #include "parser/grammar/Grammar.hpp"
 // #include "parser/grammar/default/Hyacinth.hpp"
 #include "parser/grammar/default/Hyacinth.hpp"
 #include "program/Program.hpp"
+#include "utils/style.hpp"
 
 namespace Parser
 {
@@ -92,16 +94,30 @@ namespace Parser
 
     void Parser::update_state(ParserState state) { state_ = state; }
 
-    void Parser::parse()
+    bool Parser::parse()
     {
-        auto [_, errors] = grammar_->parse(*this);
+        auto [status, _, diagnostics] = grammar_->parse(*this);
+        // size_t errors = 0, warns = 0;
 
-        std::cout << "finished parsing and detected " << errors.size()
-                  << " errors\n";
-        // std::cout << "state: " << static_cast<int>(state) << "\n";
+        for (auto &diagnostic : diagnostics)
+        {
+            // if (dynamic_cast<Diagnostic::ErrorDiagnostic *>(diagnostic.get()))
+            //     errors++;
 
-        for (auto &diagnostic : errors)
-            diagnostic.report();
+            // if (dynamic_cast<Diagnostic::WarningDiagnostic *>(diagnostic.get()))
+            //     warns++;
+
+            diagnostic->report();
+        }
+
+        return status == ParseResultStatus::Success;
+
+        // std::cout << "\n\n"
+        //           << (errors == 0 ? warns == 0 ? Utils::Colors::Green
+        //                                        : Utils::Colors::Yellow
+        //                           : Utils::Colors::Red)
+        //           << " [" << (errors == 0 ? warns == 0 ? "/" : "~" : "X")
+        //           << "] Program Parsed.\n\n\n";
     }
 
 } // namespace Parser

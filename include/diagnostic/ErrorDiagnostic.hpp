@@ -1,9 +1,11 @@
 #pragma once
 
+#include <optional>
 #include <unordered_map>
 #include <variant>
 
 #include "diagnostic/Diagnostic.hpp"
+#include "lexer/Token.hpp"
 
 namespace Diagnostic
 {
@@ -55,5 +57,9 @@ namespace Diagnostic
         const char *error_type_to_string(ErrorType type);
         void report() override;
     };
+
+    std::unique_ptr<ErrorDiagnostic> create_syntax_error(
+        Lexer::Token *token,
+        std::optional<Lexer::TokenType> expected = std::nullopt);
 
 } // namespace Diagnostic
