@@ -39,8 +39,7 @@ namespace Parser
             return result;
         }
 
-        result.node = std::make_unique<MutabilityNode>(
-            Program::Position(token->position), false);
+        auto mut = false;
 
         // Immutable
         if (parser.expect(token_type_, false))
@@ -54,6 +53,8 @@ namespace Parser
                                false))
         {
             lexer.next();
+            mut = true;
+
             if (!parser.expect(token_type_, false))
             {
                 Lexer::Token *token = lexer.peek();
@@ -61,19 +62,21 @@ namespace Parser
                 result.diagnostics.push_back(Diagnostic::create_syntax_error(
                     token, Lexer::TokenTypes::Delimeter::Colon));
 
-                result.diagnostics.push_back(std::make_unique<
-                                             Diagnostic::NoteDiagnostic>(
-                    std::make_unique<AST::LiteralExpr>(*token),
-                    Diagnostic::NoteType::Suggestion,
-                    std::string("Did you mean to put a \"") +
-                        Diagnostic::NOTE_GEN + ":" + Utils::Styles::Reset +
-                        "\"?",
-                    "Replace this with (or Insert) a \":\" to make the value mutable."));
+                result.diagnostics.push_back(
+                    std::make_unique<Diagnostic::NoteDiagnostic>(
+                        std::make_unique<AST::LiteralExpr>(*token),
+                        Diagnostic::NoteType::Suggestion,
+                        std::string("Did you mean to put a \"") +
+                            Diagnostic::NOTE_GEN + ":" + Utils::Styles::Reset +
+                            "\"?",
+                        "Replace this with (or Insert) a \":\" to make the "
+                        "value mutable."));
             }
 
             else
             {
                 lexer.next();
+
                 result.status = ParseResultStatus::Success;
             }
         }
@@ -93,6 +96,9 @@ namespace Parser
                         "!:" + Utils::Styles::Reset + "\" for mutability.",
                     "Use here"));
         }
+
+        result.node = std::make_unique<MutabilityNode>(
+            Program::Position(token->position), mut);
 
         return result;
     }

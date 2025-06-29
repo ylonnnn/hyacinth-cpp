@@ -9,7 +9,10 @@ namespace AST
         : Stmt(::Program::Position(name.position)), name_(name),
           mut_state_(mut_state)
     {
+        end_pos_ = name.position.col + name.value.size();
     }
+
+    bool VariableDeclarationStmt::is_definition() const { return false; }
 
     Lexer::Token &VariableDeclarationStmt::name() { return name_; }
 

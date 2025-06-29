@@ -23,6 +23,8 @@ namespace AST
         VariableDeclarationStmt(Lexer::Token &name,
                                 VariableMutabilityState mut_state);
 
+        virtual bool is_definition() const;
+
         Lexer::Token &name();
         VariableMutabilityState mut_state() const;
         Expr &type();

@@ -10,7 +10,7 @@ namespace Diagnostic
     {
         NOTE_CODES.reserve(32);
 
-        NOTE_CODES[NoteType::Definition] = "HYC::UNREACHABLE";
+        NOTE_CODES[NoteType::Definition] = "HYC::DEFINITION";
         NOTE_CODES[NoteType::Usage] = "HYC::USAGE";
         NOTE_CODES[NoteType::Suggestion] = "HYC::SUGGESTION";
     }
