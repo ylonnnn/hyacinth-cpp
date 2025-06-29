@@ -27,14 +27,14 @@ namespace Diagnostic
     }
 
     Diagnostic::Diagnostic(std::unique_ptr<AST::Node> node,
-                           std::string &&message,
-                           std::string &&emphasis_message)
+                           std::string message,
+                           std::string emphasis_message)
         : node_(std::move(node)), message_(std::move(message)),
           emphasis_message_(std::move(emphasis_message))
     {
     }
 
-    void Diagnostic::emphasize_position(DiagnosticEmphasis &&options)
+    void Diagnostic::emphasize_position(DiagnosticEmphasis options)
     {
         auto &[message, position, length, emphasis, trace, pointer] = options;
         auto &[row, col, program] = position;
@@ -42,7 +42,7 @@ namespace Diagnostic
         size_t end_pos = node_->end_pos();
 
         constexpr size_t tab_size = 3;
-        std::string tab = Utils::tab(tab_size),
+        std::string tab = Utils::tab(tab_size, 1),
                     row_string = std::to_string(row);
 
         std::string prefix = tab + row_string + "  | " + tab;
@@ -58,7 +58,7 @@ namespace Diagnostic
 
         std::cout << display_line;
 
-        std::string offset = Utils::tab((prefix.size() + col) - 1);
+        std::string offset = Utils::tab((prefix.size() + col) - 1, 1);
         std::cout << offset << pointer << "^"
                   << std::string(end_pos - (col + 1), '~')
                   << Utils::Styles::Reset << "\n";

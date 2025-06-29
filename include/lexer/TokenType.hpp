@@ -88,7 +88,7 @@ namespace Lexer
                 LessThan,
                 LessThanEqual,
                 GreaterThan,
-                GreatherThanEqual,
+                GreaterThanEqual,
             };
 
         } // namespace Operator
@@ -287,8 +287,8 @@ namespace Lexer
                     return "Operator::Relational::LessThanEqual";
                 case TokenTypes::Operator::Relational::GreaterThan:
                     return "Operator::Relational::GreaterThan";
-                case TokenTypes::Operator::Relational::GreatherThanEqual:
-                    return "Operator::Relational::GreatherThanEqual";
+                case TokenTypes::Operator::Relational::GreaterThanEqual:
+                    return "Operator::Relational::GreaterThanEqual";
             }
 
             return "Operator::Relational::Unknown";
@@ -352,7 +352,7 @@ namespace Lexer
 
     inline const char *type_to_string(TokenType type)
     {
-        return std::visit([&](auto &&value)
+        return std::visit([&](auto value)
                           { return TokenTypes::to_string(value); }, type);
     }
 

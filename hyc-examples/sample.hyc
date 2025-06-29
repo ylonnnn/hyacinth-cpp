@@ -1,0 +1,5 @@
+config_default_name: str = "Some Project";
+
+fn main -> i4 (argc: i32, argv: str[]) {
+    return 0;
+}

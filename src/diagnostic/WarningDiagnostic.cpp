@@ -15,13 +15,10 @@ namespace Diagnostic
 
     static bool initialized_codes = (initialize_codes(), true);
 
-    Utils::TextStyle WARNING_GENERAL = Utils::Colors::Yellow,
-                     WARNING_EMPHASIS = Utils::Colors::BrightYellow;
-
     WarningDiagnostic::WarningDiagnostic(std::unique_ptr<AST::Node> node,
                                          WarningType warn_type,
-                                         std::string &&message,
-                                         std::string &&emphasis_message)
+                                         std::string message,
+                                         std::string emphasis_message)
         : Diagnostic(std::move(node), std::move(message),
                      std::move(emphasis_message)),
           warn_type_(warn_type)
@@ -41,21 +38,21 @@ namespace Diagnostic
 
     void WarningDiagnostic::report()
     {
-        const Program::Position &position = node_->position();
+        const ::Program::Position &position = node_->position();
 
         std::cout << "\n\n";
 
-        std::cout << WARNING_GENERAL << "Warning <"
+        std::cout << WARN_GEN << "Warning <"
                   << warn_type_to_string(warn_type_) << "> "
                   << Utils::Styles::Reset << message_ << "\n\n";
 
         emphasize_position((DiagnosticEmphasis){
             .message = emphasis_message_,
-            .position = const_cast<Program::Position &>(position),
+            .position = const_cast<::Program::Position &>(position),
             .length = node_->end_pos(),
-            .emphasis = WARNING_EMPHASIS,
-            .trace = WARNING_GENERAL,
-            .pointer = WARNING_GENERAL,
+            .emphasis = WARN_EMPH,
+            .trace = WARN_GEN,
+            .pointer = WARN_GEN,
         });
 
         for (std::unique_ptr<Diagnostic> &detail : details)

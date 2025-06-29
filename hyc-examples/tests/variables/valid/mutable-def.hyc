@@ -1,0 +1,1 @@
+mutable_str!: str = "This is some sort of string";

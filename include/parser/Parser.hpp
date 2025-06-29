@@ -14,40 +14,13 @@ namespace Parser
         Synchronized,
     };
 
-    // class ParserErrorHandler
-    // {
-    //   private:
-    //     ParserState state_ = ParserState::Normal;
-    //     std::vector<Diagnostic::ErrorDiagnostic> errors_;
-
-    //     std::unique_ptr<Diagnostic::ErrorDiagnostic> attempt_diagnostic_;
-
-    //   public:
-    //     ParserErrorHandler();
-
-    //   public:
-    //     ParserState state();
-
-    //     void update_state(ParserState state);
-
-    //     void attempt_panic(Diagnostic::ErrorDiagnostic &&diagnostic);
-    //     void abort_panic_attempt();
-    //     void proceed_panic();
-
-    //     void panic(Diagnostic::ErrorDiagnostic &&diagnostic);
-
-    //     void undo_panic();
-
-    //     void synchronize();
-    // };
-
     class Parser
     {
       private:
         Program::ProgramFile &program_;
         Lexer::Lexer &lexer_;
 
-        std::unique_ptr<Grammar> grammar_ = nullptr;
+        Grammar grammar_;
 
         ParserState state_ = ParserState::Normal;
 
@@ -56,17 +29,19 @@ namespace Parser
         virtual ~Parser() = default;
 
       protected:
-        std::unique_ptr<Grammar> initialize_grammar();
+        void initialize_grammar();
 
       public:
         Program::ProgramFile &program();
         Lexer::Lexer &lexer();
-        const Grammar *grammar() const;
-         
-        // ParserErrorHandler &error_handler();
+        Grammar &grammar();
 
-        ParserState state();
+        ParserState state() const;
         void update_state(ParserState state);
+
+        bool expect(Lexer::TokenType type, bool consume = true);
+        std::unique_ptr<Diagnostic::ErrorDiagnostic>
+        expect_or_error(Lexer::TokenType type, bool consume = true);
 
         bool parse();
     };

@@ -1,11 +1,10 @@
 #pragma once
 
 #include <memory>
-#include <type_traits>
 #include <unordered_map>
 
 #include "lexer/Token.hpp"
-#include "parser/grammar/GrammarRuleSet.hpp"
+#include "parser/grammar/GrammarRule.hpp"
 
 namespace Parser
 {
@@ -14,24 +13,18 @@ namespace Parser
     class Grammar
     {
       protected:
-        std::unordered_map<Lexer::TokenType, std::unique_ptr<GrammarRuleSet>>
-            rule_sets_;
+        std::unordered_map<Lexer::TokenType, std::unique_ptr<GrammarRule>>
+            rules_;
+        std::unique_ptr<GrammarRule> fallback_;
 
       public:
-        Grammar() = default;
+        Grammar();
 
       public:
-        template <typename T,
-                  typename = std::enable_if<
-                      std::is_base_of<GrammarRuleSet, T>::value, T *>>
-        T *make_rule_set(Lexer::TokenType token_type)
-        {
-            auto [it, _] = rule_sets_.insert_or_assign(
-                token_type, std::move(std::make_unique<T>(token_type)));
-            return static_cast<T *>(it->second.get());
-        }
+        GrammarRule *fallback() const;
 
-        GrammarRuleSet *get_rule_set(Lexer::TokenType token_type);
+        void add_rule(Lexer::TokenType type, std::unique_ptr<GrammarRule> rule);
+        GrammarRule *get_rule(Lexer::TokenType type) const;
 
         ParseResult parse(Parser &parser);
     };

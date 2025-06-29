@@ -1,6 +1,0 @@
-class Test {
-    some_member: i32;
-    some_member: bool;
-}
-
-fn main -> void (argc: i32, argv!: str) {}

@@ -33,13 +33,9 @@ namespace Diagnostic
 
     static bool initialized_codes = (initialize_codes(), true);
 
-    Utils::TextStyle ERROR_GENERAL = Utils::Colors::Red,
-                     ERROR_EMPHASIS = Utils::Colors::BrightRed;
-
     ErrorDiagnostic::ErrorDiagnostic(std::unique_ptr<AST::Node> node,
-                                     ErrorType error_type,
-                                     std::string &&message,
-                                     std::string &&emphasis_message)
+                                     ErrorType error_type, std::string message,
+                                     std::string emphasis_message)
         : Diagnostic(std::move(node), std::move(message),
                      std::move(emphasis_message)),
           error_type_(error_type)
@@ -59,21 +55,20 @@ namespace Diagnostic
 
     void ErrorDiagnostic::report()
     {
-        const Program::Position &position = node_->position();
+        const ::Program::Position &position = node_->position();
 
         std::cout << "\n\n";
 
-        std::cout << ERROR_GENERAL << "Error <"
-                  << error_type_to_string(error_type_) << "> "
-                  << Utils::Styles::Reset << message_ << "\n\n";
+        std::cout << ERR_GEN << "Error <" << error_type_to_string(error_type_)
+                  << "> " << Utils::Styles::Reset << message_ << "\n\n";
 
         emphasize_position((DiagnosticEmphasis){
             .message = emphasis_message_,
-            .position = const_cast<Program::Position &>(position),
+            .position = const_cast<::Program::Position &>(position),
             .length = node_->end_pos(),
-            .emphasis = ERROR_EMPHASIS,
-            .trace = ERROR_GENERAL,
-            .pointer = ERROR_GENERAL,
+            .emphasis = ERR_EMPH,
+            .trace = ERR_GEN,
+            .pointer = ERR_GEN,
         });
 
         for (std::unique_ptr<Diagnostic> &detail : details)
@@ -94,13 +89,13 @@ namespace Diagnostic
         return std::make_unique<ErrorDiagnostic>(
             std::make_unique<AST::LiteralExpr>(*token),
             ErrorTypes::General::Syntax,
-            std::string("Unexpected \"") + ERROR_EMPHASIS +
+            std::string("Unexpected \"") + ERR_EMPH +
                 std::string(token->value) + Utils::Styles::Reset + "\"." +
-                (expects ? std::string(" Expected \"") + ERROR_EMPHASIS +
+                (expects ? std::string(" Expected \"") + ERR_EMPH +
                                Lexer::type_to_string(*expected) +
                                Utils::Styles::Reset + "."
                          : ""),
-            ERROR_GENERAL + std::string("Received ") +
+            ERR_GEN + std::string("Received ") +
                 Lexer::type_to_string(token->type) +
                 (expects ? " instead" : "") + ".");
     }

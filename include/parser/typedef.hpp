@@ -14,18 +14,13 @@ namespace Parser
         Failed,
     };
 
+    using DiagnosticList = std::vector<std::unique_ptr<Diagnostic::Diagnostic>>;
+
     struct ParseResult
     {
         ParseResultStatus status = ParseResultStatus::Failed;
         std::unique_ptr<AST::Node> node;
-        std::vector<std::unique_ptr<Diagnostic::Diagnostic>> diagnostics;
-    };
-
-    struct UnbuiltParseResult
-    {
-        ParseResultStatus status = ParseResultStatus::Failed;
-        std::vector<std::unique_ptr<AST::Node>> nodes;
-        std::vector<std::unique_ptr<Diagnostic::Diagnostic>> diagnostics;
+        DiagnosticList diagnostics;
     };
 
 } // namespace Parser

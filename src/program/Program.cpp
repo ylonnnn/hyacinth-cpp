@@ -4,7 +4,6 @@
 #include <string>
 
 #include "lexer/Lexer.hpp"
-#include "lexer/Token.hpp"
 #include "parser/Parser.hpp"
 #include "program/Program.hpp"
 #include "utils/control.hpp"
@@ -16,6 +15,7 @@ namespace Program
     ProgramFile::ProgramFile(const char *path)
         : path_(std::filesystem::absolute(path))
     {
+        read();
     }
 
     size_t ProgramFile::file_size(std::ifstream &file)
@@ -63,21 +63,21 @@ namespace Program
     {
         auto start = std::chrono::high_resolution_clock::now();
 
-        read();
-
         Lexer::Lexer lexer(*this);
 
         lexer.tokenize();
 
-        while (!lexer.eof())
-            std::cout << *lexer.next() << "\n";
+        // while (!lexer.eof())
+        //     std::cout << *lexer.next() << "\n";
 
-        std::cout << std::endl;
+        // std::cout << std::endl;
 
-        lexer.rewind();
+        // lexer.rewind();
 
         Parser::Parser parser(*this, lexer);
         bool parsed = parser.parse();
+
+        // After Execution
 
         auto microseconds =
             std::chrono::duration_cast<std::chrono::microseconds>(

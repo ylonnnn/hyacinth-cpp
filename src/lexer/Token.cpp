@@ -108,7 +108,7 @@ namespace Lexer
         TOKEN_HANDLERS.emplace_back(TokenTypes::Operator::Relational::Equal,
                                     "!=");
         TOKEN_HANDLERS.emplace_back(
-            TokenTypes::Operator::Relational::GreatherThanEqual, ">=");
+            TokenTypes::Operator::Relational::GreaterThanEqual, ">=");
         TOKEN_HANDLERS.emplace_back(
             TokenTypes::Operator::Relational::GreaterThan, ">");
         TOKEN_HANDLERS.emplace_back(

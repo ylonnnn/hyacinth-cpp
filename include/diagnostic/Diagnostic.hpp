@@ -13,7 +13,7 @@ namespace Diagnostic
     {
         std::string message;
 
-        Program::Position &position;
+        ::Program::Position &position;
         size_t length;
 
         Utils::TextStyle emphasis;
@@ -32,13 +32,13 @@ namespace Diagnostic
         std::vector<std::unique_ptr<Diagnostic>> details;
 
       public:
-        Diagnostic(std::unique_ptr<AST::Node> node, std::string &&message,
-                   std::string &&emphasis_message);
+        Diagnostic(std::unique_ptr<AST::Node> node, std::string message,
+                   std::string emphasis_message);
 
       public:
         AST::Node &node();
 
-        void emphasize_position(DiagnosticEmphasis &&options);
+        void emphasize_position(DiagnosticEmphasis options);
 
         virtual void report() = 0;
     };

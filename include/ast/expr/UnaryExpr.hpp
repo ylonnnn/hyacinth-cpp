@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast/expr/Expr.hpp"
+#include "ast/expr/Expr.hpp"
 #include "lexer/Token.hpp"
 
 namespace AST
@@ -17,10 +18,11 @@ namespace AST
         UnaryType unary_type_;
 
         Lexer::Token &operation_;
-        Expr &expr_;
+        std::unique_ptr<Expr> expr_;
 
       public:
-        UnaryExpr(UnaryType unary_type, Lexer::Token &operation, Expr &expr);
+        UnaryExpr(UnaryType unary_type, Lexer::Token &operation,
+                  std::unique_ptr<Expr> expr);
         ~UnaryExpr() override = default;
 
       public:

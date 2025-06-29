@@ -8,6 +8,9 @@
 
 namespace Diagnostic
 {
+    constexpr auto WARN_GEN = Utils::Colors::Yellow,
+                   WARN_EMPH = Utils::Colors::BrightYellow;
+
     enum class WarningType
     {
         Unreachable = 1,
@@ -23,8 +26,8 @@ namespace Diagnostic
 
       public:
         WarningDiagnostic(std::unique_ptr<AST::Node> node,
-                          WarningType warn_type, std::string &&message,
-                          std::string &&emphasis_message);
+                          WarningType warn_type, std::string message,
+                          std::string emphasis_message);
 
         WarningType warn_type();
 

@@ -10,17 +10,17 @@ namespace AST
     class Node
     {
       protected:
-        Program::Position position_;
+        ::Program::Position position_;
         size_t end_pos_;
- 
+
       public:
-        Node(Program::Position &&position);
+        Node(::Program::Position position);
         virtual ~Node() = default;
 
       public:
         Program::ProgramFile &program();
-        const Program::Position &position() const;
-        virtual size_t end_pos(); 
+        const ::Program::Position &position() const;
+        virtual size_t end_pos() const;
 
         virtual void print(std::ostream &os, uint8_t tab) const = 0;
 

@@ -4,6 +4,6 @@
 
 namespace AST
 {
-    Expr::Expr(Program::Position &&position) : Node(std::move(position)) {}
+    Expr::Expr(::Program::Position position) : Node(std::move(position)) {}
 
 } // namespace AST

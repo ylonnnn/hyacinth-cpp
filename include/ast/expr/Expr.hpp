@@ -10,7 +10,7 @@ namespace AST
     class Expr : public Node
     {
       public:
-        Expr(Program::Position &&program);
+        Expr(::Program::Position program);
         virtual ~Expr() = default;
 
       public:

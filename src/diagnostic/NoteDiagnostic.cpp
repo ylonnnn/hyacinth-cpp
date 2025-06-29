@@ -17,13 +17,9 @@ namespace Diagnostic
 
     static bool initialized_codes = (initialize_codes(), true);
 
-    Utils::TextStyle NOTE_GENERAL = Utils::Colors::Blue,
-                     NOTE_EMPHASIS = Utils::Colors::BrightBlue;
-
     NoteDiagnostic::NoteDiagnostic(std::unique_ptr<AST::Node> node,
-                                         NoteType note_type,
-                                         std::string &&message,
-                                         std::string &&emphasis_message)
+                                   NoteType note_type, std::string message,
+                                   std::string emphasis_message)
         : Diagnostic(std::move(node), std::move(message),
                      std::move(emphasis_message)),
           note_type_(note_type)
@@ -43,20 +39,20 @@ namespace Diagnostic
 
     void NoteDiagnostic::report()
     {
-        const Program::Position &position = node_->position();
+        const ::Program::Position &position = node_->position();
 
         std::cout << "\n\n";
 
-        std::cout << NOTE_GENERAL << "Note <" << note_type_to_string(note_type_)
+        std::cout << NOTE_GEN << "Note <" << note_type_to_string(note_type_)
                   << "> " << Utils::Styles::Reset << message_ << "\n\n";
 
         emphasize_position((DiagnosticEmphasis){
             .message = emphasis_message_,
-            .position = const_cast<Program::Position &>(position),
+            .position = const_cast<::Program::Position &>(position),
             .length = node_->end_pos(),
-            .emphasis = NOTE_EMPHASIS,
-            .trace = NOTE_GENERAL,
-            .pointer = NOTE_GENERAL,
+            .emphasis = NOTE_EMPH,
+            .trace = NOTE_GEN,
+            .pointer = NOTE_GEN,
         });
 
         for (std::unique_ptr<Diagnostic> &detail : details)

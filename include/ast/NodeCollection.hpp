@@ -22,8 +22,8 @@ namespace AST
         std::vector<std::unique_ptr<T>> collection_;
 
       public:
-        NodeCollection(Program::Position &&position,
-                       std::vector<std::unique_ptr<T>> &&collection)
+        NodeCollection(::Program::Position position,
+                       std::vector<std::unique_ptr<T>> collection)
             : Node(std::move(position)), collection_(std::move(collection))
         {
         }
@@ -31,7 +31,7 @@ namespace AST
         virtual ~NodeCollection() override = default;
 
       public:
-        size_t end_pos() override
+        size_t end_pos()
         {
             end_pos_ = collection_.back()->end_pos();
 
@@ -40,14 +40,14 @@ namespace AST
 
         virtual void print(std::ostream &os, uint8_t tab) const override
         {
-            std::string less_indented = Utils::tab(tab - 1),
+            std::string indentation = Utils::tab(tab - 1),
                         tabs = Utils::tab(tab);
-            os << less_indented << "NodeCollection {";
+            os << indentation << "NodeCollection {";
 
             for (const auto &node : collection_)
                 node->print(os, tab + 1);
 
-            os << "\n" << less_indented << "}";
+            os << "\n" << indentation << "}";
         }
 
         auto &collection() { return collection_; }

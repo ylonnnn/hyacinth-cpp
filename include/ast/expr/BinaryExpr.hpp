@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast/expr/Expr.hpp"
+#include "ast/expr/Expr.hpp"
 #include "lexer/Token.hpp"
 
 namespace AST
@@ -8,12 +9,13 @@ namespace AST
     class BinaryExpr : public Expr
     {
       private:
-        Expr &left_;
+        std::unique_ptr<Expr> left_;
         Lexer::Token &operation_;
-        Expr &right_;
+        std::unique_ptr<Expr> right_;
 
       public:
-        BinaryExpr(Expr &left, Lexer::Token &operation, Expr &right);
+        BinaryExpr(std::unique_ptr<Expr> left, Lexer::Token &operation,
+                   std::unique_ptr<Expr> right);
         ~BinaryExpr() override = default;
 
       public:

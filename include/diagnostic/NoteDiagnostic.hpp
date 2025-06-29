@@ -8,6 +8,9 @@
 
 namespace Diagnostic
 {
+    constexpr auto NOTE_GEN = Utils::Colors::Blue,
+                   NOTE_EMPH = Utils::Colors::BrightBlue;
+
     enum class NoteType
     {
         Definition = 1,
@@ -24,7 +27,7 @@ namespace Diagnostic
 
       public:
         NoteDiagnostic(std::unique_ptr<AST::Node> node, NoteType note_type,
-                       std::string &&message, std::string &&emphasis_message);
+                       std::string message, std::string emphasis_message);
 
         NoteType note_type();
 

@@ -6,7 +6,10 @@
 
 namespace Utils
 {
-    std::string tab(uint8_t tab_count) { return std::string(tab_count, ' '); }
+    std::string tab(uint8_t tab_count, uint8_t size)
+    {
+        return std::string(tab_count * size, ' ');
+    }
 
     static re2::RE2 style_regex("\033\\[[0-9;]*m");
 

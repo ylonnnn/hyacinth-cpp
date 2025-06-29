@@ -72,7 +72,7 @@ namespace Lexer
 
         Token &last = tokens_.back();
 
-        Program::Position position = last.position;
+        ::Program::Position position = last.position;
         position.col += last.value.size();
 
         tokens_.push_back((Token){" ", std::move(position),
@@ -81,10 +81,7 @@ namespace Lexer
 
     bool Lexer::eof() { return position_ >= tokens_.size(); }
 
-    Token *Lexer::at(size_t pos)
-    {
-        return pos < 0 || eof() ? nullptr : &tokens_[pos];
-    }
+    Token *Lexer::at(size_t pos) { return eof() ? nullptr : &tokens_[pos]; }
 
     void Lexer::rewind(size_t pos)
     {
@@ -133,7 +130,11 @@ namespace Lexer
 
     Token &Lexer::current()
     {
-        return tokens_.at(std::clamp(position_, (size_t)0, tokens_.size() - 1));
+        using signed_size_t = std::make_signed_t<size_t>;
+        signed_size_t max_idx = static_cast<signed_size_t>(tokens_.size() - 1);
+
+        return tokens_.at(std::clamp(static_cast<signed_size_t>(position_) - 1,
+                                     static_cast<signed_size_t>(0), max_idx));
     }
 
 } // namespace Lexer

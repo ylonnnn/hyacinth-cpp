@@ -9,6 +9,9 @@
 
 namespace Diagnostic
 {
+    constexpr auto ERR_GEN = Utils::Colors::Red,
+                   ERR_EMPH = Utils::Colors::BrightRed;
+
     namespace ErrorTypes
     {
         enum class General
@@ -50,7 +53,7 @@ namespace Diagnostic
 
       public:
         ErrorDiagnostic(std::unique_ptr<AST::Node> node, ErrorType error_type,
-                        std::string &&message, std::string &&emphasis_message);
+                        std::string message, std::string emphasis_message);
 
         ErrorType error_type();
 

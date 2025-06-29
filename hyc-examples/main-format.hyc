@@ -1,4 +1,4 @@
-import stdtstd.io;
+import std.io;
 
 fn main -> void (argc: i32, argv: str[]) {
     some_var: i32 = 123;
