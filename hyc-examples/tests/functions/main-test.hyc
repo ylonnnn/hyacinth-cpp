@@ -1,0 +1,5 @@
+GLOBAL_VAL: u8 = 0;
+
+fn main -> u8 (a: i32, b!: bool) {}
+
+some_val!: i32;

@@ -6,9 +6,11 @@ namespace AST
 {
     VariableDefinitionStmt::VariableDefinitionStmt(
         Lexer::Token &name, VariableMutabilityState mut_state,
-        std::unique_ptr<Expr> value)
-        : VariableDeclarationStmt(name, mut_state), value_(std::move(value))
+        std::unique_ptr<Type> type, std::unique_ptr<Expr> value)
+        : VariableDeclarationStmt(name, mut_state, std::move(type)),
+          value_(std::move(value))
     {
+        end_pos_ = value_->end_pos();
     }
 
     bool VariableDefinitionStmt::is_definition() const { return true; }

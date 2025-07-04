@@ -1,4 +1,3 @@
-#pragma once
 
 #include "ast/expr/BinaryExpr.hpp"
 #include "ast/expr/IdentifierExpr.hpp"

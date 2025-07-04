@@ -14,21 +14,39 @@ namespace Diagnostic
     {
         ERROR_CODES.reserve(32);
 
-        ERROR_CODES[ErrorTypes::General::Syntax] = "HYC::SYNTAX";
-        ERROR_CODES[ErrorTypes::Type::Mismatch] = "HYC::TYPE_MISMATCH";
-        ERROR_CODES[ErrorTypes::Type::UnknownType] = "HYC::TYPE_UNKNOWN";
+        ERROR_CODES[ErrorTypes::Syntax::UnexpectedToken] =
+            "HYC::SYNTAX::UNEXPECTED_TOKEN";
+        ERROR_CODES[ErrorTypes::Syntax::MissingIdentifier] =
+            "HYC::SYNTAX:MISSING_IDENTIFIER";
+        ERROR_CODES[ErrorTypes::Syntax::MissingValue] =
+            "HYC::SYNTAX:MISSING_VALUE";
+        ERROR_CODES[ErrorTypes::Syntax::MissingKeyword] =
+            "HYC::SYNTAX:MISSING_KEYWORD";
+        ERROR_CODES[ErrorTypes::Syntax::MissingOperator] =
+            "HYC::SYNTAX:MISSING_OPERATOR";
+        ERROR_CODES[ErrorTypes::Syntax::MissingType] =
+            "HYC::SYNTAX:MISSING_TYPE";
+        ERROR_CODES[ErrorTypes::Syntax::MissingReturnType] =
+            "HYC::SYNTAX:MISSING_RETURN_TYPE";
+        ERROR_CODES[ErrorTypes::Syntax::MissingMutabilityModifier] =
+            "HYC::SYNTAX:MISSING_MUTABILITY_MODIFIER";
+
+        ERROR_CODES[ErrorTypes::Type::Mismatch] = "HYC::TYPE:MISMATCH";
+        ERROR_CODES[ErrorTypes::Type::UnknownType] = "HYC::TYPE:UNKNOWN";
         ERROR_CODES[ErrorTypes::Type::InvalidArgumentType] =
-            "HYC::INVALID_ARGUMENT_TYPE";
+            "HYC::TYPE:INVALID_ARGUMENT_TYPE";
         ERROR_CODES[ErrorTypes::Type::InvalidReturnType] =
-            "HYC::INVALID_RETURN_TYPE";
+            "HYC::TYPE:INVALID_RETURN_TYPE";
+
         ERROR_CODES[ErrorTypes::Modification::ReadValueModification] =
-            "HYC::RVALUE_MODIFICATION";
+            "HYC::MODIFICATION:RVALUE_MODIFICATION";
         ERROR_CODES[ErrorTypes::Modification::ImmutableValueModification] =
-            "HYC::IMMUTABLE_MODIFICATION";
+            "HYC::MODIFICATION:IMMUTABLE_MODIFICATION";
+
         ERROR_CODES[ErrorTypes::Uninitialization::UninitializedValue] =
-            "HYC::UNINITIALIZED_VALUE";
+            "HYC::UNINITIALIZATION:UNINITIALIZED_VALUE";
         ERROR_CODES[ErrorTypes::Uninitialization::UninitializedImmutable] =
-            "HYC::UNINITIALIZED_IMMUTABLE";
+            "HYC::UNINITIALIZATION:UNINITIALIZED_IMMUTABLE";
     }
 
     static bool initialized_codes = (initialize_codes(), true);
@@ -88,7 +106,7 @@ namespace Diagnostic
 
         return std::make_unique<ErrorDiagnostic>(
             std::make_unique<AST::LiteralExpr>(*token),
-            ErrorTypes::General::Syntax,
+            ErrorTypes::Syntax::UnexpectedToken,
             std::string("Unexpected \"") + ERR_EMPH +
                 std::string(token->value) + Utils::Styles::Reset + "\"." +
                 (expects ? std::string(" Expected \"") + ERR_EMPH +

@@ -37,7 +37,11 @@ namespace Parser
         Grammar &grammar();
 
         ParserState state() const;
+        bool is(ParserState state) const;
         void update_state(ParserState state);
+
+        void panic();
+        void synchronize();
 
         bool expect(Lexer::TokenType type, bool consume = true);
         std::unique_ptr<Diagnostic::ErrorDiagnostic>

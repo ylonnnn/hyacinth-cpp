@@ -10,10 +10,11 @@ void run_tests(const char *path)
 
     fs::path f_path = path;
 
-    if (!fs::exists(f_path) || !fs::is_directory(f_path))
+    if (!fs::exists(f_path))
         return;
 
-    for (const auto &entry : fs::directory_iterator(f_path))
+    auto file_handler = [&](const auto &entry) -> void
+    {
         if (fs::is_regular_file(entry.status()))
         {
             Program::ProgramFile program(entry.path().c_str());
@@ -27,9 +28,20 @@ void run_tests(const char *path)
         }
         else if (fs::is_directory(entry.status()))
             run_tests(entry.path().c_str());
+    };
+
+    if (fs::is_directory(f_path))
+        for (const auto &entry : fs::directory_iterator(f_path))
+            file_handler(entry);
+
+    else
+        file_handler(fs::directory_entry(f_path));
 }
 
-void run_specific_tests() { run_tests("hyc-examples/tests/variables/"); }
+void run_specific_tests()
+{
+    run_tests("hyc-examples/tests/functions/");
+}
 
 int main()
 {

@@ -31,7 +31,7 @@ namespace Parser
     extern std::unordered_map<Lexer::TokenType, std::pair<float, float>>
         BINDING_POWERS;
 
-    void add_bp(Lexer::TokenType token_type, std::pair<float, float>);
+    void add_bp(Lexer::TokenType token_type, std::pair<float, float> bp);
     const std::pair<float, float> &get_bp(Lexer::TokenType token_type);
 
     using NudHandler =
@@ -60,12 +60,10 @@ namespace Parser
         std::unique_ptr<AST::Expr> node;
     };
 
-    class ExprRule : public GrammarRule
+    class Expr : public GrammarRule
     {
       public:
-        ExprRule();
-
-        void initialize();
+        Expr();
 
         ExprParseResult parse_expr(Parser &parser, float right_bp = 0);
         ParseResult parse(Parser &parser) override;

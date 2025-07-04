@@ -13,6 +13,7 @@ namespace AST
       public:
         VariableDefinitionStmt(Lexer::Token &name,
                                VariableMutabilityState mut_state,
+                               std::unique_ptr<AST::Type> type,
                                std::unique_ptr<AST::Expr> value);
 
         bool is_definition() const override;

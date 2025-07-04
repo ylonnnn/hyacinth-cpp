@@ -1,6 +1,7 @@
 #pragma once
 
 #include "parser/grammar/GrammarRule.hpp"
+#include "parser/Parser.hpp"
 
 namespace Parser
 {

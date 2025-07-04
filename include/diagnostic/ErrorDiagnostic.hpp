@@ -16,7 +16,18 @@ namespace Diagnostic
     {
         enum class General
         {
-            Syntax = 1,
+        };
+
+        enum class Syntax
+        {
+            UnexpectedToken = 1,
+            MissingIdentifier,
+            MissingValue,
+            MissingKeyword,
+            MissingOperator,
+            MissingType,
+            MissingReturnType,
+            MissingMutabilityModifier,
         };
 
         enum class Type
@@ -41,7 +52,7 @@ namespace Diagnostic
     } // namespace ErrorTypes
 
     using ErrorType =
-        std::variant<ErrorTypes::General, ErrorTypes::Type,
+        std::variant<ErrorTypes::General, ErrorTypes::Syntax, ErrorTypes::Type,
                      ErrorTypes::Modification, ErrorTypes::Uninitialization>;
 
     extern std::unordered_map<ErrorType, const char *> ERROR_CODES;

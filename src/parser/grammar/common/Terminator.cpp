@@ -1,4 +1,4 @@
-#include "parser/grammar/rules/common/Terminator.hpp"
+#include "parser/grammar/common/Terminator.hpp"
 #include "parser/grammar/rules/Hyacinth.hpp"
 
 namespace Parser

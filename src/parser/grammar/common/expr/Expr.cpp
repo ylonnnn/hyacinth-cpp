@@ -5,8 +5,9 @@
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "parser/Parser.hpp"
 #include "parser/grammar/GrammarRule.hpp"
-#include "parser/grammar/expr/Expr.hpp"
-#include "parser/grammar/expr/ExprHandlers.hpp"
+#include "parser/grammar/common/Common.hpp"
+#include "parser/grammar/common/expr/Expr.hpp"
+#include "parser/grammar/common/expr/ExprHandlers.hpp"
 #include "parser/typedef.hpp"
 
 namespace Parser
@@ -18,7 +19,12 @@ namespace Parser
     void add_bp(Lexer::TokenType token_type,
                 std::pair<float, float> binding_power)
     {
+        if (!BINDING_POWERS.bucket_count())
+            BINDING_POWERS.reserve(32);
+
         BINDING_POWERS[token_type] = std::move(binding_power);
+        // BINDING_POWERS.insert_or_assign(token_type,
+        // std::move(binding_power));
     }
 
     const std::pair<float, float> &get_bp(Lexer::TokenType token_type)
@@ -38,7 +44,10 @@ namespace Parser
         if (binding_power)
             add_bp(token_type, std::move(*binding_power));
 
-        NUD_HANDLER_MAP[token_type] = std::move(handler);
+        if (!NUD_HANDLER_MAP.bucket_count())
+            NUD_HANDLER_MAP.reserve(32);
+
+        NUD_HANDLER_MAP.insert_or_assign(token_type, std::move(handler));
     }
 
     NudHandler get_nud(Lexer::TokenType token_type)
@@ -58,7 +67,10 @@ namespace Parser
         if (binding_power)
             add_bp(token_type, std::move(*binding_power));
 
-        LED_HANDLER_MAP[token_type] = std::move(handler);
+        if (!LED_HANDLER_MAP.bucket_count())
+            LED_HANDLER_MAP.reserve(32);
+
+        LED_HANDLER_MAP.insert_or_assign(token_type, std::move(handler));
     }
 
     LedHandler get_led(Lexer::TokenType token_type)
@@ -70,17 +82,8 @@ namespace Parser
         return it->second;
     }
 
-    ExprRule::ExprRule()
-        : GrammarRule(Lexer::TokenTypes::Miscellaneous::EndOfFile)
+    static void initialize()
     {
-        initialize();
-    }
-
-    void ExprRule::initialize()
-    {
-        // No rules for expressions
-        // Binding Power and Handlers are initialized here
-
         using namespace Lexer::TokenTypes;
         using namespace Operator;
 
@@ -92,20 +95,21 @@ namespace Parser
                   Primary::Character, Primary::String}))
         {
             add_nud(type, parse_literal,
-                    std::pair<float, float>({primary_bp, primary_bp}));
+                    std::pair<float, float>{primary_bp, primary_bp});
         }
 
         // Identifier
         add_nud(Primary::Identifier, parse_identifier,
-                std::pair<float, float>({primary_bp, primary_bp}));
+                std::pair<float, float>{primary_bp, primary_bp});
 
         // Grouping
         add_nud(Delimeter::ParenthesisOpen,
                 [&](Parser &parser,
                     DiagnosticList &diagnostics) -> std::unique_ptr<AST::Expr>
                 {
+                    Expr &expr_rule = Common::Expr;
                     std::unique_ptr<AST::Expr> expr =
-                        parse_expr(parser, 0).node;
+                        expr_rule.parse_expr(parser, 0).node;
 
                     std::unique_ptr<Diagnostic::ErrorDiagnostic> diagnostic =
                         parser.expect_or_error(
@@ -132,7 +136,7 @@ namespace Parser
             add_nud(
                 type, [](Parser &parser, DiagnosticList &diagnostics)
                 { return parse_unary(parser, diagnostics); },
-                std::pair<float, float>({unary_bp, unary_bp}));
+                std::pair<float, float>{unary_bp, unary_bp});
 
             add_led(
                 type, [](Parser &parser, std::unique_ptr<AST::Expr> &left,
@@ -163,7 +167,7 @@ namespace Parser
         {
 
             add_led(type, parse_binary,
-                    std::pair<float, float>({additive_bp, additive_bp}));
+                    std::pair<float, float>{additive_bp, additive_bp});
         }
 
         // Relational
@@ -178,7 +182,7 @@ namespace Parser
              }))
         {
             add_led(type, parse_binary,
-                    std::pair<float, float>({relational_bp, relational_bp}));
+                    std::pair<float, float>{relational_bp, relational_bp});
         }
 
         // Logical
@@ -189,7 +193,7 @@ namespace Parser
              }))
         {
             add_led(type, parse_binary,
-                    std::pair<float, float>({logical_bp, logical_bp}));
+                    std::pair<float, float>{logical_bp, logical_bp});
         }
 
         // Assignment
@@ -204,11 +208,15 @@ namespace Parser
              }))
         {
             add_led(type, parse_binary,
-                    std::pair<float, float>({assignment_bp, assignment_bp}));
+                    std::pair<float, float>{assignment_bp, assignment_bp});
         }
     }
 
-    ExprParseResult ExprRule::parse_expr(Parser &parser, float right_bp)
+    static bool initialized = (initialize(), true);
+
+    Expr::Expr() : GrammarRule(Lexer::TokenTypes::Miscellaneous::EndOfFile) {}
+
+    ExprParseResult Expr::parse_expr(Parser &parser, float right_bp)
     {
         ExprParseResult result = {ParseResultStatus::Success, nullptr, {}};
 
@@ -224,10 +232,7 @@ namespace Parser
 
         if (nud == nullptr)
         {
-            result.status = ParseResultStatus::Failed;
-            result.diagnostics.push_back(
-                Diagnostic::create_syntax_error(token));
-
+            result.error(parser, Diagnostic::create_syntax_error(token));
             return result;
         }
 
@@ -263,7 +268,7 @@ namespace Parser
         return result;
     }
 
-    ParseResult ExprRule::parse(Parser &parser)
+    ParseResult Expr::parse(Parser &parser)
     {
         ExprParseResult expr_result = parse_expr(parser, 0);
         ParseResult result = {expr_result.status, std::move(expr_result.node),

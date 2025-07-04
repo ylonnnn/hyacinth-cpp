@@ -1,10 +1,11 @@
-#include "parser/grammar/rules/common/Mutability.hpp"
+#include <iostream>
+
 #include "ast/expr/LiteralExpr.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "diagnostic/NoteDiagnostic.hpp"
 #include "parser/grammar/GrammarRule.hpp"
+#include "parser/grammar/common/Mutability.hpp"
 #include "utils/style.hpp"
-#include <iostream>
 
 namespace Parser
 {
@@ -17,7 +18,10 @@ namespace Parser
 
     bool MutabilityNode::is_mutable() const { return mutable_; }
 
-    void MutabilityNode::print(std::ostream &os, uint8_t tab) const {}
+    void MutabilityNode::print(std::ostream &os, uint8_t tab) const
+    {
+        (void)os, (void)tab;
+    }
 
     Mutability::Mutability() : GrammarRule(Lexer::TokenTypes::Delimeter::Colon)
     {
@@ -28,23 +32,22 @@ namespace Parser
         auto &lexer = parser.lexer();
         ParseResult result = {ParseResultStatus::Failed, nullptr, {}};
 
-        size_t initial_pos = lexer.position();
-
         Lexer::Token *token = lexer.peek();
         if (lexer.eof())
         {
-            result.diagnostics.push_back(
-                Diagnostic::create_syntax_error(token));
+            result.error(parser, Diagnostic::create_syntax_error(token));
 
             return result;
         }
 
-        auto mut = false;
+        auto mut = true;
 
         // Immutable
         if (parser.expect(token_type_, false))
         {
+            mut = false;
             result.status = ParseResultStatus::Success;
+
             lexer.next();
         }
 
@@ -53,24 +56,22 @@ namespace Parser
                                false))
         {
             lexer.next();
-            mut = true;
 
             if (!parser.expect(token_type_, false))
             {
                 Lexer::Token *token = lexer.peek();
 
-                result.diagnostics.push_back(Diagnostic::create_syntax_error(
-                    token, Lexer::TokenTypes::Delimeter::Colon));
+                result.force_error(
+                    parser, Diagnostic::create_syntax_error(
+                                token, Lexer::TokenTypes::Delimeter::Colon));
 
-                result.diagnostics.push_back(
-                    std::make_unique<Diagnostic::NoteDiagnostic>(
-                        std::make_unique<AST::LiteralExpr>(*token),
-                        Diagnostic::NoteType::Suggestion,
-                        std::string("Did you mean to put a \"") +
-                            Diagnostic::NOTE_GEN + ":" + Utils::Styles::Reset +
-                            "\"?",
-                        "Replace this with (or Insert) a \":\" to make the "
-                        "value mutable."));
+                result.note(std::make_unique<AST::LiteralExpr>(*token),
+                            Diagnostic::NoteType::Suggestion,
+                            std::string("Did you mean to put a \"") +
+                                Diagnostic::NOTE_GEN + ":" +
+                                Utils::Styles::Reset + "\"?",
+                            "Replace this with (or Insert) a \":\" to make the "
+                            "value mutable.");
             }
 
             else
@@ -86,15 +87,14 @@ namespace Parser
         {
             result.node = nullptr;
 
-            result.diagnostics.push_back(
-                std::make_unique<Diagnostic::ErrorDiagnostic>(
-                    std::make_unique<AST::LiteralExpr>(*token),
-                    Diagnostic::ErrorTypes::General::Syntax,
-                    std::string("Missing mutability modifier. Use \"") +
-                        Diagnostic::ERR_GEN + ":" + Utils::Styles::Reset +
-                        "\" for immutability, and \"" + Diagnostic::ERR_GEN +
-                        "!:" + Utils::Styles::Reset + "\" for mutability.",
-                    "Use here"));
+            result.force_error(
+                parser, std::make_unique<AST::LiteralExpr>(*token),
+                Diagnostic::ErrorTypes::Syntax::MissingMutabilityModifier,
+                std::string("Missing mutability modifier. Use \"") +
+                    Diagnostic::ERR_GEN + ":" + Utils::Styles::Reset +
+                    "\" for immutability, and \"" + Diagnostic::ERR_GEN +
+                    "!:" + Utils::Styles::Reset + "\" for mutability.",
+                "Use here");
         }
 
         result.node = std::make_unique<MutabilityNode>(

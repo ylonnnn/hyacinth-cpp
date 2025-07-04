@@ -25,18 +25,29 @@ namespace Parser
 
     void Parser::update_state(ParserState state) { state_ = state; }
 
+    bool Parser::is(ParserState state) const { return state_ == state; }
+
+    void Parser::panic() { state_ = ParserState::Panic; }
+
+    void Parser::synchronize() { state_ = ParserState::Synchronized; }
+
     bool Parser::expect(Lexer::TokenType type, bool consume)
     {
         Lexer::Token *token =
             lexer_.eof() ? nullptr : (consume ? lexer_.next() : lexer_.peek());
-        return token == nullptr ? false : token->type == type;
+        auto expected = token == nullptr ? false : token->type == type;
+
+        if (expected)
+            synchronize();
+
+        return expected;
     }
 
     std::unique_ptr<Diagnostic::ErrorDiagnostic>
     Parser::expect_or_error(Lexer::TokenType type, bool consume)
     {
         Lexer::Token *token = lexer_.eof() ? nullptr : lexer_.peek();
-        return (expect(type, consume) || state_ == ParserState::Panic)
+        return expect(type, consume)
                    ? nullptr
                    : Diagnostic::create_syntax_error(
                          token ? token : &lexer_.current(), type);

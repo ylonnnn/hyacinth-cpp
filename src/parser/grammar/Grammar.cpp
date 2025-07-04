@@ -1,18 +1,17 @@
+#include <iostream>
 #include <unordered_map>
 #include <variant>
 
-#include "ast/NodeCollection.hpp"
-#include "ast/Program.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "lexer/Lexer.hpp"
 #include "lexer/Token.hpp"
 #include "parser/Parser.hpp"
 #include "parser/grammar/Grammar.hpp"
-#include "parser/grammar/expr/Expr.hpp"
+#include "parser/grammar/common/expr/Expr.hpp"
 
 namespace Parser
 {
-    Grammar::Grammar() : fallback_(std::make_unique<ExprRule>()) {}
+    Grammar::Grammar() : fallback_(std::make_unique<Expr>()) {}
 
     GrammarRule *Grammar::fallback() const { return fallback_.get(); }
 
@@ -34,16 +33,16 @@ namespace Parser
     ParseResult Grammar::parse(Parser &parser)
     {
         Lexer::Lexer &lexer = parser.lexer();
+        ParseResult result = {ParseResultStatus::Success, nullptr, {}};
 
-        ParseResultStatus status = ParseResultStatus::Success;
-        auto program_node = std::make_unique<AST::Program>(parser.program());
+        // auto program_node = std::make_unique<AST::Program>(parser.program());
 
-        auto collection_node = std::make_unique<AST::NodeCollection<AST::Node>>(
-            parser.program().position_at(1, 1),
-            std::vector<std::unique_ptr<AST::Node>>());
+        // auto collection_node =
+        // std::make_unique<AST::NodeCollection<AST::Node>>(
+        //     parser.program().position_at(1, 1),
+        //     std::vector<std::unique_ptr<AST::Node>>());
 
-        std::vector<std::unique_ptr<Diagnostic::Diagnostic>> diagnostics;
-        diagnostics.reserve(lexer.size());
+        result.diagnostics.reserve(lexer.size());
 
         while (!lexer.eof())
         {
@@ -61,10 +60,7 @@ namespace Parser
             GrammarRule *rule = get_rule(token->type);
             if (rule == nullptr)
             {
-                status = ParseResultStatus::Failed;
-                parser.update_state(ParserState::Panic);
-
-                diagnostics.push_back(Diagnostic::create_syntax_error(token));
+                result.error(parser, Diagnostic::create_syntax_error(token));
                 lexer.next();
 
                 continue;
@@ -72,19 +68,19 @@ namespace Parser
 
             auto [p_status, p_node, p_diagnostics] = rule->parse(parser);
 
-            collection_node->collection().push_back(std::move(p_node));
-
-            if (p_status == ParseResultStatus::Failed)
-            {
-                status = p_status;
-                diagnostics.insert(
-                    diagnostics.end(),
+            // collection_node->collection().push_back(std::move(p_node));
+            if (!p_diagnostics.empty())
+                result.diagnostics.insert(
+                    result.diagnostics.end(),
                     std::make_move_iterator(p_diagnostics.begin()),
                     std::make_move_iterator(p_diagnostics.end()));
-            }
+
+            if (p_status == ParseResultStatus::Failed)
+                result.status = p_status;
         }
 
-        return {status, std::move(collection_node), std::move(diagnostics)};
+        // return {status, std::move(collection_node), std::move(diagnostics)};
+        return result;
     }
 
 } // namespace Parser

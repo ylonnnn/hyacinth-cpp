@@ -6,9 +6,9 @@
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "diagnostic/NoteDiagnostic.hpp"
 #include "parser/grammar/GrammarRule.hpp"
+#include "parser/grammar/common/Common.hpp"
+#include "parser/grammar/common/IdentifierInit.hpp"
 #include "parser/grammar/rules/Hyacinth.hpp"
-#include "parser/grammar/rules/common/Common.hpp"
-#include "parser/grammar/rules/common/IdentifierInit.hpp"
 #include "utils/style.hpp"
 
 namespace Parser
@@ -24,7 +24,7 @@ namespace Parser
         ParseResult result = Common::IdentifierInitialization.parse(parser);
 
         std::unique_ptr<IdentifierNode> identifier;
-        if (auto ptr = dynamic_cast<IdentifierNode *>(result.node.get()))
+        if (dynamic_cast<IdentifierNode *>(result.node.get()))
             identifier = std::unique_ptr<IdentifierNode>(
                 static_cast<IdentifierNode *>(result.node.release()));
 
@@ -49,6 +49,7 @@ namespace Parser
         AST::VariableMutabilityState mut_state =
             identifier->is_mutable() ? AST::VariableMutabilityState::Mutable
                                      : AST::VariableMutabilityState::Immutable;
+        std::unique_ptr<AST::Type> &type = identifier->type();
 
         std::unique_ptr<AST::Expr> value;
         if (dynamic_cast<AST::Expr *>(v_node.get()))
@@ -60,7 +61,7 @@ namespace Parser
             case 0b00:
             {
                 result.node = std::make_unique<AST::VariableDeclarationStmt>(
-                    name, mut_state);
+                    name, mut_state, std::move(type));
 
                 break;
             }
@@ -68,27 +69,24 @@ namespace Parser
             case 0b01: // = [X] Value [/]
             case 0b10: // = [/] Value [X]
             {
-                result.status = ParseResultStatus::Failed;
                 result.node = nullptr;
 
-                result.diagnostics.push_back(
-                    presence_flag == 0b01
-                        ? std::make_unique<Diagnostic::ErrorDiagnostic>(
-                              std::move(value),
-                              Diagnostic::ErrorTypes::General::Syntax,
-                              std::string("Missing ") + Diagnostic::ERR_GEN +
-                                  "=" + Utils::Styles::Reset +
-                                  " operator before the value",
-                              "Missing operator before this value")
-                        : std::make_unique<Diagnostic::ErrorDiagnostic>(
-                              std::make_unique<AST::LiteralExpr>(*token),
-                              Diagnostic::ErrorTypes::General::Syntax,
-                              std::string("Missing ") + Diagnostic::ERR_GEN +
-                                  "VALUE" + Utils::Styles::Reset +
-                                  " after the assignment operator",
-                              "Missing value after this operator")
+                if (presence_flag == 0b01)
+                    result.force_error(
+                        parser, std::move(value),
+                        Diagnostic::ErrorTypes::Syntax::MissingOperator,
+                        std::string("Missing ") + Diagnostic::ERR_GEN + "=" +
+                            Utils::Styles::Reset + " operator before the value",
+                        "Missing operator before this value");
 
-                );
+                else
+                    result.force_error(
+                        parser, std::make_unique<AST::LiteralExpr>(*token),
+                        Diagnostic::ErrorTypes::Syntax::MissingValue,
+                        std::string("Missing ") + Diagnostic::ERR_GEN +
+                            "VALUE" + Utils::Styles::Reset +
+                            " after the assignment operator",
+                        "Missing value after this operator");
 
                 break;
             }
@@ -96,7 +94,8 @@ namespace Parser
             case 0b11:
             {
                 result.node = std::make_unique<AST::VariableDefinitionStmt>(
-                    name, mut_state, std::move(value));
+                    name, mut_state, std::move(type), std::move(value));
+
                 break;
             }
         }
@@ -119,30 +118,24 @@ namespace Parser
         if (auto ptr =
                 dynamic_cast<AST::VariableDeclarationStmt *>(result.node.get()))
         {
-            std::cout << "is mutable: " << ptr->is_mutable() << "\n";
             if (ptr->is_mutable() || ptr->is_definition())
                 return result;
 
-            result.status = ParseResultStatus::Failed; 
-            // result.node = nullptr;
+            result.force_error(
+                parser, std::make_unique<AST::IdentifierExpr>(name),
+                Diagnostic::ErrorTypes::Uninitialization::
+                    UninitializedImmutable,
+                std::string("Illegal uninitialization of immutable \"") +
+                    Diagnostic::ERR_GEN + std::string(name.value) +
+                    Utils::Styles::Reset + "\".",
+                "Immutable variables require initial values");
 
-            result.diagnostics.push_back(
-                std::make_unique<Diagnostic::ErrorDiagnostic>(
-                    std::make_unique<AST::IdentifierExpr>(name),
-                    Diagnostic::ErrorTypes::Uninitialization::
-                        UninitializedImmutable,
-                    std::string("Illegal uninitialization of immutable \"") +
-                        Diagnostic::ERR_GEN + std::string(name.value) +
-                        Utils::Styles::Reset + "\".",
-                    "Immutable variables require initial values"));
-
-            result.diagnostics.push_back(
-                std::make_unique<Diagnostic::NoteDiagnostic>(
-                    std::move(result.node), Diagnostic::NoteType::Definition,
-                    std::string("Immutable variable \"") +
-                        Diagnostic::NOTE_GEN + std::string(name.value) +
-                        Utils::Styles::Reset + "\" defined here",
-                    "Defined here"));
+            result.note(std::move(result.node),
+                        Diagnostic::NoteType::Definition,
+                        std::string("Immutable variable \"") +
+                            Diagnostic::NOTE_GEN + std::string(name.value) +
+                            Utils::Styles::Reset + "\" defined here",
+                        "Defined here");
         }
 
         return result;

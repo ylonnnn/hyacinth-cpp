@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ast/expr/Expr.hpp"
 #include "ast/stmt/Stmt.hpp"
+#include "ast/type/Type.hpp"
 #include "lexer/Token.hpp"
 
 namespace AST
@@ -17,17 +17,18 @@ namespace AST
       protected:
         Lexer::Token &name_;
         VariableMutabilityState mut_state_;
-        // std::unique_ptr<Expr> type_;
+        std::unique_ptr<Type> type_;
 
       public:
         VariableDeclarationStmt(Lexer::Token &name,
-                                VariableMutabilityState mut_state);
+                                VariableMutabilityState mut_state,
+                                std::unique_ptr<Type> type);
 
         virtual bool is_definition() const;
 
         Lexer::Token &name();
         VariableMutabilityState mut_state() const;
-        Expr &type();
+        Type &type();
 
         bool is_mutable() const;
 

@@ -5,11 +5,12 @@
 namespace AST
 {
     VariableDeclarationStmt::VariableDeclarationStmt(
-        Lexer::Token &name, VariableMutabilityState mut_state)
+        Lexer::Token &name, VariableMutabilityState mut_state,
+        std::unique_ptr<Type> type)
         : Stmt(::Program::Position(name.position)), name_(name),
-          mut_state_(mut_state)
+          mut_state_(mut_state), type_(std::move(type))
     {
-        end_pos_ = name.position.col + name.value.size();
+        end_pos_ = type_->end_pos();
     }
 
     bool VariableDeclarationStmt::is_definition() const { return false; }
@@ -20,6 +21,8 @@ namespace AST
     {
         return mut_state_;
     }
+
+    Type &VariableDeclarationStmt::type() { return *type_; }
 
     bool VariableDeclarationStmt::is_mutable() const
     {
