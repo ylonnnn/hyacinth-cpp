@@ -1,11 +1,8 @@
 #pragma once
 
-#include <cstddef>
 #include <filesystem>
-#include <fstream>
-#include <string>
 
-namespace Program
+namespace Core
 {
     class ProgramFile;
 
@@ -27,12 +24,10 @@ namespace Program
         ProgramFile(const char *path);
 
       protected:
-        // File Operations
         size_t file_size(std::ifstream &file);
         void read();
 
       public:
-        // Accessors
         const std::filesystem::path &path() const;
         const std::string &source() const;
 
@@ -40,4 +35,4 @@ namespace Program
         void execute();
     };
 
-} // namespace Program
+} // namespace Core

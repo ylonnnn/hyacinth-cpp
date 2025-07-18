@@ -5,14 +5,14 @@
 #include "ast/NodeCollection.hpp"
 #include "ast/expr/Expr.hpp"
 #include "ast/expr/Expr.hpp"
-#include "program/Program.hpp"
+#include "core/program/Program.hpp"
 
 namespace AST
 {
     class CollectionExpr : public NodeCollection<Expr>
     {
       public:
-        CollectionExpr(::Program::Position position,
+        CollectionExpr(Core::Position position,
                        std::vector<std::unique_ptr<Expr>> collection);
         ~CollectionExpr() override = default;
 

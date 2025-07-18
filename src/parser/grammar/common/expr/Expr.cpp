@@ -1,14 +1,13 @@
-#include <iostream>
 #include <unordered_map>
 #include <utility>
 
 #include "diagnostic/ErrorDiagnostic.hpp"
+#include "parser/ParseResult.hpp"
 #include "parser/Parser.hpp"
 #include "parser/grammar/GrammarRule.hpp"
 #include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/common/expr/Expr.hpp"
 #include "parser/grammar/common/expr/ExprHandlers.hpp"
-#include "parser/typedef.hpp"
 
 namespace Parser
 {
@@ -104,12 +103,12 @@ namespace Parser
 
         // Grouping
         add_nud(Delimeter::ParenthesisOpen,
-                [&](Parser &parser,
-                    DiagnosticList &diagnostics) -> std::unique_ptr<AST::Expr>
+                [&](Parser &parser, Diagnostic::DiagnosticList &diagnostics)
+                    -> std::unique_ptr<AST::Expr>
                 {
                     Expr &expr_rule = Common::Expr;
                     std::unique_ptr<AST::Expr> expr =
-                        expr_rule.parse_expr(parser, 0).node;
+                        expr_rule.parse_expr(parser, 0).data;
 
                     std::unique_ptr<Diagnostic::ErrorDiagnostic> diagnostic =
                         parser.expect_or_error(
@@ -134,13 +133,15 @@ namespace Parser
              }))
         {
             add_nud(
-                type, [](Parser &parser, DiagnosticList &diagnostics)
+                type,
+                [](Parser &parser, Diagnostic::DiagnosticList &diagnostics)
                 { return parse_unary(parser, diagnostics); },
                 std::pair<float, float>{unary_bp, unary_bp});
 
             add_led(
-                type, [](Parser &parser, std::unique_ptr<AST::Expr> &left,
-                         float right_bp, DiagnosticList &diagnostics)
+                type,
+                [](Parser &parser, std::unique_ptr<AST::Expr> &left,
+                   float right_bp, Diagnostic::DiagnosticList &diagnostics)
                 { return parse_unary(parser, left, right_bp, diagnostics); });
         }
 
@@ -216,14 +217,26 @@ namespace Parser
 
     Expr::Expr() : GrammarRule(Lexer::TokenTypes::Miscellaneous::EndOfFile) {}
 
+    ExprParseResult::ExprParseResult(Parser &parser, Core::ResultStatus status,
+                                     std::unique_ptr<AST::Expr> data,
+                                     Diagnostic::DiagnosticList diagnostics)
+        : ParseResult(parser, status, std::move(data), std::move(diagnostics))
+    {
+        std::unique_ptr<AST::Node> node = std::move(ParseResult::data);
+        if (dynamic_cast<AST::Expr *>(node.get()))
+            this->data = std::unique_ptr<AST::Expr>(
+                static_cast<AST::Expr *>(node.release()));
+    }
+
     ExprParseResult Expr::parse_expr(Parser &parser, float right_bp)
     {
-        ExprParseResult result = {ParseResultStatus::Success, nullptr, {}};
+        ExprParseResult result = {
+            parser, Core::ResultStatus::Success, nullptr, {}};
 
         auto &lexer = parser.lexer();
         if (lexer.eof())
         {
-            result.status = ParseResultStatus::Failed;
+            result.status = Core::ResultStatus::Fail;
             return result;
         }
 
@@ -232,7 +245,7 @@ namespace Parser
 
         if (nud == nullptr)
         {
-            result.error(parser, Diagnostic::create_syntax_error(token));
+            result.error(Diagnostic::create_syntax_error(token));
             return result;
         }
 
@@ -252,7 +265,7 @@ namespace Parser
             LedHandler led = get_led(token->type);
             if (led == nullptr)
             {
-                // result.status = ParseResultStatus::Failed;
+                // result.status = Core::ResultStatus::Fail;
                 // result.diagnostics.push_back(
                 //     Diagnostic::create_syntax_error(token));
 
@@ -263,7 +276,7 @@ namespace Parser
             left = led(parser, left, right_bp_, result.diagnostics);
         }
 
-        result.node = std::move(left);
+        result.data = std::move(left);
 
         return result;
     }
@@ -271,12 +284,13 @@ namespace Parser
     ParseResult Expr::parse(Parser &parser)
     {
         ExprParseResult expr_result = parse_expr(parser, 0);
-        ParseResult result = {expr_result.status, std::move(expr_result.node),
+        ParseResult result = {parser, expr_result.status,
+                              std::move(expr_result.data),
                               std::move(expr_result.diagnostics)};
 
-        if (result.status == ParseResultStatus::Failed)
+        if (result.status == Core::ResultStatus::Fail)
         {
-            result.node = nullptr;
+            result.data = nullptr;
             return result;
         }
 

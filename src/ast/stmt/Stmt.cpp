@@ -2,6 +2,6 @@
 
 namespace AST
 {
-    Stmt::Stmt(::Program::Position position) : Node(std::move(position)) {}
+    Stmt::Stmt(Core::Position position) : Node(std::move(position)) {}
 
 } // namespace AST

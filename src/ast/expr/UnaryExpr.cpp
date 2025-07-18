@@ -9,9 +9,9 @@ namespace AST
 {
     UnaryExpr::UnaryExpr(UnaryType unary_type, Lexer::Token &operation,
                          std::unique_ptr<Expr> expr)
-        : Expr(::Program::Position(unary_type == UnaryType::Pre
-                                     ? operation.position
-                                     : expr->position())),
+        : Expr(unary_type == UnaryType::Pre
+                   ? operation.position
+                   : Core::Position(expr->position())),
           unary_type_(unary_type), operation_(operation), expr_(std::move(expr))
     {
         end_pos_ = unary_type_ == UnaryType::Pre

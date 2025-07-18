@@ -7,7 +7,7 @@
 
 namespace Diagnostic
 {
-    std::string line_at(Program::ProgramFile &program, size_t line)
+    std::string line_at(Core::ProgramFile &program, size_t line)
     {
         std::stringstream stream(program.source());
         std::string curr_line;
@@ -26,15 +26,20 @@ namespace Diagnostic
         return nullptr;
     }
 
-    Diagnostic::Diagnostic(std::unique_ptr<AST::Node> node,
-                           std::string message,
-                           std::string emphasis_message)
-        : node_(std::move(node)), message_(std::move(message)),
-          emphasis_message_(std::move(emphasis_message))
+    Diagnostic::Diagnostic(AST::Node *node, const std::string &message,
+                           const std::string &submessage)
+        : node_(node), message_(message), submessage_(submessage)
     {
     }
 
-    void Diagnostic::emphasize_position(DiagnosticEmphasis options)
+    AST::Node &Diagnostic::node() { return *node_; }
+
+    void Diagnostic::add_detail(std::unique_ptr<Diagnostic> detail)
+    {
+        details_.push_back(std::move(detail));
+    }
+
+    void Diagnostic::construct_emphasis(DiagnosticEmphasis options)
     {
         auto &[message, position, length, emphasis, trace, pointer] = options;
         auto &[row, col, program] = position;
@@ -56,21 +61,41 @@ namespace Diagnostic
         display_line.insert(tab_size + row_string.size(), Utils::Styles::Reset);
         display_line.insert(tab_size, Utils::Colors::Yellow);
 
-        std::cout << display_line;
+        constructed_ += display_line;
 
         std::string offset = Utils::tab((prefix.size() + col) - 1, 1);
-        std::cout << offset << pointer << "^"
-                  << std::string(end_pos - (col + 1), '~')
-                  << Utils::Styles::Reset << "\n";
+        constructed_ +=
+            (offset + pointer + "^" + std::string(end_pos - (col + 1), '~') +
+             Utils::Styles::Reset + "\n");
+
+        // std::cout << offset << pointer << "^"
+        //           << std::string(end_pos - (col + 1), '~')
+        //           << Utils::Styles::Reset << "\n";
 
         if (!message.empty())
-            std::cout << offset << pointer << "|  " << message
-                      << Utils::Styles::Reset << "\n";
+            constructed_ += (offset + pointer + "| " + std::string(message) +
+                             Utils::Styles::Reset + "\n");
+        // std::cout << offset << pointer << "|  " << message
+        //           << Utils::Styles::Reset << "\n";
 
-        std::cout << "\n\t\t" << trace << "at " << program.path().string()
-                  << ":" << row << ":" << col << Utils::Styles::Reset << "\n\n";
+        constructed_ +=
+            (std::string("\n\t\t") + trace + "at " + program.path().string() +
+             ":" + std::to_string(row) + ":" + std::to_string(col) +
+             Utils::Styles::Reset + "\n\n");
+
+        // std::cout << constructed_ << "\n";
+
+        // std::cout << "\n\t\t" << trace << "at " << program.path().string()
+        //           << ":" << row << ":" << col << Utils::Styles::Reset <<
+        //           "\n\n";
     }
 
-    AST::Node &Diagnostic::node() { return *node_; }
+    void Diagnostic::report() const
+    {
+        std::cout << constructed_ << "\n";
+
+        for (auto &detail : details_)
+            detail->report();
+    }
 
 } // namespace Diagnostic

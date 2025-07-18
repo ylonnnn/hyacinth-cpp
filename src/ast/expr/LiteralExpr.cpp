@@ -5,7 +5,7 @@
 namespace AST
 {
     LiteralExpr::LiteralExpr(Lexer::Token &value)
-        : Expr(::Program::Position(value.position)), value_(value)
+        : Expr(value.position), value_(value)
     {
         end_pos_ = value_.position.col + value_.value.size();
     }

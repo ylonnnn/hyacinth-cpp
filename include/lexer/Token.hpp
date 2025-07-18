@@ -4,15 +4,15 @@
 #include <ostream>
 #include <re2/re2.h>
 
+#include "core/program/Program.hpp"
 #include "lexer/TokenType.hpp"
-#include "program/Program.hpp"
 
 namespace Lexer
 {
     struct Token
     {
         std::string_view value;
-        ::Program::Position position;
+        Core::Position position;
         TokenType type;
 
         friend std::ostream &operator<<(std::ostream &os, const Token &token);

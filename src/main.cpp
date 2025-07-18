@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include "program/Program.hpp"
+#include "core/program/Program.hpp"
 
 void run_tests(const char *path)
 {
@@ -17,7 +17,7 @@ void run_tests(const char *path)
     {
         if (fs::is_regular_file(entry.status()))
         {
-            Program::ProgramFile program(entry.path().c_str());
+            Core::ProgramFile program(entry.path().c_str());
 
             std::cout << std::string(16, '=') << " TEST "
                       << std::string(16, '=') << "\n";
@@ -40,7 +40,7 @@ void run_tests(const char *path)
 
 void run_specific_tests()
 {
-    run_tests("hyc-examples/tests/functions/");
+    run_tests("hyc-examples/tests/functions/main-test.hyc");
 }
 
 int main()

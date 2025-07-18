@@ -32,6 +32,14 @@ namespace Parser
     {
     }
 
+    FunctionParameterListParseResult::FunctionParameterListParseResult(
+        Core::ResultStatus status,
+        std::unique_ptr<AST::NodeCollection<FunctionParameterNode>> data,
+        Diagnostic::DiagnosticList diagnostics)
+        : Core::Result<
+              std::unique_ptr<AST::NodeCollection<FunctionParameterNode>>>(
+              status, std::move(data), std::move(diagnostics)) {};
+
     FunctionDefinition::FunctionDefinition() : GrammarRule(Hyacinth::FUNCTION)
     {
     }
@@ -41,7 +49,7 @@ namespace Parser
     {
         auto &lexer = parser.lexer();
         FunctionParameterListParseResult result = {
-            ParseResultStatus::Success, nullptr, {}};
+            Core::ResultStatus::Success, nullptr, {}};
 
         std::vector<std::unique_ptr<FunctionParameterNode>> parameters;
         parameters.reserve(8);
@@ -54,27 +62,27 @@ namespace Parser
         {
             if (expect_param)
             {
-                auto [id_status, id_node, id_diagnostics] =
-                    identifier.parse(parser);
-                if (id_node == nullptr)
+                ParseResult i_res = identifier.parse(parser);
+
+                if (i_res.data == nullptr)
                 {
-                    result.node = nullptr;
-                    result.error(parser, Diagnostic::create_syntax_error(
-                                             &lexer.current()));
+                    result.data = nullptr;
+                    result.error(
+                        Diagnostic::create_syntax_error(&lexer.current()));
 
                     break;
                 }
 
-                if (id_status == ParseResultStatus::Failed)
+                if (i_res.status == Core::ResultStatus::Fail)
                 {
-                    result.status = id_status;
+                    result.status = i_res.status;
                     result.diagnostics.insert(
                         result.diagnostics.end(),
-                        std::make_move_iterator(id_diagnostics.begin()),
-                        std::make_move_iterator(id_diagnostics.end()));
+                        std::make_move_iterator(i_res.diagnostics.begin()),
+                        std::make_move_iterator(i_res.diagnostics.end()));
                 }
 
-                if (auto ptr = dynamic_cast<IdentifierNode *>(id_node.get()))
+                if (auto ptr = dynamic_cast<IdentifierNode *>(i_res.data.get()))
                 {
                     parameters.push_back(
                         std::make_unique<FunctionParameterNode>(
@@ -99,7 +107,7 @@ namespace Parser
         if (parameters.empty())
             parser.synchronize();
         else
-            result.node =
+            result.data =
                 std::make_unique<AST::NodeCollection<FunctionParameterNode>>(
                     parameters[0]->position(), std::move(parameters));
 
@@ -111,7 +119,7 @@ namespace Parser
         // fn NAME -> RET_TYPE ([PARAM_LIST]) {}
 
         auto &lexer = parser.lexer();
-        ParseResult result = {ParseResultStatus::Success, nullptr, {}};
+        ParseResult result = {parser, Core::ResultStatus::Success, nullptr, {}};
 
         // fn (Keyword)
         if (auto diagnostic = parser.expect_or_error(token_type_, false))
@@ -124,30 +132,36 @@ namespace Parser
         if (parser.expect(Primary::Identifier, false))
             name = lexer.next();
         else
+        {
+            auto node = new AST::LiteralExpr(*lexer.peek());
             result.force_error(
-                parser, std::make_unique<AST::LiteralExpr>(*lexer.peek()),
-                Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
+                node, Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
                 std::string("Missing function ") + Diagnostic::ERR_GEN +
                     "IDENTIFIER" + Utils::Styles::Reset +
                     " after function keyword.",
                 "Missing identifier here");
 
+            delete node;
+        }
+
         // -> (ArrowLeftOperator)
         if (parser.expect(Operator::Arrow::Left, false))
             lexer.next();
         else
+        {
+            auto node = new AST::LiteralExpr(*lexer.peek());
             result.force_error(
-                parser, std::make_unique<AST::LiteralExpr>(*lexer.peek()),
-                Diagnostic::ErrorTypes::Syntax::MissingOperator,
+                node, Diagnostic::ErrorTypes::Syntax::MissingOperator,
                 std::string("Missing ") + Diagnostic::ERR_GEN + "->" +
                     Utils::Styles::Reset + " after function identifier.",
                 "Missing arrow operator here");
+        }
 
         // RET_TYPE (ReturnType/Type)
         size_t rt_initial_pos = lexer.position();
         ParseResult rt_result = Common::Type.parse_type(parser);
 
-        if (rt_result.status == ParseResultStatus::Failed)
+        if (rt_result.status == Core::ResultStatus::Fail)
         {
             if (rt_initial_pos != lexer.position() &&
                 !rt_result.diagnostics.empty())
@@ -160,36 +174,40 @@ namespace Parser
             }
 
             else
+            {
+                auto node = new AST::LiteralExpr(*lexer.peek());
                 result.force_error(
-                    parser, std::make_unique<AST::LiteralExpr>(*lexer.peek()),
-                    Diagnostic::ErrorTypes::Syntax::MissingReturnType,
+                    node, Diagnostic::ErrorTypes::Syntax::MissingReturnType,
                     std::string("Missing function ") + Diagnostic::ERR_GEN +
                         "RETURN TYPE" + Utils::Styles::Reset +
                         " after function arrow operator.",
                     "Missing return type here");
+
+                delete node;
+            }
         }
 
         // ( (ParenthesisOpen)
         if (parser.expect(Delimeter::ParenthesisOpen, false))
             lexer.next();
         else
-            result.error(parser, Diagnostic::create_syntax_error(
-                                     lexer.peek(), Delimeter::ParenthesisOpen));
+            result.error(Diagnostic::create_syntax_error(
+                lexer.peek(), Delimeter::ParenthesisOpen));
 
         // PARAM_LIST
         size_t pl_initial_pos = lexer.position();
-        ParseResult pl_result = parse_param_list(parser);
+        FunctionParameterListParseResult pl_res = parse_param_list(parser);
 
-        if (pl_result.status == ParseResultStatus::Failed)
+        if (pl_res.status == Core::ResultStatus::Fail)
         {
             if (pl_initial_pos != lexer.position() &&
-                !pl_result.diagnostics.empty())
+                !pl_res.diagnostics.empty())
             {
-                result.status = pl_result.status;
+                result.status = pl_res.status;
                 result.diagnostics.insert(
                     result.diagnostics.end(),
-                    std::make_move_iterator(pl_result.diagnostics.begin()),
-                    std::make_move_iterator(pl_result.diagnostics.end()));
+                    std::make_move_iterator(pl_res.diagnostics.begin()),
+                    std::make_move_iterator(pl_res.diagnostics.end()));
             }
 
             else
@@ -200,16 +218,15 @@ namespace Parser
         if (parser.expect(Delimeter::ParenthesisClose, false))
             lexer.next();
         else
-            result.error(parser,
-                         Diagnostic::create_syntax_error(
-                             lexer.peek(), Delimeter::ParenthesisClose));
+            result.error(Diagnostic::create_syntax_error(
+                lexer.peek(), Delimeter::ParenthesisClose));
 
         // { (BraceOpen)
         if (parser.expect(Delimeter::BraceOpen, false))
             lexer.next();
         else
-            result.error(parser, Diagnostic::create_syntax_error(
-                                     lexer.peek(), Delimeter::BraceOpen));
+            result.error(Diagnostic::create_syntax_error(lexer.peek(),
+                                                         Delimeter::BraceOpen));
 
         // FUNCTION_BODY
 
@@ -217,8 +234,8 @@ namespace Parser
         if (parser.expect(Delimeter::BraceClose, false))
             lexer.next();
         else
-            result.error(parser, Diagnostic::create_syntax_error(
-                                     lexer.peek(), Delimeter::BraceClose));
+            result.error(Diagnostic::create_syntax_error(
+                lexer.peek(), Delimeter::BraceClose));
 
         return result;
     }

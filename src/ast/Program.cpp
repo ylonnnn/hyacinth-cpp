@@ -4,8 +4,8 @@
 
 namespace AST
 {
-    Program::Program(::Program::ProgramFile &program)
-        : Node(program.position_at(1, 1)), program_(program)
+    Program::Program(Core::ProgramFile &program)
+        : Node(program.position_at(1, 1)), program_(program), declarations_()
     {
         declarations_.reserve(64);
     }
@@ -22,7 +22,10 @@ namespace AST
         os << "Program {";
 
         for (auto &declaration : declarations_)
+        {
+            std::cout << "\n" << inner_indentation;
             declaration->print(os, tab + 1);
+        }
 
         os << "\n" << indentation << "}";
     }

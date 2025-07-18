@@ -3,23 +3,23 @@
 #include <cstdint>
 #include <ostream>
 
-#include "program/Program.hpp"
+#include "core/program/Program.hpp"
 
 namespace AST
 {
     class Node
     {
       protected:
-        ::Program::Position position_;
+        Core::Position position_;
         size_t end_pos_;
 
       public:
-        Node(::Program::Position position);
+        Node(Core::Position position);
         virtual ~Node() = default;
 
       public:
-        Program::ProgramFile &program();
-        const ::Program::Position &position() const;
+        Core::ProgramFile &program();
+        const Core::Position &position() const;
         virtual size_t end_pos() const;
 
         virtual void print(std::ostream &os, uint8_t tab) const = 0;

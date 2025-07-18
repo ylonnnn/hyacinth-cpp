@@ -19,6 +19,7 @@ namespace AST
         bool is_definition() const override;
 
         Expr &value();
+        std::unique_ptr<Expr> &value_ptr();
 
         void print(std::ostream &os, uint8_t tab) const override;
     };

@@ -1,13 +1,25 @@
 #include "parser/Parser.hpp"
+#include "core/program/Program.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "lexer/Lexer.hpp"
 #include "parser/grammar/Grammar.hpp"
 #include "parser/grammar/rules/Hyacinth.hpp"
-#include "program/Program.hpp"
 
 namespace Parser
 {
-    Parser::Parser(Program::ProgramFile &program, Lexer::Lexer &lexer)
+    ProgramParseResult::ProgramParseResult(
+        Parser &parser, Core::ResultStatus status,
+        std::unique_ptr<AST::Program> data,
+        Diagnostic::DiagnosticList diagnostics)
+        : ParseResult(parser, status, std::move(data), std::move(diagnostics))
+    {
+        std::unique_ptr<AST::Node> node = std::move(ParseResult::data);
+        if (dynamic_cast<AST::Program *>(node.get()))
+            this->data = std::unique_ptr<AST::Program>(
+                static_cast<AST::Program *>(node.release()));
+    }
+
+    Parser::Parser(Core::ProgramFile &program, Lexer::Lexer &lexer)
         : program_(program), lexer_(lexer)
     {
         initialize_grammar();
@@ -15,7 +27,7 @@ namespace Parser
 
     void Parser::initialize_grammar() { Hyacinth::initialize(grammar_); }
 
-    Program::ProgramFile &Parser::program() { return program_; }
+    Core::ProgramFile &Parser::program() { return program_; }
 
     Lexer::Lexer &Parser::lexer() { return lexer_; }
 
@@ -53,14 +65,14 @@ namespace Parser
                          token ? token : &lexer_.current(), type);
     }
 
-    bool Parser::parse()
+    ProgramParseResult Parser::parse()
     {
-        auto [status, _, diagnostics] = grammar_.parse(*this);
+        ProgramParseResult result = grammar_.parse(*this);
 
-        for (auto &diagnostic : diagnostics)
+        for (auto &diagnostic : result.diagnostics)
             diagnostic->report();
 
-        return status == ParseResultStatus::Success;
+        return result;
     }
 
 } // namespace Parser

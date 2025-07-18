@@ -1,5 +1,4 @@
 #include "ast/stmt/VariableDeclStmt.hpp"
-#include "ast/stmt/Stmt.hpp"
 #include "utils/style.hpp"
 
 namespace AST
@@ -7,15 +6,12 @@ namespace AST
     VariableDeclarationStmt::VariableDeclarationStmt(
         Lexer::Token &name, VariableMutabilityState mut_state,
         std::unique_ptr<Type> type)
-        : Stmt(::Program::Position(name.position)), name_(name),
-          mut_state_(mut_state), type_(std::move(type))
+        : DeclarationStmt(name), mut_state_(mut_state), type_(std::move(type))
     {
         end_pos_ = type_->end_pos();
     }
 
     bool VariableDeclarationStmt::is_definition() const { return false; }
-
-    Lexer::Token &VariableDeclarationStmt::name() { return name_; }
 
     VariableMutabilityState VariableDeclarationStmt::mut_state() const
     {
@@ -41,7 +37,11 @@ namespace AST
            << (mut_state_ == VariableMutabilityState::Mutable ? "Mutable"
                                                               : "Immutable")
            << "\n"
-           << indentation << "}";
+           << inner_indentation << "type: ";
+
+        type_->print(os, tab + 1);
+
+        os << "\n" << indentation << "}";
     }
 
 } // namespace AST

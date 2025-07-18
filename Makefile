@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g -O0 -Wall -Wextra -std=c++17 -Iinclude
+CXXFLAGS = -g -O0 -Wall -Wextra -std=c++17 -Iinclude -MMD -MP
 LDFLAGS = -lre2
 
 BUILD_DIR = $(CURDIR)/build

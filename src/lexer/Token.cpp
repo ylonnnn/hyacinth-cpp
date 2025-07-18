@@ -1,5 +1,4 @@
 #include <ostream>
-#include <re2/re2.h>
 #include <vector>
 
 #include "lexer/Token.hpp"
@@ -63,7 +62,7 @@ namespace Lexer
             "[+-]?((\\d(?:_?\\d)*\\.\\d(?:_?\\d)*|\\d(?:_?\\d)*\\.)([f]?)|"
             "\\d(?:_?\\d)*f)");
         TOKEN_HANDLERS.emplace_back(TokenTypes::Primary::Int,
-                                    "-?\\d(?:_?\\d)*");
+                                    "[+-]?\\d(?:_?\\d)*");
         TOKEN_HANDLERS.emplace_back(TokenTypes::Primary::Boolean,
                                     "\\b(true|false)\\b");
         TOKEN_HANDLERS.emplace_back(TokenTypes::Primary::Character,
@@ -91,7 +90,8 @@ namespace Lexer
                                     "%=");
 
         TOKEN_HANDLERS.emplace_back(TokenTypes::Operator::Arrow::Left, "->");
-        TOKEN_HANDLERS.emplace_back(TokenTypes::Operator::Arrow::Right, "<-");
+        // TOKEN_HANDLERS.emplace_back(TokenTypes::Operator::Arrow::Right,
+        // "<-");
 
         TOKEN_HANDLERS.emplace_back(TokenTypes::Operator::ArithmeticUnary::Plus,
                                     "\\+");

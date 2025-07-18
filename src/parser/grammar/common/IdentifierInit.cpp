@@ -11,8 +11,8 @@ namespace Parser
 {
     IdentifierNode::IdentifierNode(Lexer::Token &name, bool mut,
                                    std::unique_ptr<AST::Type> type)
-        : AST::Node(Program::Position(name.position)), name_(name),
-          mutable_(mut), type_(std::move(type))
+        : AST::Node(name.position), name_(name), mutable_(mut),
+          type_(std::move(type))
     {
     }
 
@@ -37,18 +37,23 @@ namespace Parser
         // IDENTIFIER_INIT ::= IDENTNFIER (":" | "!:") TYPE
 
         auto &lexer = parser.lexer();
-        ParseResult result = {ParseResultStatus::Success, nullptr, {}};
+        ParseResult result = {parser, Core::ResultStatus::Success, nullptr, {}};
 
         // Identifier
         if (parser.expect(token_type_, false))
             lexer.next();
         else
+        {
+            auto node = new AST::LiteralExpr(*lexer.peek());
+
             result.force_error(
-                parser, std::make_unique<AST::LiteralExpr>(*lexer.peek()),
-                Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
+                node, Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
                 std::string("Missing ") + Diagnostic::ERR_GEN + "IDENTIFIER" +
                     Utils::Styles::Reset + " before the mutability modifier.",
                 "Missing identifier here");
+
+            delete node;
+        }
 
         // if (auto diagnostic = parser.expect_or_error(token_type_))
         //     result.diagnostics.push_back(std::move(diagnostic));
@@ -56,29 +61,28 @@ namespace Parser
         Lexer::Token &name = lexer.current();
 
         // Mutability Modifier
-        auto [mut_status, mut_node, mut_diagnostics] =
-            mutability_.parse(parser);
+        auto mut_result = mutability_.parse(parser);
 
-        if (mut_status == ParseResultStatus::Failed)
+        if (mut_result.status == Core::ResultStatus::Fail)
         {
-            result.node = nullptr;
-            result.status = mut_status;
+            result.data = nullptr;
+            result.status = mut_result.status;
 
-            if (!mut_diagnostics.empty())
+            if (!mut_result.diagnostics.empty())
                 result.diagnostics.insert(
                     result.diagnostics.end(),
-                    std::make_move_iterator(mut_diagnostics.begin()),
-                    std::make_move_iterator(mut_diagnostics.end()));
+                    std::make_move_iterator(mut_result.diagnostics.begin()),
+                    std::make_move_iterator(mut_result.diagnostics.end()));
         }
 
         bool mut = false;
-        if (auto ptr = dynamic_cast<MutabilityNode *>(mut_node.get()))
+        if (auto ptr = dynamic_cast<MutabilityNode *>(mut_result.data.get()))
             mut = ptr->is_mutable();
 
         size_t t_initial_pos = lexer.position();
         TypeParseResult t_result = Common::Type.parse_type(parser);
 
-        if (t_result.status == ParseResultStatus::Failed)
+        if (t_result.status == Core::ResultStatus::Fail)
         {
             if (t_initial_pos != lexer.position() &&
                 !t_result.diagnostics.empty())
@@ -91,17 +95,22 @@ namespace Parser
             }
 
             else
+            {
+                auto node = new AST::LiteralExpr(*lexer.peek());
+
                 result.force_error(
-                    parser, std::make_unique<AST::LiteralExpr>(*lexer.peek()),
-                    Diagnostic::ErrorTypes::Syntax::MissingType,
+                    node, Diagnostic::ErrorTypes::Syntax::MissingType,
                     std::string("Missing identifier ") + Diagnostic::ERR_GEN +
                         "TYPE" + Utils::Styles::Reset +
                         " after the mutability modifier.",
                     "Missing type here");
+
+                delete node;
+            }
         }
 
-        result.node = std::make_unique<IdentifierNode>(
-            name, mut, std::move(t_result.node));
+        result.data = std::make_unique<IdentifierNode>(
+            name, mut, std::move(t_result.data));
 
         return result;
     }

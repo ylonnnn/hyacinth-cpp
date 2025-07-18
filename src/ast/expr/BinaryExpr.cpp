@@ -9,7 +9,7 @@ namespace AST
 {
     BinaryExpr::BinaryExpr(std::unique_ptr<Expr> left, Lexer::Token &operation,
                            std::unique_ptr<Expr> right)
-        : Expr(::Program::Position(left->position())), left_(std::move(left)),
+        : Expr(Core::Position(left->position())), left_(std::move(left)),
           operation_(operation), right_(std::move(right))
     {
         end_pos_ = right_->end_pos();
@@ -23,19 +23,19 @@ namespace AST
 
     void BinaryExpr::print(std::ostream &os, uint8_t tab) const
     {
-        std::string less_indented = Utils::tab(tab - 1, 4),
-                    tabs = Utils::tab(tab, 4);
+        std::string indentation = Utils::tab(tab - 1, 4),
+                    inner_indentation = Utils::tab(tab, 4);
         os << "BinaryExpr {";
 
-        os << "\n" << tabs << "left: ";
+        os << "\n" << inner_indentation << "left: ";
         left_->print(os, tab + 1);
 
-        os << "\n" << tabs << "operation: " << operation_.value;
+        os << "\n" << inner_indentation << "operation: " << operation_.value;
 
-        os << "\n" << tabs << "right: ";
+        os << "\n" << inner_indentation << "right: ";
         right_->print(os, tab + 1);
 
-        os << "\n" << less_indented << "}";
+        os << "\n" << indentation << "}";
     }
 
 } // namespace AST

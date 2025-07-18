@@ -1,6 +1,6 @@
-#include <iostream>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "parser/grammar/common/type/Type.hpp"
 #include "parser/grammar/common/type/TypeHandlers.hpp"
@@ -79,8 +79,14 @@ namespace Parser
         add_type_nud(Primary::Identifier, parse_simple,
                      std::pair<float, float>{primary_bp, primary_bp});
 
+        for (const auto &type : std::vector<Lexer::TokenType>{
+                 Primary::Int, Primary::Float, Primary::Boolean,
+                 Primary::Character, Primary::String})
+            add_type_nud(type, parse_constant,
+                         std::pair<float, float>{primary_bp, primary_bp});
+
         float generic_bp = static_cast<int>(TypeBindingPower::Generic);
-        add_type_led(Operator::Relational::LessThan, parse_generic,
+        add_type_led(Delimeter::BracketOpen, parse_generic,
                      std::pair<float, float>{generic_bp, generic_bp});
     }
 
@@ -88,14 +94,26 @@ namespace Parser
 
     Type::Type() : GrammarRule(Lexer::TokenTypes::Miscellaneous::EndOfFile) {}
 
+    TypeParseResult::TypeParseResult(Parser &parser, Core::ResultStatus status,
+                                     std::unique_ptr<AST::Type> data,
+                                     Diagnostic::DiagnosticList diagnostics)
+        : ParseResult(parser, status, std::move(data), std::move(diagnostics))
+    {
+        std::unique_ptr<AST::Node> node = std::move(ParseResult::data);
+        if (dynamic_cast<AST::Type *>(node.get()))
+            this->data = std::unique_ptr<AST::Type>(
+                static_cast<AST::Type *>(node.release()));
+    }
+
     TypeParseResult Type::parse_type(Parser &parser, float right_bp)
     {
-        TypeParseResult result = {ParseResultStatus::Success, nullptr, {}};
+        TypeParseResult result = {
+            parser, Core::ResultStatus::Success, nullptr, {}};
 
         auto &lexer = parser.lexer();
         if (lexer.eof())
         {
-            result.status = ParseResultStatus::Failed;
+            result.status = Core::ResultStatus::Fail;
             return result;
         }
 
@@ -104,7 +122,7 @@ namespace Parser
 
         if (nud == nullptr)
         {
-            result.error(parser, Diagnostic::create_syntax_error(token));
+            result.error(Diagnostic::create_syntax_error(token));
             return result;
         }
 
@@ -124,7 +142,7 @@ namespace Parser
             TypeLedHandler led = get_type_led(token->type);
             if (led == nullptr)
             {
-                // result.status = ParseResultStatus::Failed;
+                // result.status = Core::ResultStatus::Fail;
                 // result.diagnostics.push_back(
                 //     Diagnostic::create_syntax_error(token));
 
@@ -135,7 +153,7 @@ namespace Parser
             left = led(parser, left, right_bp_, result);
         }
 
-        result.node = std::move(left);
+        result.data = std::move(left);
 
         return result;
     }
@@ -143,12 +161,13 @@ namespace Parser
     ParseResult Type::parse(Parser &parser)
     {
         TypeParseResult type_result = parse_type(parser, 0);
-        ParseResult result = {type_result.status, std::move(type_result.node),
+        ParseResult result = {parser, type_result.status,
+                              std::move(type_result.data),
                               std::move(type_result.diagnostics)};
 
-        if (result.status == ParseResultStatus::Failed)
+        if (result.status == Core::ResultStatus::Fail)
         {
-            result.node = nullptr;
+            result.data = nullptr;
             return result;
         }
 

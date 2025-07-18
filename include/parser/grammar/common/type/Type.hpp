@@ -7,9 +7,9 @@
 
 #include "ast/type/Type.hpp"
 #include "lexer/Token.hpp"
+#include "parser/ParseResult.hpp"
 #include "parser/Parser.hpp"
 #include "parser/grammar/GrammarRule.hpp"
-#include "parser/typedef.hpp"
 
 namespace Parser
 {
@@ -30,9 +30,13 @@ namespace Parser
                      std::pair<float, float> type_bp);
     const std::pair<float, float> &get_type_bp(Lexer::TokenType token_type);
 
-    struct TypeParseResult : ParseResult
+    struct TypeParseResult : public ParseResult
     {
-        std::unique_ptr<AST::Type> node;
+        std::unique_ptr<AST::Type> data;
+
+        TypeParseResult(Parser &parser, Core::ResultStatus status,
+                        std::unique_ptr<AST::Type> data,
+                        Diagnostic::DiagnosticList diagnostics);
     };
 
     using TypeNudHandler =

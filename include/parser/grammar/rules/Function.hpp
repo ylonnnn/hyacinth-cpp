@@ -2,10 +2,11 @@
 
 #include "ast/NodeCollection.hpp"
 #include "ast/expr/Expr.hpp"
+#include "core/result/Result.hpp"
+#include "parser/ParseResult.hpp"
 #include "parser/Parser.hpp"
 #include "parser/grammar/GrammarRule.hpp"
 #include "parser/grammar/common/IdentifierInit.hpp"
-#include "parser/typedef.hpp"
 
 namespace Parser
 {
@@ -24,9 +25,14 @@ namespace Parser
         void print(std::ostream &os, uint8_t tab) const override;
     };
 
-    struct FunctionParameterListParseResult : public ParseResult
+    struct FunctionParameterListParseResult
+        : public Core::Result<
+              std::unique_ptr<AST::NodeCollection<FunctionParameterNode>>>
     {
-        std::unique_ptr<AST::NodeCollection<FunctionParameterNode>> node;
+        FunctionParameterListParseResult(
+            Core::ResultStatus status,
+            std::unique_ptr<AST::NodeCollection<FunctionParameterNode>> data,
+            Diagnostic::DiagnosticList diagnostics);
     };
 
     class FunctionDefinition : public GrammarRule

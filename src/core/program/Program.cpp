@@ -3,13 +3,14 @@
 #include <iostream>
 #include <string>
 
+#include "core/program/Program.hpp"
 #include "lexer/Lexer.hpp"
 #include "parser/Parser.hpp"
-#include "program/Program.hpp"
+#include "semantic/analyzer/Analyzer.hpp"
 #include "utils/control.hpp"
 #include "utils/style.hpp"
 
-namespace Program
+namespace Core
 {
 
     ProgramFile::ProgramFile(const char *path)
@@ -50,6 +51,8 @@ namespace Program
 
     const std::string &ProgramFile::source() const { return source_; }
 
+    // Semantic::ScopeStack &ProgramFile::scope_stack() { return scope_stack_; }
+
     Position ProgramFile::position_at(size_t row, size_t col)
     {
         return (Position){
@@ -62,20 +65,31 @@ namespace Program
     void ProgramFile::execute()
     {
         auto start = std::chrono::high_resolution_clock::now();
+        auto succeed = true;
 
+        // Lexical Analysis
         Lexer::Lexer lexer(*this);
-
         lexer.tokenize();
 
-        // while (!lexer.eof())
-        //     std::cout << *lexer.next() << "\n";
-
-        // std::cout << std::endl;
-
-        // lexer.rewind();
-
+        // Parsing
         Parser::Parser parser(*this, lexer);
-        bool parsed = parser.parse();
+        Parser::ProgramParseResult parse_result = parser.parse();
+
+        if (parse_result.status != Core::ResultStatus::Success)
+            succeed = false;
+
+        std::cout << *parse_result.data << "\n";
+
+        // Semantic Analysis
+        if (succeed)
+        {
+            Semantic::Analyzer analyzer(*this);
+            Semantic::AnalysisResult result =
+                analyzer.analyze(*parse_result.data);
+
+            if (result.status != Core::ResultStatus::Success)
+                succeed = false;
+        }
 
         // After Execution
 
@@ -84,13 +98,13 @@ namespace Program
                 std::chrono::high_resolution_clock::now() - start);
 
         Utils::TextStyle color =
-            parsed ? Utils::Colors::Green : Utils::Colors::Red;
+            succeed ? Utils::Colors::Green : Utils::Colors::Red;
 
         std::cout << "\n\n"
-                  << Utils::tab(3) << color << "[" << (parsed ? "/" : "X")
+                  << Utils::tab(3) << color << "[" << (succeed ? "/" : "X")
                   << "]" << Utils::Styles::Reset << " Program Executed ("
-                  << color << (double)microseconds.count() / 1'000 << "ms"
-                  << Utils::Styles::Reset << ")\n\n";
+                  << color << static_cast<double>(microseconds.count()) / 1'000
+                  << "ms" << Utils::Styles::Reset << ")\n\n";
     }
 
-} // namespace Program
+} // namespace Core

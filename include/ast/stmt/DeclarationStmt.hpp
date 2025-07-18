@@ -8,13 +8,14 @@ namespace AST
     class DeclarationStmt : public Stmt
     {
       protected:
-          Lexer::Token &name_;
+        Lexer::Token &name_;
 
       public:
         DeclarationStmt(Lexer::Token &name);
         virtual ~DeclarationStmt() = default;
 
-        Lexer::Token &name() const;
+        Lexer::Token &name();
+        virtual bool is_definition() const = 0;
 
         virtual void print(std::ostream &os, uint8_t tab) const override = 0;
     };

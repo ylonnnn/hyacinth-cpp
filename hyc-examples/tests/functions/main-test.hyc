@@ -1,5 +1,5 @@
-GLOBAL_VAL: u8 = 0;
+test: uint[64] = 123;
 
-fn main -> u8 (a: i32, b!: bool) {}
+fn main -> uint[1] (argc: int[32], argv: array[str]) {
 
-some_val!: i32;
+}

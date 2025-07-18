@@ -1,13 +1,12 @@
 #include "ast/expr/CollectionExpr.hpp"
-#include "ast/NodeCollection.hpp"
 #include "ast/expr/Expr.hpp"
+#include "core/program/Program.hpp"
 #include "utils/style.hpp"
 
 namespace AST
 {
     CollectionExpr::CollectionExpr(
-        ::Program::Position position,
-        std::vector<std::unique_ptr<Expr>> collection)
+        Core::Position position, std::vector<std::unique_ptr<Expr>> collection)
         : NodeCollection<Expr>(std::move(position), std::move(collection))
     {
     }

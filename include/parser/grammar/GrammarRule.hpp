@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lexer/Token.hpp"
-#include "parser/typedef.hpp"
+#include "parser/ParseResult.hpp"
 
 namespace Parser
 {

@@ -1,4 +1,4 @@
-import std.io;
+import "std/io";
 
 fn main -> void (argc: i32, argv: str[]) {
     some_var: i32 = 123;
@@ -11,6 +11,15 @@ fn main -> void (argc: i32, argv: str[]) {
         io.writeln("some_var is lower than 150");
 
     n: i8 = 1, m: i8 = 15;
+
+    for i : 1..5, 1 {
+
+    }
+
+    arr: array<i32> = {1, 2, 3};
+    for val : arr {
+        io.write("${val} ");
+    }
 
     for i : (n, m, 1) {
         io.write("Enter a number: ");
@@ -26,10 +35,10 @@ fn main -> void (argc: i32, argv: str[]) {
         io.writeln("something");
 
         if (some_var < 125)
-            exit;
+            break;
 
         else
-            proceed;
+            continue;
     }
     
     return;

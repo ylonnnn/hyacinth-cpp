@@ -6,18 +6,16 @@
 #include <variant>
 
 #include "lexer/Lexer.hpp"
-#include "lexer/Token.hpp"
-#include "program/Program.hpp"
 
 namespace Lexer
 {
 
-    Lexer::Lexer(Program::ProgramFile &program) : program_(program)
+    Lexer::Lexer(Core::ProgramFile &program) : program_(program)
     {
         tokens_.reserve(std::max((size_t)256, program.source().size() / 4));
     }
 
-    Program::ProgramFile &Lexer::program() { return program_; }
+    Core::ProgramFile &Lexer::program() { return program_; }
 
     size_t Lexer::position() { return position_; }
 
@@ -25,7 +23,7 @@ namespace Lexer
 
     void Lexer::tokenize()
     {
-        std::string_view source = program_.source();
+        const std::string &source = program_.source();
         size_t row = 1, col = 1;
 
         for (size_t cursor = 0; cursor < source.size();)
@@ -72,7 +70,7 @@ namespace Lexer
 
         Token &last = tokens_.back();
 
-        ::Program::Position position = last.position;
+        Core::Position position = last.position;
         position.col += last.value.size();
 
         tokens_.push_back((Token){" ", std::move(position),

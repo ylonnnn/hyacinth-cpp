@@ -9,6 +9,7 @@
 namespace Parser
 {
     class Parser;
+    class ProgramParseResult;
 
     class Grammar
     {
@@ -26,7 +27,7 @@ namespace Parser
         void add_rule(Lexer::TokenType type, std::unique_ptr<GrammarRule> rule);
         GrammarRule *get_rule(Lexer::TokenType type) const;
 
-        ParseResult parse(Parser &parser);
+        ProgramParseResult parse(Parser &parser);
     };
 
 } // namespace Parser

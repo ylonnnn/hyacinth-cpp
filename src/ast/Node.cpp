@@ -1,15 +1,15 @@
 #include <ostream>
 
 #include "ast/Node.hpp"
-#include "program/Program.hpp"
+#include "core/program/Program.hpp"
 
 namespace AST
 {
-    Node::Node(::Program::Position position) : position_(std::move(position)) {}
+    Node::Node(Core::Position position) : position_(std::move(position)) {}
 
-    Program::ProgramFile &Node::program() { return position_.program; }
+    Core::ProgramFile &Node::program() { return position_.program; }
 
-    const ::Program::Position &Node::position() const { return position_; }
+    const Core::Position &Node::position() const { return position_; }
 
     size_t Node::end_pos() const { return end_pos_; }
 

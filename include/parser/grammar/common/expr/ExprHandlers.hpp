@@ -8,19 +8,19 @@
 namespace Parser
 {
     std::unique_ptr<AST::LiteralExpr>
-    parse_literal(Parser &parser, DiagnosticList &diagnostics);
+    parse_literal(Parser &parser, Diagnostic::DiagnosticList &diagnostics);
 
     std::unique_ptr<AST::IdentifierExpr>
-    parse_identifier(Parser &parser, DiagnosticList &diagnostics);
+    parse_identifier(Parser &parser, Diagnostic::DiagnosticList &diagnostics);
 
     std::unique_ptr<AST::BinaryExpr>
     parse_binary(Parser &parser, std::unique_ptr<AST::Expr> &left,
-                 float right_bp, DiagnosticList &diagnostics);
+                 float right_bp, Diagnostic::DiagnosticList &diagnostics);
 
     std::unique_ptr<AST::UnaryExpr> parse_unary(Parser &parser,
-                                                DiagnosticList &diagnostics);
+                                                Diagnostic::DiagnosticList &diagnostics);
     std::unique_ptr<AST::UnaryExpr>
     parse_unary(Parser &parser, std::unique_ptr<AST::Expr> &left,
-                float right_bp, DiagnosticList &diagnostics);
+                float right_bp, Diagnostic::DiagnosticList &diagnostics);
 
 } // namespace Parser

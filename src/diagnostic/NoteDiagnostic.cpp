@@ -10,6 +10,7 @@ namespace Diagnostic
     {
         NOTE_CODES.reserve(32);
 
+        NOTE_CODES[NoteType::Declaration] = "HYC::DEFINITION";
         NOTE_CODES[NoteType::Definition] = "HYC::DEFINITION";
         NOTE_CODES[NoteType::Usage] = "HYC::USAGE";
         NOTE_CODES[NoteType::Suggestion] = "HYC::SUGGESTION";
@@ -17,13 +18,12 @@ namespace Diagnostic
 
     static bool initialized_codes = (initialize_codes(), true);
 
-    NoteDiagnostic::NoteDiagnostic(std::unique_ptr<AST::Node> node,
-                                   NoteType note_type, std::string message,
-                                   std::string emphasis_message)
-        : Diagnostic(std::move(node), std::move(message),
-                     std::move(emphasis_message)),
-          note_type_(note_type)
+    NoteDiagnostic::NoteDiagnostic(AST::Node *node, NoteType note_type,
+                                   const std::string &message,
+                                   const std::string &submessage)
+        : Diagnostic(node, message, submessage), note_type_(note_type)
     {
+        construct();
     }
 
     NoteType NoteDiagnostic::note_type() { return note_type_; }
@@ -37,28 +37,22 @@ namespace Diagnostic
         return it->second;
     }
 
-    void NoteDiagnostic::report()
+    void NoteDiagnostic::construct()
     {
-        const ::Program::Position &position = node_->position();
+        const Core::Position &position = node_->position();
 
-        std::cout << "\n\n";
+        constructed_ += std::string("\n\n") + NOTE_GEN + "Note <" +
+                        note_type_to_string(note_type_) + "> " +
+                        Utils::Styles::Reset + message_ + "\n\n";
 
-        std::cout << NOTE_GEN << "Note <" << note_type_to_string(note_type_)
-                  << "> " << Utils::Styles::Reset << message_ << "\n\n";
-
-        emphasize_position((DiagnosticEmphasis){
-            .message = emphasis_message_,
-            .position = const_cast<::Program::Position &>(position),
+        construct_emphasis((DiagnosticEmphasis){
+            .message = submessage_,
+            .position = const_cast<Core::Position &>(position),
             .length = node_->end_pos(),
             .emphasis = NOTE_EMPH,
             .trace = NOTE_GEN,
             .pointer = NOTE_GEN,
         });
-
-        for (std::unique_ptr<Diagnostic> &detail : details)
-        {
-            detail->report();
-        }
     }
 
 } // namespace Diagnostic

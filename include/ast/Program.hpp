@@ -5,18 +5,18 @@
 
 #include "ast/Node.hpp"
 #include "ast/stmt/DeclarationStmt.hpp"
-#include "program/Program.hpp"
+#include "core/program/Program.hpp"
 
 namespace AST
 {
     class Program : public Node
     {
       private:
-        ::Program::ProgramFile &program_;
+        Core::ProgramFile &program_;
         std::vector<std::unique_ptr<DeclarationStmt>> declarations_;
 
       public:
-        Program(::Program::ProgramFile &program);
+        Program(Core::ProgramFile &program);
 
         std::vector<std::unique_ptr<DeclarationStmt>> &declarations();
 

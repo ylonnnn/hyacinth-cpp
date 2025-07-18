@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <unordered_map>
 
 #include "ast/Node.hpp"
@@ -13,7 +12,8 @@ namespace Diagnostic
 
     enum class NoteType
     {
-        Definition = 1,
+        Declaration = 1,
+        Definition,
         Usage,
         Suggestion,
     };
@@ -26,13 +26,14 @@ namespace Diagnostic
         NoteType note_type_;
 
       public:
-        NoteDiagnostic(std::unique_ptr<AST::Node> node, NoteType note_type,
-                       std::string message, std::string emphasis_message);
+        NoteDiagnostic(AST::Node *node, NoteType note_type,
+                       const std::string & message, const std::string & submessage);
 
         NoteType note_type();
 
         const char *note_type_to_string(NoteType type);
-        void report() override;
+
+        void construct() override;
     };
 
 } // namespace Diagnostic

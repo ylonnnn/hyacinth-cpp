@@ -2,6 +2,11 @@
 
 namespace AST
 {
-    Type::Type(::Program::Position position) : Node(std::move(position)) {}
+    Type::Type(Lexer::Token &value)
+        : Node(value.position), value_(value)
+    {
+    }
+
+    Lexer::Token &Type::value() { return value_; }
 
 } // namespace AST

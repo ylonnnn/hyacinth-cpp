@@ -15,14 +15,12 @@ namespace Diagnostic
 
     static bool initialized_codes = (initialize_codes(), true);
 
-    WarningDiagnostic::WarningDiagnostic(std::unique_ptr<AST::Node> node,
-                                         WarningType warn_type,
-                                         std::string message,
-                                         std::string emphasis_message)
-        : Diagnostic(std::move(node), std::move(message),
-                     std::move(emphasis_message)),
-          warn_type_(warn_type)
+    WarningDiagnostic::WarningDiagnostic(AST::Node *node, WarningType warn_type,
+                                         const std::string &message,
+                                         const std::string &submessage)
+        : Diagnostic(node, message, submessage), warn_type_(warn_type)
     {
+        construct();
     }
 
     WarningType WarningDiagnostic::warn_type() { return warn_type_; }
@@ -36,29 +34,22 @@ namespace Diagnostic
         return it->second;
     }
 
-    void WarningDiagnostic::report()
+    void WarningDiagnostic::construct()
     {
-        const ::Program::Position &position = node_->position();
+        const Core::Position &position = node_->position();
 
-        std::cout << "\n\n";
+        constructed_ += std::string("\n\n") + WARN_GEN + "Warning <" +
+                        warn_type_to_string(warn_type_) + "> " +
+                        Utils::Styles::Reset + message_ + "\n\n";
 
-        std::cout << WARN_GEN << "Warning <"
-                  << warn_type_to_string(warn_type_) << "> "
-                  << Utils::Styles::Reset << message_ << "\n\n";
-
-        emphasize_position((DiagnosticEmphasis){
-            .message = emphasis_message_,
-            .position = const_cast<::Program::Position &>(position),
+        construct_emphasis((DiagnosticEmphasis){
+            .message = submessage_,
+            .position = const_cast<Core::Position &>(position),
             .length = node_->end_pos(),
             .emphasis = WARN_EMPH,
             .trace = WARN_GEN,
             .pointer = WARN_GEN,
         });
-
-        for (std::unique_ptr<Diagnostic> &detail : details)
-        {
-            detail->report();
-        }
     }
 
 } // namespace Diagnostic

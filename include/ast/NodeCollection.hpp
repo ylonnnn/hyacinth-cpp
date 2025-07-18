@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "ast/Node.hpp"
-#include "program/Program.hpp"
+#include "core/program/Program.hpp"
 #include "utils/style.hpp"
 
 namespace AST
@@ -22,7 +22,7 @@ namespace AST
         std::vector<std::unique_ptr<T>> collection_;
 
       public:
-        NodeCollection(::Program::Position position,
+        NodeCollection(Core::Position position,
                        std::vector<std::unique_ptr<T>> collection)
             : Node(std::move(position)), collection_(std::move(collection))
         {

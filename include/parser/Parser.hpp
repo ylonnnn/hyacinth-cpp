@@ -1,9 +1,12 @@
 #pragma once
 
+#include "ast/Program.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "lexer/Lexer.hpp"
 #include "parser/grammar/Grammar.hpp"
-#include "program/Program.hpp"
+// #include "parser/ParseResult.hpp"
+#include "core/program/Program.hpp"
+#include "parser/ParseResult.hpp"
 
 namespace Parser
 {
@@ -14,10 +17,19 @@ namespace Parser
         Synchronized,
     };
 
+    struct ProgramParseResult : public ParseResult
+    {
+        std::unique_ptr<AST::Program> data;
+
+        ProgramParseResult(Parser &parser, Core::ResultStatus status,
+                           std::unique_ptr<AST::Program> data,
+                           Diagnostic::DiagnosticList diagnostics);
+    };
+
     class Parser
     {
       private:
-        Program::ProgramFile &program_;
+        Core::ProgramFile &program_;
         Lexer::Lexer &lexer_;
 
         Grammar grammar_;
@@ -25,14 +37,14 @@ namespace Parser
         ParserState state_ = ParserState::Normal;
 
       public:
-        Parser(Program::ProgramFile &program, Lexer::Lexer &lexer);
+        Parser(Core::ProgramFile &program, Lexer::Lexer &lexer);
         virtual ~Parser() = default;
 
       protected:
         void initialize_grammar();
 
       public:
-        Program::ProgramFile &program();
+        Core::ProgramFile &program();
         Lexer::Lexer &lexer();
         Grammar &grammar();
 
@@ -47,7 +59,7 @@ namespace Parser
         std::unique_ptr<Diagnostic::ErrorDiagnostic>
         expect_or_error(Lexer::TokenType type, bool consume = true);
 
-        bool parse();
+        ProgramParseResult parse();
     };
 
 } // namespace Parser

@@ -35,6 +35,8 @@ namespace Diagnostic
         ERROR_CODES[ErrorTypes::Type::UnknownType] = "HYC::TYPE:UNKNOWN";
         ERROR_CODES[ErrorTypes::Type::InvalidArgumentType] =
             "HYC::TYPE:INVALID_ARGUMENT_TYPE";
+        ERROR_CODES[ErrorTypes::Type::InvalidTypeArgumentType] =
+            "HYC::TYPE:INVALID_TYPE_ARGUMENT_TYPE";
         ERROR_CODES[ErrorTypes::Type::InvalidReturnType] =
             "HYC::TYPE:INVALID_RETURN_TYPE";
 
@@ -51,13 +53,12 @@ namespace Diagnostic
 
     static bool initialized_codes = (initialize_codes(), true);
 
-    ErrorDiagnostic::ErrorDiagnostic(std::unique_ptr<AST::Node> node,
-                                     ErrorType error_type, std::string message,
-                                     std::string emphasis_message)
-        : Diagnostic(std::move(node), std::move(message),
-                     std::move(emphasis_message)),
-          error_type_(error_type)
+    ErrorDiagnostic::ErrorDiagnostic(AST::Node *node, ErrorType error_type,
+                                     const std::string &message,
+                                     const std::string &submessage)
+        : Diagnostic(node, message, submessage), error_type_(error_type)
     {
+        construct();
     }
 
     ErrorType ErrorDiagnostic::error_type() { return error_type_; }
@@ -71,28 +72,22 @@ namespace Diagnostic
         return it->second;
     }
 
-    void ErrorDiagnostic::report()
+    void ErrorDiagnostic::construct()
     {
-        const ::Program::Position &position = node_->position();
+        const Core::Position &position = node_->position();
 
-        std::cout << "\n\n";
+        constructed_ += std::string("\n\n") + ERR_GEN + "Error <" +
+                        error_type_to_string(error_type_) + "> " +
+                        Utils::Styles::Reset + message_ + "\n\n";
 
-        std::cout << ERR_GEN << "Error <" << error_type_to_string(error_type_)
-                  << "> " << Utils::Styles::Reset << message_ << "\n\n";
-
-        emphasize_position((DiagnosticEmphasis){
-            .message = emphasis_message_,
-            .position = const_cast<::Program::Position &>(position),
+        construct_emphasis((DiagnosticEmphasis){
+            .message = submessage_,
+            .position = const_cast<Core::Position &>(position),
             .length = node_->end_pos(),
             .emphasis = ERR_EMPH,
             .trace = ERR_GEN,
             .pointer = ERR_GEN,
         });
-
-        for (std::unique_ptr<Diagnostic> &detail : details)
-        {
-            detail->report();
-        }
     }
 
     std::unique_ptr<ErrorDiagnostic>
@@ -103,19 +98,22 @@ namespace Diagnostic
             Utils::terminate("Token cannot be a nullptr!", EXIT_FAILURE);
 
         bool expects = !!expected;
+        auto node = new AST::LiteralExpr(*token);
 
-        return std::make_unique<ErrorDiagnostic>(
-            std::make_unique<AST::LiteralExpr>(*token),
-            ErrorTypes::Syntax::UnexpectedToken,
-            std::string("Unexpected \"") + ERR_EMPH +
-                std::string(token->value) + Utils::Styles::Reset + "\"." +
-                (expects ? std::string(" Expected \"") + ERR_EMPH +
+        auto diagnostic = std::make_unique<ErrorDiagnostic>(
+            node, ErrorTypes::Syntax::UnexpectedToken,
+            std::string("Unexpected \"") + ERR_GEN + std::string(token->value) +
+                Utils::Styles::Reset + "\"." +
+                (expects ? std::string(" Expected \"") + ERR_GEN +
                                Lexer::type_to_string(*expected) +
                                Utils::Styles::Reset + "."
                          : ""),
-            ERR_GEN + std::string("Received ") +
-                Lexer::type_to_string(token->type) +
+            std::string("Received ") + Lexer::type_to_string(token->type) +
                 (expects ? " instead" : "") + ".");
+
+        delete node;
+
+        return diagnostic;
     }
 
 } // namespace Diagnostic

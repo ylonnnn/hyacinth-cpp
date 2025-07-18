@@ -17,6 +17,11 @@ namespace AST
 
     Expr &VariableDefinitionStmt::value() { return *value_; }
 
+    std::unique_ptr<Expr> &VariableDefinitionStmt::value_ptr()
+    {
+        return value_;
+    }
+
     void VariableDefinitionStmt::print(std::ostream &os, uint8_t tab) const
     {
         std::string indentation = Utils::tab(tab - 1, 4),
@@ -29,8 +34,15 @@ namespace AST
            << (mut_state_ == VariableMutabilityState::Mutable ? "Mutable"
                                                               : "Immutable")
            << "\n"
-           << inner_indentation << "value: " << *value_ << "\n"
-           << indentation << "}";
+           << inner_indentation << "type: ";
+
+        type_->print(os, tab + 1);
+
+        os << "\n" << inner_indentation << "value: ";
+
+        value_->print(os, tab + 1);
+
+        os << "\n" << indentation << "}";
     }
 
 } // namespace AST

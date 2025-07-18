@@ -3,8 +3,8 @@
 #include <functional>
 #include <vector>
 
+#include "core/program/Program.hpp"
 #include "lexer/Token.hpp"
-#include "program/Program.hpp"
 
 namespace Lexer
 {
@@ -13,16 +13,16 @@ namespace Lexer
     class Lexer
     {
       private:
-        Program::ProgramFile &program_;
+        Core::ProgramFile &program_;
         std::vector<Token> tokens_;
         size_t position_ = 0;
 
       public:
-        Lexer(Program::ProgramFile &program);
+        Lexer(Core::ProgramFile &program);
 
       protected:
       public:
-        Program::ProgramFile &program();
+        Core::ProgramFile &program();
         size_t position();
         size_t size();
 

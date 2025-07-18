@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ast/stmt/Stmt.hpp"
+#include "ast/stmt/DeclarationStmt.hpp"
 #include "ast/type/Type.hpp"
 #include "lexer/Token.hpp"
 
@@ -12,10 +12,9 @@ namespace AST
         Immutable,
     };
 
-    class VariableDeclarationStmt : public Stmt
+    class VariableDeclarationStmt : public DeclarationStmt
     {
       protected:
-        Lexer::Token &name_;
         VariableMutabilityState mut_state_;
         std::unique_ptr<Type> type_;
 
@@ -24,9 +23,8 @@ namespace AST
                                 VariableMutabilityState mut_state,
                                 std::unique_ptr<Type> type);
 
-        virtual bool is_definition() const;
+        virtual bool is_definition() const override;
 
-        Lexer::Token &name();
         VariableMutabilityState mut_state() const;
         Type &type();
 

@@ -7,13 +7,10 @@ namespace Parser
 
     ParseResult Terminator::parse(Parser &parser)
     {
-        ParseResult result = {ParseResultStatus::Success, nullptr, {}};
+        ParseResult result = {parser, Core::ResultStatus::Success, nullptr, {}};
 
         if (auto diagnostic = parser.expect_or_error(token_type_))
-        {
-            result.status = ParseResultStatus::Failed;
-            result.diagnostics.push_back(std::move(diagnostic));
-        }
+            result.error(std::move(diagnostic));
 
         return result;
     }

@@ -24,9 +24,9 @@ namespace Parser
         ParseResult result = Common::IdentifierInitialization.parse(parser);
 
         std::unique_ptr<IdentifierNode> identifier;
-        if (dynamic_cast<IdentifierNode *>(result.node.get()))
+        if (dynamic_cast<IdentifierNode *>(result.data.get()))
             identifier = std::unique_ptr<IdentifierNode>(
-                static_cast<IdentifierNode *>(result.node.release()));
+                static_cast<IdentifierNode *>(result.data.release()));
 
         // (Optional) = VALUE
         auto presence_flag = 0;
@@ -39,10 +39,9 @@ namespace Parser
             presence_flag |= (1 << 1);
         }
 
-        auto [v_status, v_node, v_diagnostics] =
-            parser.grammar().fallback()->parse(parser);
+        ParseResult v_res = parser.grammar().fallback()->parse(parser);
 
-        if (v_status != ParseResultStatus::Failed)
+        if (v_res.status != Core::ResultStatus::Fail)
             presence_flag |= (1 << 0);
 
         Lexer::Token &name = identifier->name();
@@ -52,15 +51,15 @@ namespace Parser
         std::unique_ptr<AST::Type> &type = identifier->type();
 
         std::unique_ptr<AST::Expr> value;
-        if (dynamic_cast<AST::Expr *>(v_node.get()))
+        if (dynamic_cast<AST::Expr *>(v_res.data.get()))
             value = std::unique_ptr<AST::Expr>(
-                static_cast<AST::Expr *>(v_node.release()));
+                static_cast<AST::Expr *>(v_res.data.release()));
 
         switch (presence_flag)
         {
             case 0b00:
             {
-                result.node = std::make_unique<AST::VariableDeclarationStmt>(
+                result.data = std::make_unique<AST::VariableDeclarationStmt>(
                     name, mut_state, std::move(type));
 
                 break;
@@ -69,31 +68,36 @@ namespace Parser
             case 0b01: // = [X] Value [/]
             case 0b10: // = [/] Value [X]
             {
-                result.node = nullptr;
+                result.data = nullptr;
 
                 if (presence_flag == 0b01)
                     result.force_error(
-                        parser, std::move(value),
+                        value.get(),
                         Diagnostic::ErrorTypes::Syntax::MissingOperator,
                         std::string("Missing ") + Diagnostic::ERR_GEN + "=" +
                             Utils::Styles::Reset + " operator before the value",
                         "Missing operator before this value");
 
                 else
+                {
+                    auto node = new AST::LiteralExpr(*token);
+
                     result.force_error(
-                        parser, std::make_unique<AST::LiteralExpr>(*token),
-                        Diagnostic::ErrorTypes::Syntax::MissingValue,
+                        node, Diagnostic::ErrorTypes::Syntax::MissingValue,
                         std::string("Missing ") + Diagnostic::ERR_GEN +
                             "VALUE" + Utils::Styles::Reset +
                             " after the assignment operator",
                         "Missing value after this operator");
+
+                    delete node;
+                }
 
                 break;
             }
 
             case 0b11:
             {
-                result.node = std::make_unique<AST::VariableDefinitionStmt>(
+                result.data = std::make_unique<AST::VariableDefinitionStmt>(
                     name, mut_state, std::move(type), std::move(value));
 
                 break;
@@ -101,28 +105,29 @@ namespace Parser
         }
 
         // TERMINATOR ::= ";"
-        auto [t_status, _, t_diagnostics] = Common::Terminator.parse(parser);
+        ParseResult t_res = Common::Terminator.parse(parser);
 
-        if (t_status == ParseResultStatus::Failed)
+        if (t_res.status == Core::ResultStatus::Fail)
         {
-            result.status = t_status;
-            result.node = nullptr;
+            result.status = t_res.status;
+            result.data = nullptr;
 
-            if (!t_diagnostics.empty())
+            if (!t_res.diagnostics.empty())
                 result.diagnostics.insert(
                     result.diagnostics.end(),
-                    std::make_move_iterator(t_diagnostics.begin()),
-                    std::make_move_iterator(t_diagnostics.end()));
+                    std::make_move_iterator(t_res.diagnostics.begin()),
+                    std::make_move_iterator(t_res.diagnostics.end()));
         }
 
         if (auto ptr =
-                dynamic_cast<AST::VariableDeclarationStmt *>(result.node.get()))
+                dynamic_cast<AST::VariableDeclarationStmt *>(result.data.get()))
         {
             if (ptr->is_mutable() || ptr->is_definition())
                 return result;
 
-            result.force_error(
-                parser, std::make_unique<AST::IdentifierExpr>(name),
+            auto node = new AST::IdentifierExpr(name);
+            auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
+                node,
                 Diagnostic::ErrorTypes::Uninitialization::
                     UninitializedImmutable,
                 std::string("Illegal uninitialization of immutable \"") +
@@ -130,12 +135,16 @@ namespace Parser
                     Utils::Styles::Reset + "\".",
                 "Immutable variables require initial values");
 
-            result.note(std::move(result.node),
-                        Diagnostic::NoteType::Definition,
-                        std::string("Immutable variable \"") +
-                            Diagnostic::NOTE_GEN + std::string(name.value) +
-                            Utils::Styles::Reset + "\" defined here",
-                        "Defined here");
+            diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
+                result.data.get(), Diagnostic::NoteType::Declaration,
+                std::string("Immutable variable \"") + Diagnostic::NOTE_GEN +
+                    std::string(name.value) + Utils::Styles::Reset +
+                    "\" declared here.",
+                "Declared here"));
+
+            delete node;
+
+            result.force_error(std::move(diagnostic));
         }
 
         return result;

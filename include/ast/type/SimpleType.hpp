@@ -7,14 +7,12 @@ namespace AST
 {
     class SimpleType : public Type
     {
-      private:
-        Lexer::Token &identifier_;
-
       public:
         SimpleType(Lexer::Token &identifier);
 
         Lexer::Token &identifier();
 
+        std::string to_string() const override;
         void print(std::ostream &os, uint8_t tab) const override;
     };
 

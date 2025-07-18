@@ -35,6 +35,7 @@ namespace Diagnostic
             Mismatch = 1,
             UnknownType,
             InvalidArgumentType,
+            InvalidTypeArgumentType,
             InvalidReturnType,
         };
 
@@ -63,13 +64,14 @@ namespace Diagnostic
         ErrorType error_type_;
 
       public:
-        ErrorDiagnostic(std::unique_ptr<AST::Node> node, ErrorType error_type,
-                        std::string message, std::string emphasis_message);
+        ErrorDiagnostic(AST::Node *node, ErrorType error_type,
+                        const std::string & message, const std::string & submessage);
 
         ErrorType error_type();
 
         const char *error_type_to_string(ErrorType type);
-        void report() override;
+
+        void construct() override;
     };
 
     std::unique_ptr<ErrorDiagnostic> create_syntax_error(

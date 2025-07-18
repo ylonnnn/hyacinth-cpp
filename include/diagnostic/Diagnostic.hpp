@@ -11,9 +11,9 @@ namespace Diagnostic
 {
     struct DiagnosticEmphasis
     {
-        std::string message;
+        const std::string &message;
 
-        ::Program::Position &position;
+        Core::Position &position;
         size_t length;
 
         Utils::TextStyle emphasis;
@@ -24,23 +24,29 @@ namespace Diagnostic
     class Diagnostic
     {
       protected:
-        std::unique_ptr<AST::Node> node_;
-        std::string message_;
+        AST::Node *node_ = nullptr;
+        const std::string & message_;
+        const std::string & submessage_;
 
-        std::string emphasis_message_;
+        std::vector<std::unique_ptr<Diagnostic>> details_;
 
-        std::vector<std::unique_ptr<Diagnostic>> details;
+        std::string constructed_;
 
       public:
-        Diagnostic(std::unique_ptr<AST::Node> node, std::string message,
-                   std::string emphasis_message);
+        Diagnostic(AST::Node *node,const std::string &message,
+                   const std::string &submessage);
 
       public:
         AST::Node &node();
 
-        void emphasize_position(DiagnosticEmphasis options);
+        void add_detail(std::unique_ptr<Diagnostic> detail);
 
-        virtual void report() = 0;
+        void construct_emphasis(DiagnosticEmphasis options);
+        void report() const;
+
+        virtual void construct() = 0;
     };
+
+    using DiagnosticList = std::vector<std::unique_ptr<Diagnostic>>;
 
 } // namespace Diagnostic

@@ -7,7 +7,7 @@
 namespace AST
 {
     ExprStmt::ExprStmt(std::unique_ptr<AST::Expr> expr)
-        : Stmt(::Program::Position(expr->position())), expr_(std::move(expr))
+        : Stmt(Core::Position(expr->position())), expr_(std::move(expr))
     {
     }
 

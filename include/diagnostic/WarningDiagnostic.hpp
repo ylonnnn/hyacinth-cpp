@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <unordered_map>
 
 #include "ast/Node.hpp"
@@ -25,14 +24,15 @@ namespace Diagnostic
         WarningType warn_type_;
 
       public:
-        WarningDiagnostic(std::unique_ptr<AST::Node> node,
-                          WarningType warn_type, std::string message,
-                          std::string emphasis_message);
+        WarningDiagnostic(AST::Node *node, WarningType warn_type,
+                          const std::string & message,
+                          const std::string & submessage);
 
         WarningType warn_type();
 
         const char *warn_type_to_string(WarningType type);
-        void report() override;
+
+        void construct() override;
     };
 
 } // namespace Diagnostic
