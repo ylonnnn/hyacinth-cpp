@@ -9,10 +9,12 @@ namespace AST
 {
     BinaryExpr::BinaryExpr(std::unique_ptr<Expr> left, Lexer::Token &operation,
                            std::unique_ptr<Expr> right)
-        : Expr(Core::Position(left->position())), left_(std::move(left)),
-          operation_(operation), right_(std::move(right))
+        : Node(left->position()), left_(std::move(left)), operation_(operation),
+          right_(std::move(right))
     {
-        end_pos_ = right_->end_pos();
+        end_pos_ = right_ != nullptr
+                       ? right_->end_pos()
+                       : (operation_.position.col + operation_.value.size());
     }
 
     Expr &BinaryExpr::left() { return *left_; }
@@ -33,7 +35,10 @@ namespace AST
         os << "\n" << inner_indentation << "operation: " << operation_.value;
 
         os << "\n" << inner_indentation << "right: ";
-        right_->print(os, tab + 1);
+        if (right_ != nullptr)
+            right_->print(os, tab + 1);
+        else
+            os << "nullptr";
 
         os << "\n" << indentation << "}";
     }

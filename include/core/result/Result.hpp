@@ -1,10 +1,11 @@
 #pragma once
 
+#include <iostream>
+
 #include "diagnostic/Diagnostic.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "diagnostic/NoteDiagnostic.hpp"
 #include "diagnostic/WarningDiagnostic.hpp"
-#include <iostream>
 
 namespace Core
 {

@@ -38,10 +38,7 @@ void run_tests(const char *path)
         file_handler(fs::directory_entry(f_path));
 }
 
-void run_specific_tests()
-{
-    run_tests("hyc-examples/tests/functions/main-test.hyc");
-}
+void run_specific_tests() { run_tests("hyc-examples/sample.hyc"); }
 
 int main()
 {

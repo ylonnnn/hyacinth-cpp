@@ -3,9 +3,12 @@
 
 namespace Parser::Common
 {
+    using Lexer::TokenTypes::Delimeter;
+
     ::Parser::Expr Expr;
     ::Parser::Type Type;
 
+    ::Parser::Block Block({Delimeter::BraceOpen, Delimeter::BraceClose});
     ::Parser::IdentifierInitialization IdentifierInitialization;
     ::Parser::Mutability Mutability;
     ::Parser::Terminator Terminator;

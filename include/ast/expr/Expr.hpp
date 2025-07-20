@@ -3,14 +3,13 @@
 #include <cstdint>
 
 #include "ast/Node.hpp"
-#include "core/program/Program.hpp"
 
 namespace AST
 {
-    class Expr : public Node
+    class Expr : virtual public Node
     {
       public:
-        Expr(Core::Position program);
+        Expr() = default;
         virtual ~Expr() = default;
 
       public:

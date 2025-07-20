@@ -18,9 +18,9 @@ namespace Parser
 
     bool MutabilityNode::is_mutable() const { return mutable_; }
 
-    void MutabilityNode::print(std::ostream &os, uint8_t tab) const
+    void MutabilityNode::print([[maybe_unused]] std::ostream &os,
+                               [[maybe_unused]] uint8_t tab) const
     {
-        (void)os, (void)tab;
     }
 
     Mutability::Mutability() : GrammarRule(Lexer::TokenTypes::Delimeter::Colon)
@@ -33,7 +33,7 @@ namespace Parser
         ParseResult result = {parser, Core::ResultStatus::Fail, nullptr, {}};
 
         Lexer::Token *token = lexer.peek();
-        if (lexer.eof())
+        if (lexer.eof(false))
         {
             result.error(Diagnostic::create_syntax_error(token));
             return result;
@@ -55,52 +55,50 @@ namespace Parser
                                false))
         {
             lexer.next();
+            if (parser.expect(token_type_))
+                result.status = Core::ResultStatus::Success;
 
-            if (!parser.expect(token_type_, false))
+            else
             {
-                Lexer::Token *token = lexer.peek();
+                // Lexer::Token *token = lexer.peek();
+                Lexer::Token &token = lexer.current();
 
                 auto diagnostic = Diagnostic::create_syntax_error(
-                    token, Lexer::TokenTypes::Delimeter::Colon);
-                auto node = new AST::LiteralExpr(*token);
+                    &token, Lexer::TokenTypes::Delimeter::Colon);
+                auto node = AST::LiteralExpr(token);
 
                 diagnostic->add_detail(
                     std::make_unique<Diagnostic::NoteDiagnostic>(
-                        node, Diagnostic::NoteType::Suggestion,
+                        &node, Diagnostic::NoteType::Suggestion,
                         std::string("Did you mean to put a \"") +
                             Diagnostic::NOTE_GEN + ":" + Utils::Styles::Reset +
                             "\"?",
                         "Replace this with (or Insert) a \":\" to make the "
                         "value mutable."));
 
-                delete node;
-
                 result.force_error(std::move(diagnostic));
             }
-
-            else
-            {
-                lexer.next();
-
-                result.status = Core::ResultStatus::Success;
-            }
         }
+        
+        // test : i = 123;
+        // test  i = 123;
+        // test < i = 123;
+        // test <> i = 123;
 
         // Other (Throw an Error)
         else
         {
             result.data = nullptr;
-            auto node = new AST::LiteralExpr(*token);
+            auto node = AST::LiteralExpr(*token);
 
             result.force_error(
-                node, Diagnostic::ErrorTypes::Syntax::MissingMutabilityModifier,
+                &node,
+                Diagnostic::ErrorTypes::Syntax::MissingMutabilityModifier,
                 std::string("Missing mutability modifier. Use \"") +
                     Diagnostic::ERR_GEN + ":" + Utils::Styles::Reset +
                     "\" for immutability, and \"" + Diagnostic::ERR_GEN +
                     "!:" + Utils::Styles::Reset + "\" for mutability.",
                 "Use here");
-
-            delete node;
         }
 
         result.data = std::make_unique<MutabilityNode>(token->position, mut);

@@ -1,5 +1,0 @@
-test: uint[64] = 123;
-
-fn main -> uint[1] (argc: int[32], argv: array[str]) {
-
-}

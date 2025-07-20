@@ -4,14 +4,13 @@
 #include <iostream>
 
 #include "ast/Node.hpp"
-#include "core/program/Program.hpp"
 
 namespace AST
 {
-    class Stmt : public Node
+    class Stmt : virtual public Node
     {
       public:
-        Stmt(Core::Position position);
+        Stmt() = default;
         virtual ~Stmt() = default;
 
       public:

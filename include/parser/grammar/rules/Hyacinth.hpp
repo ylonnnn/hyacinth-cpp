@@ -4,11 +4,13 @@
 
 namespace Parser::Hyacinth
 {
-    constexpr auto IDENTIFIER = Lexer::TokenTypes::Primary::Identifier;
-    constexpr auto TERMINATOR = Lexer::TokenTypes::Delimeter::Semicolon;
+    using namespace Lexer::TokenTypes;
 
-    constexpr auto FUNCTION = Lexer::TokenTypes::Reserved::Function;
-    constexpr auto VARIABLE = IDENTIFIER;
+    constexpr auto IDENTIFIER = Primary::Identifier;
+    constexpr auto TERMINATOR = Delimeter::Semicolon;
+
+    constexpr auto FUNCTION = Reserved::Function;
+    constexpr auto VARIABLE = Reserved::Declaration;
 
     void initialize(Grammar &grammar);
 

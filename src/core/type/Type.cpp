@@ -33,6 +33,8 @@ namespace Core
                 return Core::null{};
             }
         }
+
+        return nullptr;
     }
 
     Type::Type(Environment *environment, std::string_view name)
@@ -74,7 +76,7 @@ namespace Core
 
         else if (auto ptr = std::get_if<Core::Value>(&resolved))
         {
-            if (auto val_ptr = std::get_if<Core::null>(ptr))
+            if (std::holds_alternative<Core::null>(*ptr))
             {
                 result.first = false;
 

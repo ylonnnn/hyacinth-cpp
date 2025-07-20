@@ -1,4 +1,4 @@
-#include "ast/stmt/VariableDeclStmt.hpp"
+#include "ast/stmt/variable/VariableDeclStmt.hpp"
 #include "core/symbol/VariableSymbol.hpp"
 #include "core/value/Value.hpp"
 #include "semantic/analyzer/Analyzer.hpp"
@@ -76,6 +76,8 @@ namespace Semantic
                 std::make_move_iterator(v_res.diagnostics.begin()),
                 std::make_move_iterator(v_res.diagnostics.end()));
         }
+
+        current.declare_variable(std::move(variable));
 
         return result;
     }

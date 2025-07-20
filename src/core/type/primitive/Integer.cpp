@@ -34,7 +34,10 @@ namespace Core
             value);
     }
 
-    bool BitWidthType::assignable_with(const Type &type) const { return false; }
+    bool BitWidthType::assignable_with([[maybe_unused]] const Type &type) const
+    {
+        return false;
+    }
 
     std::unique_ptr<Diagnostic::NoteDiagnostic> BitWidthType::make_suggestion(
         AST::Node *node,
@@ -102,7 +105,10 @@ namespace Core
             value);
     }
 
-    bool IntegerType::assignable_with(const Type &type) const { return false; }
+    bool IntegerType::assignable_with([[maybe_unused]] const Type &type) const
+    {
+        return false;
+    }
 
     std::unique_ptr<Diagnostic::NoteDiagnostic> IntegerType::make_suggestion(
         AST::Node *node, const std::vector<TypeArgument> &arguments) const

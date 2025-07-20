@@ -14,7 +14,7 @@ namespace AST
         return std::string(value_.value);
     }
 
-    void SimpleType::print(std::ostream &os, uint8_t tab) const
+    void SimpleType::print(std::ostream &os, [[maybe_unused]] uint8_t tab) const
     {
         os << "SimpleType { identifier: " << value_ << " }";
     }

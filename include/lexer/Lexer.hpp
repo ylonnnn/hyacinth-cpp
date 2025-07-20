@@ -27,7 +27,7 @@ namespace Lexer
         size_t size();
 
         void tokenize();
-        bool eof();
+        bool eof(bool absolute = true);
         Token *at(size_t pos);
 
         void rewind(size_t pos = 0);

@@ -2,6 +2,8 @@
 
 #include "ast/NodeCollection.hpp"
 #include "ast/expr/LiteralExpr.hpp"
+#include "ast/stmt/function/FunctionDeclStmt.hpp"
+#include "ast/stmt/function/FunctionDefStmt.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "parser/grammar/GrammarRule.hpp"
 #include "parser/grammar/common/Common.hpp"
@@ -14,30 +16,13 @@ namespace Parser
 {
     using namespace Lexer::TokenTypes;
 
-    FunctionParameterNode::FunctionParameterNode(
-        Lexer::Token &name, bool mut, std::unique_ptr<AST::Type> type,
-        std::unique_ptr<AST::Expr> default_value)
-        : IdentifierNode(name, mut, std::move(type)),
-          default_value_(std::move(default_value))
-    {
-    }
-
-    std::unique_ptr<AST::Expr> &FunctionParameterNode::default_value()
-    {
-        return default_value_;
-    }
-
-    void FunctionParameterNode::print([[maybe_unused]] std::ostream &os,
-                                      [[maybe_unused]] uint8_t tab) const
-    {
-    }
-
     FunctionParameterListParseResult::FunctionParameterListParseResult(
         Core::ResultStatus status,
-        std::unique_ptr<AST::NodeCollection<FunctionParameterNode>> data,
+        std::unique_ptr<AST::NodeCollection<AST::FunctionParameterIdentifier>>
+            data,
         Diagnostic::DiagnosticList diagnostics)
-        : Core::Result<
-              std::unique_ptr<AST::NodeCollection<FunctionParameterNode>>>(
+        : Core::Result<std::unique_ptr<
+              AST::NodeCollection<AST::FunctionParameterIdentifier>>>(
               status, std::move(data), std::move(diagnostics)) {};
 
     FunctionDefinition::FunctionDefinition() : GrammarRule(Hyacinth::FUNCTION)
@@ -51,8 +36,11 @@ namespace Parser
         FunctionParameterListParseResult result = {
             Core::ResultStatus::Success, nullptr, {}};
 
-        std::vector<std::unique_ptr<FunctionParameterNode>> parameters;
+        std::vector<std::unique_ptr<AST::FunctionParameterIdentifier>>
+            parameters;
         parameters.reserve(8);
+
+        Lexer::Token &opening_token = lexer.current();
 
         auto &identifier = Common::IdentifierInitialization;
         auto expect_param = true;
@@ -66,7 +54,6 @@ namespace Parser
 
                 if (i_res.data == nullptr)
                 {
-                    result.data = nullptr;
                     result.error(
                         Diagnostic::create_syntax_error(&lexer.current()));
 
@@ -82,12 +69,13 @@ namespace Parser
                         std::make_move_iterator(i_res.diagnostics.end()));
                 }
 
-                if (auto ptr = dynamic_cast<IdentifierNode *>(i_res.data.get()))
+                if (auto ptr =
+                        dynamic_cast<IdentifierInitNode *>(i_res.data.get()))
                 {
                     parameters.push_back(
-                        std::make_unique<FunctionParameterNode>(
-                            ptr->name(), ptr->is_mutable(),
-                            std::move(ptr->type()), nullptr));
+                        std::make_unique<AST::FunctionParameterIdentifier>(
+                            ptr->name(), ptr->mut_state(),
+                            std::move(ptr->type_ptr())));
                 }
 
                 expect_param = false;
@@ -104,12 +92,9 @@ namespace Parser
             break;
         }
 
-        if (parameters.empty())
-            parser.synchronize();
-        else
-            result.data =
-                std::make_unique<AST::NodeCollection<FunctionParameterNode>>(
-                    parameters[0]->position(), std::move(parameters));
+        result.data = std::make_unique<
+            AST::NodeCollection<AST::FunctionParameterIdentifier>>(
+            opening_token.position, std::move(parameters));
 
         return result;
     }
@@ -159,7 +144,7 @@ namespace Parser
 
         // RET_TYPE (ReturnType/Type)
         size_t rt_initial_pos = lexer.position();
-        ParseResult rt_result = Common::Type.parse_type(parser);
+        TypeParseResult rt_result = Common::Type.parse_type(parser);
 
         if (rt_result.status == Core::ResultStatus::Fail)
         {
@@ -223,21 +208,55 @@ namespace Parser
 
         // { (BraceOpen)
         if (parser.expect(Delimeter::BraceOpen, false))
-            lexer.next();
+        {
+            ParseResult b_res = Common::Block.parse(parser);
+
+            std::unique_ptr<AST::BlockStmt> body;
+            if (b_res.data != nullptr)
+                if (auto ptr =
+                        dynamic_cast<AST::BlockStmt *>(b_res.data.release()))
+                    body = std::unique_ptr<AST::BlockStmt>(ptr);
+
+            result.diagnostics.insert(
+                result.diagnostics.end(),
+                std::make_move_iterator(b_res.diagnostics.begin()),
+                std::make_move_iterator(b_res.diagnostics.end()));
+
+            if (b_res.status == Core::ResultStatus::Fail)
+                result.status = b_res.status;
+
+            result.data = std::make_unique<AST::FunctionDefinitionStmt>(
+                *name, std::move(rt_result.data), std::move(pl_res.data),
+                std::move(body));
+
+            return result;
+        }
         else
-            result.error(Diagnostic::create_syntax_error(lexer.peek(),
-                                                         Delimeter::BraceOpen));
+        {
+            // TERMINATOR ::= ";"
+            ParseResult t_res = Common::Terminator.parse(parser);
 
-        // FUNCTION_BODY
+            if (t_res.status == Core::ResultStatus::Fail)
+            {
+                result.status = t_res.status;
+                result.data = nullptr;
 
-        // } (BraceClose)
-        if (parser.expect(Delimeter::BraceClose, false))
-            lexer.next();
-        else
-            result.error(Diagnostic::create_syntax_error(
-                lexer.peek(), Delimeter::BraceClose));
+                result.error(Diagnostic::create_syntax_error(
+                    lexer.peek(), Delimeter::BraceOpen));
+            }
+            else
+            {
+                result.data = std::make_unique<AST::FunctionDeclarationStmt>(
+                    *name, std::move(rt_result.data), std::move(pl_res.data));
+            }
 
-        return result;
+            result.diagnostics.insert(
+                result.diagnostics.end(),
+                std::make_move_iterator(t_res.diagnostics.begin()),
+                std::make_move_iterator(t_res.diagnostics.end()));
+
+            return result;
+        }
     }
 
 } // namespace Parser

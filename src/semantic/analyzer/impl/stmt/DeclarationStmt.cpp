@@ -10,10 +10,12 @@ namespace Semantic
         AST::DeclarationStmt *stmt = &node;
 
         if (auto ptr = dynamic_cast<AST::VariableDeclarationStmt *>(stmt))
-        {
             return AnalyzerImpl<AST::VariableDeclarationStmt>::analyze(analyzer,
                                                                        *ptr);
-        }
+
+        else if (auto ptr = dynamic_cast<AST::FunctionDeclarationStmt *>(stmt))
+            return AnalyzerImpl<AST::FunctionDeclarationStmt>::analyze(analyzer,
+                                                                       *ptr);
 
         return {std::nullopt, Core::ResultStatus::Fail, nullptr, {}};
     }

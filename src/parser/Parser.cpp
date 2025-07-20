@@ -65,14 +65,6 @@ namespace Parser
                          token ? token : &lexer_.current(), type);
     }
 
-    ProgramParseResult Parser::parse()
-    {
-        ProgramParseResult result = grammar_.parse(*this);
-
-        for (auto &diagnostic : result.diagnostics)
-            diagnostic->report();
-
-        return result;
-    }
+    ProgramParseResult Parser::parse() { return grammar_.parse(*this); }
 
 } // namespace Parser

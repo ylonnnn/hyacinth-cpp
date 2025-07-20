@@ -15,6 +15,10 @@ namespace AST
         ~ExprStmt() = default;
 
       public:
+        AST::Expr &expr();
+
+        std::unique_ptr<AST::Expr> &expr_ptr();
+
         void print(std::ostream &os, uint8_t tab) const override;
     };
 

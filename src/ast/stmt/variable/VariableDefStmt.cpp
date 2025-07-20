@@ -1,16 +1,18 @@
-#include "ast/stmt/VariableDefStmt.hpp"
-#include "ast/stmt/VariableDeclStmt.hpp"
+#include "ast/stmt/variable/VariableDefStmt.hpp"
+#include "ast/stmt/variable/VariableDeclStmt.hpp"
 #include "utils/style.hpp"
 
 namespace AST
 {
     VariableDefinitionStmt::VariableDefinitionStmt(
-        Lexer::Token &name, VariableMutabilityState mut_state,
+        Lexer::Token &name, IdentifierMutabilityState mut_state,
         std::unique_ptr<Type> type, std::unique_ptr<Expr> value)
-        : VariableDeclarationStmt(name, mut_state, std::move(type)),
+        : Node(Core::Position(name.position)),
+          VariableDeclarationStmt(name, mut_state, std::move(type)),
           value_(std::move(value))
     {
-        end_pos_ = value_->end_pos();
+        if (value_ != nullptr)
+            end_pos_ = value_->end_pos();
     }
 
     bool VariableDefinitionStmt::is_definition() const { return true; }
@@ -31,8 +33,8 @@ namespace AST
            << "\n"
            << inner_indentation << "name: " << name_ << "\n"
            << inner_indentation << "mut_state: "
-           << (mut_state_ == VariableMutabilityState::Mutable ? "Mutable"
-                                                              : "Immutable")
+           << (mut_state_ == IdentifierMutabilityState::Mutable ? "Mutable"
+                                                                : "Immutable")
            << "\n"
            << inner_indentation << "type: ";
 

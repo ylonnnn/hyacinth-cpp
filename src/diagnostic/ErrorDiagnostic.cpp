@@ -98,10 +98,10 @@ namespace Diagnostic
             Utils::terminate("Token cannot be a nullptr!", EXIT_FAILURE);
 
         bool expects = !!expected;
-        auto node = new AST::LiteralExpr(*token);
+        auto node = AST::LiteralExpr(*token);
 
         auto diagnostic = std::make_unique<ErrorDiagnostic>(
-            node, ErrorTypes::Syntax::UnexpectedToken,
+            &node, ErrorTypes::Syntax::UnexpectedToken,
             std::string("Unexpected \"") + ERR_GEN + std::string(token->value) +
                 Utils::Styles::Reset + "\"." +
                 (expects ? std::string(" Expected \"") + ERR_GEN +
@@ -110,8 +110,6 @@ namespace Diagnostic
                          : ""),
             std::string("Received ") + Lexer::type_to_string(token->type) +
                 (expects ? " instead" : "") + ".");
-
-        delete node;
 
         return diagnostic;
     }

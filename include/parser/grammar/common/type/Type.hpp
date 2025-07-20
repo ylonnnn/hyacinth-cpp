@@ -23,13 +23,6 @@ namespace Parser
         Primary,
     };
 
-    extern std::unordered_map<Lexer::TokenType, std::pair<float, float>>
-        TYPE_BINDING_POWERS;
-
-    void add_type_bp(Lexer::TokenType token_type,
-                     std::pair<float, float> type_bp);
-    const std::pair<float, float> &get_type_bp(Lexer::TokenType token_type);
-
     struct TypeParseResult : public ParseResult
     {
         std::unique_ptr<AST::Type> data;
@@ -38,6 +31,13 @@ namespace Parser
                         std::unique_ptr<AST::Type> data,
                         Diagnostic::DiagnosticList diagnostics);
     };
+
+    extern std::unordered_map<Lexer::TokenType, std::pair<float, float>>
+        TYPE_BINDING_POWERS;
+
+    void add_type_bp(Lexer::TokenType token_type,
+                     std::pair<float, float> type_bp);
+    const std::pair<float, float> &get_type_bp(Lexer::TokenType token_type);
 
     using TypeNudHandler =
         std::function<std::unique_ptr<AST::Type>(Parser &, TypeParseResult &)>;

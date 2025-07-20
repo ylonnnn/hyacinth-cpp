@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ast/expr/Expr.hpp"
-#include "ast/stmt/VariableDeclStmt.hpp"
+#include "ast/stmt/variable/VariableDeclStmt.hpp"
 
 namespace AST
 {
@@ -12,7 +12,7 @@ namespace AST
 
       public:
         VariableDefinitionStmt(Lexer::Token &name,
-                               VariableMutabilityState mut_state,
+                               IdentifierMutabilityState mut_state,
                                std::unique_ptr<AST::Type> type,
                                std::unique_ptr<AST::Expr> value);
 

@@ -77,7 +77,10 @@ namespace Lexer
                                   TokenTypes::Miscellaneous::EndOfFile});
     }
 
-    bool Lexer::eof() { return position_ >= tokens_.size(); }
+    bool Lexer::eof(bool absolute)
+    {
+        return position_ >= (tokens_.size() - !absolute);
+    }
 
     Token *Lexer::at(size_t pos) { return eof() ? nullptr : &tokens_[pos]; }
 

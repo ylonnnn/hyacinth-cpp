@@ -1,5 +1,8 @@
-config_default_name: str = "Some Project";
+let test_integer: int[32] = 123_456;
 
-fn main -> i4 (argc: i32, argv: str[]) {
-    return 0;
+fn main -> int[1] () {
+    let x: int[8] = 123;
+    let y: int[9] = 456;
+
+    writeln("{x + y}");
 }

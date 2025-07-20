@@ -10,9 +10,10 @@ namespace Lexer
             Public,
             Private,
             Protected,
-            Class,
             Function,
             Return,
+            Declaration,
+            Class,
             If,
             Else,
             For,
@@ -127,12 +128,14 @@ namespace Lexer
                     return "Reserved::Private";
                 case TokenTypes::Reserved::Protected:
                     return "Reserved::Protected";
-                case TokenTypes::Reserved::Class:
-                    return "Reserved::Class";
                 case TokenTypes::Reserved::Function:
                     return "Reserved::Function";
                 case TokenTypes::Reserved::Return:
                     return "Reserved::Return";
+                case TokenTypes::Reserved::Declaration:
+                    return "Reserved::Declaration";
+                case TokenTypes::Reserved::Class:
+                    return "Reserved::Class";
                 case TokenTypes::Reserved::If:
                     return "Reserved::If";
                 case TokenTypes::Reserved::Else:

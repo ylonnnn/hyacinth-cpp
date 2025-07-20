@@ -48,12 +48,7 @@ namespace Semantic
                   typename = std::enable_if_t<std::is_base_of_v<AST::Node, T>>>
         AnalysisResult analyze(T &node)
         {
-            AnalysisResult result = AnalyzerImpl<T>::analyze(*this, node);
-
-            for (auto &diagnostic : result.diagnostics)
-                diagnostic->report();
-
-            return result;
+            return AnalyzerImpl<T>::analyze(*this, node);
         }
     };
 

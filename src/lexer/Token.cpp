@@ -49,9 +49,10 @@ namespace Lexer
         TOKEN_HANDLERS.emplace_back(TokenTypes::Reserved::Public, "pub");
         TOKEN_HANDLERS.emplace_back(TokenTypes::Reserved::Private, "priv");
         TOKEN_HANDLERS.emplace_back(TokenTypes::Reserved::Protected, "prot");
-        TOKEN_HANDLERS.emplace_back(TokenTypes::Reserved::Class, "class");
         TOKEN_HANDLERS.emplace_back(TokenTypes::Reserved::Function, "fn");
         TOKEN_HANDLERS.emplace_back(TokenTypes::Reserved::Return, "return");
+        TOKEN_HANDLERS.emplace_back(TokenTypes::Reserved::Declaration, "let");
+        TOKEN_HANDLERS.emplace_back(TokenTypes::Reserved::Class, "class");
         TOKEN_HANDLERS.emplace_back(TokenTypes::Reserved::If, "if");
         TOKEN_HANDLERS.emplace_back(TokenTypes::Reserved::Else, "else");
         TOKEN_HANDLERS.emplace_back(TokenTypes::Reserved::For, "for");

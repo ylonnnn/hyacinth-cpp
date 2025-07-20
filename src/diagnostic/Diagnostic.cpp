@@ -68,26 +68,13 @@ namespace Diagnostic
             (offset + pointer + "^" + std::string(end_pos - (col + 1), '~') +
              Utils::Styles::Reset + "\n");
 
-        // std::cout << offset << pointer << "^"
-        //           << std::string(end_pos - (col + 1), '~')
-        //           << Utils::Styles::Reset << "\n";
-
         if (!message.empty())
             constructed_ += (offset + pointer + "| " + std::string(message) +
                              Utils::Styles::Reset + "\n");
-        // std::cout << offset << pointer << "|  " << message
-        //           << Utils::Styles::Reset << "\n";
-
         constructed_ +=
             (std::string("\n\t\t") + trace + "at " + program.path().string() +
              ":" + std::to_string(row) + ":" + std::to_string(col) +
              Utils::Styles::Reset + "\n\n");
-
-        // std::cout << constructed_ << "\n";
-
-        // std::cout << "\n\t\t" << trace << "at " << program.path().string()
-        //           << ":" << row << ":" << col << Utils::Styles::Reset <<
-        //           "\n\n";
     }
 
     void Diagnostic::report() const

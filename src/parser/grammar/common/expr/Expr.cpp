@@ -1,6 +1,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "ast/stmt/ExprStmt.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "parser/ParseResult.hpp"
 #include "parser/Parser.hpp"
@@ -103,27 +104,45 @@ namespace Parser
 
         // Grouping
         add_nud(Delimeter::ParenthesisOpen,
-                [&](Parser &parser, Diagnostic::DiagnosticList &diagnostics)
-                    -> std::unique_ptr<AST::Expr>
+                [&](Parser &parser,
+                    ExprParseResult &result) -> std::unique_ptr<AST::Expr>
                 {
                     Expr &expr_rule = Common::Expr;
-                    std::unique_ptr<AST::Expr> expr =
-                        expr_rule.parse_expr(parser, 0).data;
 
-                    std::unique_ptr<Diagnostic::ErrorDiagnostic> diagnostic =
-                        parser.expect_or_error(
-                            Lexer::TokenTypes::Delimeter::ParenthesisClose);
+                    ExprParseResult expr_res = expr_rule.parse_expr(parser, 0);
+                    std::unique_ptr<AST::Expr> expr = std::move(expr_res.data);
 
-                    parser.lexer().next();
+                    if (expr_res.status == Core::ResultStatus::Fail)
+                        result.status = expr_res.status;
 
-                    if (diagnostic != nullptr)
+                    result.diagnostics.insert(
+                        result.diagnostics.end(),
+                        std::make_move_iterator(expr_res.diagnostics.begin()),
+                        std::make_move_iterator(expr_res.diagnostics.end()));
+
+                    if (auto diagnostic = parser.expect_or_error(
+                            Delimeter::ParenthesisClose, false))
                     {
-                        diagnostics.push_back(std::move(diagnostic));
+                        result.error(std::move(diagnostic));
+
                         return nullptr;
                     }
+                    else
+                        parser.lexer().next();
 
                     return expr;
                 });
+
+        // Member Access
+
+        // Function Call
+        float fncall_bp = static_cast<int>(BindingPower::FunctionCall);
+        for (const auto &type :
+             std::vector<Lexer::TokenType>{Delimeter::ParenthesisOpen})
+        {
+            add_led(type, parse_fncall,
+                    std::pair<float, float>{fncall_bp, fncall_bp});
+        }
 
         // Unary
         float unary_bp = static_cast<int>(BindingPower::Unary);
@@ -133,16 +152,13 @@ namespace Parser
              }))
         {
             add_nud(
-                type,
-                [](Parser &parser, Diagnostic::DiagnosticList &diagnostics)
-                { return parse_unary(parser, diagnostics); },
+                type, [](Parser &parser, ExprParseResult &result)
+                { return parse_unary(parser, result); },
                 std::pair<float, float>{unary_bp, unary_bp});
 
-            add_led(
-                type,
-                [](Parser &parser, std::unique_ptr<AST::Expr> &left,
-                   float right_bp, Diagnostic::DiagnosticList &diagnostics)
-                { return parse_unary(parser, left, right_bp, diagnostics); });
+            add_led(type, [](Parser &parser, std::unique_ptr<AST::Expr> &left,
+                             float right_bp, ExprParseResult &result)
+                    { return parse_unary(parser, left, right_bp, result); });
         }
 
         // Multiplicative
@@ -223,9 +239,8 @@ namespace Parser
         : ParseResult(parser, status, std::move(data), std::move(diagnostics))
     {
         std::unique_ptr<AST::Node> node = std::move(ParseResult::data);
-        if (dynamic_cast<AST::Expr *>(node.get()))
-            this->data = std::unique_ptr<AST::Expr>(
-                static_cast<AST::Expr *>(node.release()));
+        if (auto ptr = dynamic_cast<AST::Expr *>(node.release()))
+            this->data = std::unique_ptr<AST::Expr>(ptr);
     }
 
     ExprParseResult Expr::parse_expr(Parser &parser, float right_bp)
@@ -245,12 +260,12 @@ namespace Parser
 
         if (nud == nullptr)
         {
-            result.error(Diagnostic::create_syntax_error(token));
+            result.status = Core::ResultStatus::Fail;
             return result;
         }
 
         lexer.next();
-        std::unique_ptr<AST::Expr> left = nud(parser, result.diagnostics);
+        std::unique_ptr<AST::Expr> left = nud(parser, result);
 
         while (!lexer.eof())
         {
@@ -273,7 +288,7 @@ namespace Parser
             }
 
             lexer.next();
-            left = led(parser, left, right_bp_, result.diagnostics);
+            left = led(parser, left, right_bp_, result);
         }
 
         result.data = std::move(left);
@@ -284,15 +299,30 @@ namespace Parser
     ParseResult Expr::parse(Parser &parser)
     {
         ExprParseResult expr_result = parse_expr(parser, 0);
-        ParseResult result = {parser, expr_result.status,
-                              std::move(expr_result.data),
-                              std::move(expr_result.diagnostics)};
+
+        ParseResult result = {
+            parser, expr_result.status,
+            std::make_unique<AST::ExprStmt>(std::move(expr_result.data)),
+            std::move(expr_result.diagnostics)};
 
         if (result.status == Core::ResultStatus::Fail)
         {
             result.data = nullptr;
             return result;
         }
+
+        ParseResult t_res = Common::Terminator.parse(parser);
+
+        if (t_res.status == Core::ResultStatus::Fail)
+        {
+            result.status = t_res.status;
+            result.data = nullptr;
+        }
+
+        result.diagnostics.insert(
+            result.diagnostics.end(),
+            std::make_move_iterator(t_res.diagnostics.begin()),
+            std::make_move_iterator(t_res.diagnostics.end()));
 
         return result;
     }

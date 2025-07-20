@@ -1,8 +1,9 @@
 #pragma once
 
 #include "ast/stmt/DeclarationStmt.hpp"
-#include "ast/stmt/VariableDeclStmt.hpp"
-#include "ast/stmt/VariableDefStmt.hpp"
+#include "ast/stmt/function/FunctionDeclStmt.hpp"
+#include "ast/stmt/variable/VariableDeclStmt.hpp"
+#include "ast/stmt/variable/VariableDefStmt.hpp"
 #include "semantic/analyzer/Analyzer.hpp"
 
 namespace Semantic
@@ -23,6 +24,12 @@ namespace Semantic
     {
         static AnalysisResult analyze(Analyzer &analyzer,
                                       AST::VariableDefinitionStmt &node);
+    };
+
+    template <> struct AnalyzerImpl<AST::FunctionDeclarationStmt>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer,
+                                      AST::FunctionDeclarationStmt &node);
     };
 
 } // namespace Semantic

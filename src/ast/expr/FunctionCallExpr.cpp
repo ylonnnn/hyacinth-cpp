@@ -7,7 +7,7 @@ namespace AST
     FunctionCalLExpr::FunctionCalLExpr(
         std::unique_ptr<Expr> callee,
         std::vector<std::unique_ptr<Expr>> arguments)
-        : Expr(callee->position()), callee_(std::move(callee)),
+        : Node(callee->position()), callee_(std::move(callee)),
           arguments_(std::move(arguments))
     {
     }
@@ -23,14 +23,12 @@ namespace AST
         os << "\n" << inner_indentation << "arguments: {";
         for (auto &argument : arguments_)
         {
-            os << "\n";
+            std::string inner_indentation = Utils::tab(tab + 1, 4);
+            os << "\n" << inner_indentation;
             argument->print(os, tab + 2);
         }
 
-        os << "\n"
-           << inner_indentation << "}\n"
-           << "\n"
-           << indentation << "}\n";
+        os << "\n" << inner_indentation << "}\n" << indentation << "}";
     }
 
 } // namespace AST

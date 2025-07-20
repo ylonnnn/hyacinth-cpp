@@ -4,7 +4,6 @@
 
 #include "ast/NodeCollection.hpp"
 #include "ast/expr/Expr.hpp"
-#include "ast/expr/Expr.hpp"
 #include "core/program/Program.hpp"
 
 namespace AST

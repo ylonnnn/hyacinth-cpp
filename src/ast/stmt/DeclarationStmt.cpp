@@ -1,10 +1,9 @@
 #include "ast/stmt/DeclarationStmt.hpp"
-#include "ast/stmt/Stmt.hpp"
 
 namespace AST
 {
     DeclarationStmt::DeclarationStmt(Lexer::Token &name)
-        : Stmt(name.position), name_(name)
+        : Node(name.position), name_(name)
     {
     }
 

@@ -10,8 +10,8 @@ namespace Parser
         return std::make_unique<AST::SimpleType>(parser.lexer().current());
     }
 
-    std::unique_ptr<AST::ConstantType> parse_constant(Parser &parser,
-                                                      TypeParseResult &result)
+    std::unique_ptr<AST::ConstantType>
+    parse_constant(Parser &parser, [[maybe_unused]] TypeParseResult &result)
     {
         return std::make_unique<AST::ConstantType>(parser.lexer().current());
     }
@@ -30,6 +30,7 @@ namespace Parser
 
         Type &type_rule = Common::Type;
         auto expect_type = true;
+        std::vector<std::unique_ptr<AST::Type>> &arguments = type->arguments();
 
         Lexer::TokenType closing_token =
             Lexer::TokenTypes::Delimeter::BracketClose;
@@ -47,7 +48,7 @@ namespace Parser
                     return nullptr;
                 }
 
-                type->arguments().push_back(std::move(type_res.data));
+                arguments.push_back(std::move(type_res.data));
                 expect_type = false;
             }
 
@@ -55,6 +56,7 @@ namespace Parser
             {
                 lexer.next();
                 expect_type = true;
+
                 continue;
             }
 

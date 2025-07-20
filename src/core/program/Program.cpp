@@ -67,6 +67,8 @@ namespace Core
         auto start = std::chrono::high_resolution_clock::now();
         auto succeed = true;
 
+        auto result = Result<void *>{ResultStatus::Success, nullptr, {}};
+
         // Lexical Analysis
         Lexer::Lexer lexer(*this);
         lexer.tokenize();
@@ -78,21 +80,36 @@ namespace Core
         if (parse_result.status != Core::ResultStatus::Success)
             succeed = false;
 
+        result.diagnostics.insert(
+            result.diagnostics.end(),
+            std::make_move_iterator(parse_result.diagnostics.begin()),
+            std::make_move_iterator(parse_result.diagnostics.end()));
+
         std::cout << *parse_result.data << "\n";
 
         // Semantic Analysis
         if (succeed)
         {
             Semantic::Analyzer analyzer(*this);
-            Semantic::AnalysisResult result =
+            Semantic::AnalysisResult semantic_result =
                 analyzer.analyze(*parse_result.data);
 
-            if (result.status != Core::ResultStatus::Success)
+            if (semantic_result.status != Core::ResultStatus::Success)
                 succeed = false;
+
+            result.diagnostics.insert(
+                result.diagnostics.end(),
+                std::make_move_iterator(semantic_result.diagnostics.begin()),
+                std::make_move_iterator(semantic_result.diagnostics.end()));
         }
 
         // After Execution
 
+        // Diagnostics
+        for (auto &diagnostic : result.diagnostics)
+            diagnostic->report();
+
+        // Time Elapsed
         auto microseconds =
             std::chrono::duration_cast<std::chrono::microseconds>(
                 std::chrono::high_resolution_clock::now() - start);

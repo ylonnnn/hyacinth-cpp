@@ -1,1 +1,0 @@
-SOME_GLOBAL_FLAG: bool = false;
