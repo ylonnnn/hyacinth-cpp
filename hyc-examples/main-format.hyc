@@ -1,44 +1,43 @@
-import "std/io";
+// import "@std/io" : std;
+// import "@std/io";
+// import "@std/io" as { { writeln } : io } : std;
 
-fn main -> void (argc: i32, argv: str[]) {
-    some_var: i32 = 123;
+import "@std/io" -> { io -> { writeln } }; 
 
-    io.writeln("Hello, World");
+fn main -> void (args: array[str]) {
+    let some_var: int[32] = 123;
+
+    std.io.writeln("Hello, World");
 
     if some_var >= 150 {
-        io.writeln("some_var is greater than or equal to 150");
-    } else
-        io.writeln("some_var is lower than 150");
+        std.io.writeln("some_var is greater than or equal to 150");
+    } else std.io.writeln("some_var is lower than 150");
 
-    n: i8 = 1, m: i8 = 15;
-
-    for i : 1..5, 1 {
+    let n: int[8] = 1;
+    let m: int[8] = 15;
+    
+    // range.from(1, 5, 1); range.make(1, 5, 1); range.create(1, 5, 1);
+    // 1<-2->5
+    for let i : 1..5, 1 {
 
     }
 
-    arr: array<i32> = {1, 2, 3};
-    for val : arr {
-        io.write("${val} ");
+    for let i!: ref<int[8]> <- range.make(1, 5, 1) {
+
     }
 
-    for i : (n, m, 1) {
-        io.write("Enter a number: ");
-        some_num: i32 = io.read();
-
-        io.write("Enter your name: ");
-        input_name: str = io.readln();
+    let arr: array[int[32]] = {1, 2, 3};
+    for let val: int[32] <- arr {
+        std.io.write("{val} ");
     }
 
-    some_bool: bool = false;
+    let some_bool: bool = false;
 
     while some_bool != false {
-        io.writeln("something");
+        std.io.writeln("something");
 
-        if (some_var < 125)
-            break;
-
-        else
-            continue;
+        if (some_var < 125) break;
+        else continue;
     }
     
     return;

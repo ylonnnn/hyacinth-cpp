@@ -13,6 +13,8 @@ namespace AST
         body_ = std::move(body);
     }
 
+    bool FunctionDefinitionStmt::is_definition() const { return true; }
+
     BlockStmt &FunctionDefinitionStmt::body() { return *body_; }
 
     std::unique_ptr<BlockStmt> &FunctionDefinitionStmt::body_ptr()

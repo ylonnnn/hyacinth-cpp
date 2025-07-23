@@ -46,13 +46,7 @@ namespace Parser
                 if (auto ptr = dynamic_cast<AST::Stmt *>(p_res.data.release()))
                     statements.push_back(std::unique_ptr<AST::Stmt>(ptr));
 
-            result.diagnostics.insert(
-                result.diagnostics.end(),
-                std::make_move_iterator(p_res.diagnostics.begin()),
-                std::make_move_iterator(p_res.diagnostics.end()));
-
-            if (p_res.status == Core::ResultStatus::Fail)
-                result.status = p_res.status;
+            result.adapt(p_res.status, std::move(p_res.diagnostics));
 
             if (invalid_data)
             {

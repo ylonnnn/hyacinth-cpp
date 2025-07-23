@@ -36,9 +36,17 @@ namespace AST
           return_type_(std::move(return_type)),
           parameters_(std::move(parameters))
     {
+        auto &collection = parameters_->collection();
+        end_pos_ = collection.empty() ? return_type_->end_pos()
+                                      : collection.back()->end_pos();
     }
 
     bool FunctionDeclarationStmt::is_definition() const { return false; }
+
+    void FunctionDeclarationStmt::set_end_pos(size_t end_pos)
+    {
+        end_pos_ = end_pos;
+    }
 
     Type &FunctionDeclarationStmt::return_type() { return *return_type_; }
 
@@ -74,9 +82,7 @@ namespace AST
             param->print(os, tab + 2);
         }
 
-        os << "\n"
-           << inner_indentation << "}\n"
-           << indentation << "}";
+        os << "\n" << inner_indentation << "}\n" << indentation << "}";
     }
 
 } // namespace AST

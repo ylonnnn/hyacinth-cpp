@@ -80,10 +80,7 @@ namespace Core
         if (parse_result.status != Core::ResultStatus::Success)
             succeed = false;
 
-        result.diagnostics.insert(
-            result.diagnostics.end(),
-            std::make_move_iterator(parse_result.diagnostics.begin()),
-            std::make_move_iterator(parse_result.diagnostics.end()));
+        result.adapt(std::move(parse_result.diagnostics));
 
         std::cout << *parse_result.data << "\n";
 
@@ -97,10 +94,7 @@ namespace Core
             if (semantic_result.status != Core::ResultStatus::Success)
                 succeed = false;
 
-            result.diagnostics.insert(
-                result.diagnostics.end(),
-                std::make_move_iterator(semantic_result.diagnostics.begin()),
-                std::make_move_iterator(semantic_result.diagnostics.end()));
+            result.adapt(std::move(semantic_result.diagnostics));
         }
 
         // After Execution

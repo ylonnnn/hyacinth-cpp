@@ -71,7 +71,7 @@ namespace Core
         virtual bool
         assignable(const Core::Value &value,
                    const std::vector<TypeArgument> &arguments) const = 0;
-        virtual bool assignable_with(const Type &type) const = 0;
+        virtual bool assignable_with(const Type &type) const;
 
         virtual std::unique_ptr<Diagnostic::NoteDiagnostic>
         make_suggestion(AST::Node *node,

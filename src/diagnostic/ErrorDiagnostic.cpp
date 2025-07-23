@@ -1,4 +1,4 @@
-#include <iostream>
+#include <cassert>
 #include <unordered_map>
 
 #include "ast/expr/LiteralExpr.hpp"
@@ -32,13 +32,25 @@ namespace Diagnostic
             "HYC::SYNTAX:MISSING_MUTABILITY_MODIFIER";
 
         ERROR_CODES[ErrorTypes::Type::Mismatch] = "HYC::TYPE:MISMATCH";
-        ERROR_CODES[ErrorTypes::Type::UnknownType] = "HYC::TYPE:UNKNOWN";
+        ERROR_CODES[ErrorTypes::Type::UnrecognizedType] =
+            "HYC::TYPE:UNRECOGNIZED_TYPE";
+        ERROR_CODES[ErrorTypes::Type::InvalidVariableType] =
+            "HYC::TYPE:INVALID_VARIABLE_TYPE";
         ERROR_CODES[ErrorTypes::Type::InvalidArgumentType] =
             "HYC::TYPE:INVALID_ARGUMENT_TYPE";
         ERROR_CODES[ErrorTypes::Type::InvalidTypeArgumentType] =
             "HYC::TYPE:INVALID_TYPE_ARGUMENT_TYPE";
         ERROR_CODES[ErrorTypes::Type::InvalidReturnType] =
             "HYC::TYPE:INVALID_RETURN_TYPE";
+
+        ERROR_CODES[ErrorTypes::Semantic::NonCallableInvocation] =
+            "HYC::SEMANTIC:NONCALLABLE_INVOCATION";
+        ERROR_CODES[ErrorTypes::Semantic::UnrecognizedSymbol] =
+            "HYC::SEMANTIC:UNRECOGNIZED_SYMBOL";
+        ERROR_CODES[ErrorTypes::Semantic::InvalidArgumentCount] =
+            "HYC::SEMANTIC:INVALID_ARGUMENT_COUNT";
+        ERROR_CODES[ErrorTypes::Semantic::Duplication] =
+            "HYC::SEMANTIC::DUPLICATION";
 
         ERROR_CODES[ErrorTypes::Modification::ReadValueModification] =
             "HYC::MODIFICATION:RVALUE_MODIFICATION";
@@ -94,13 +106,12 @@ namespace Diagnostic
     create_syntax_error(Lexer::Token *token,
                         std::optional<Lexer::TokenType> expected)
     {
-        if (token == nullptr)
-            Utils::terminate("Token cannot be a nullptr!", EXIT_FAILURE);
+        assert(token != nullptr);
 
         bool expects = !!expected;
         auto node = AST::LiteralExpr(*token);
 
-        auto diagnostic = std::make_unique<ErrorDiagnostic>(
+        return std::make_unique<ErrorDiagnostic>(
             &node, ErrorTypes::Syntax::UnexpectedToken,
             std::string("Unexpected \"") + ERR_GEN + std::string(token->value) +
                 Utils::Styles::Reset + "\"." +
@@ -110,8 +121,17 @@ namespace Diagnostic
                          : ""),
             std::string("Received ") + Lexer::type_to_string(token->type) +
                 (expects ? " instead" : "") + ".");
+    }
 
-        return diagnostic;
+    std::unique_ptr<ErrorDiagnostic> create_unknown_type_error(AST::Type *type)
+    {
+        assert(type != nullptr);
+
+        return std::make_unique<ErrorDiagnostic>(
+            type, ErrorTypes::Type::UnrecognizedType,
+            std::string("Unknown type \"") + ERR_GEN + type->to_string() +
+                Utils::Styles::Reset + "\" received.",
+            "Type received here");
     }
 
 } // namespace Diagnostic

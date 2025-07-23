@@ -38,13 +38,7 @@ namespace Parser
         // IDENTIFIER (":" | "!:") TYPE
         ParseResult i_res = Common::IdentifierInitialization.parse(parser);
 
-        result.diagnostics.insert(
-            result.diagnostics.end(),
-            std::make_move_iterator(i_res.diagnostics.begin()),
-            std::make_move_iterator(i_res.diagnostics.end()));
-
-        if (i_res.status == Core::ResultStatus::Fail)
-            result.status = i_res.status;
+        result.adapt(i_res.status, std::move(i_res.diagnostics));
 
         if (i_res.data == nullptr)
             return result;
@@ -75,10 +69,7 @@ namespace Parser
 
         ExprParseResult v_res = Common::Expr.parse_expr(parser, 0);
 
-        result.diagnostics.insert(
-            result.diagnostics.end(),
-            std::make_move_iterator(v_res.diagnostics.begin()),
-            std::make_move_iterator(v_res.diagnostics.end()));
+        result.adapt(std::move(v_res.diagnostics));
 
         if (v_res.data != nullptr)
             presence_flag |= (1 << 0);
@@ -138,16 +129,7 @@ namespace Parser
         // TERMINATOR ::= ";"
         ParseResult t_res = Common::Terminator.parse(parser);
 
-        if (t_res.status == Core::ResultStatus::Fail)
-        {
-            result.status = t_res.status;
-            result.data = nullptr;
-        }
-
-        result.diagnostics.insert(
-            result.diagnostics.end(),
-            std::make_move_iterator(t_res.diagnostics.begin()),
-            std::make_move_iterator(t_res.diagnostics.end()));
+        result.adapt(t_res.status, std::move(t_res.diagnostics));
 
         if (auto ptr =
                 dynamic_cast<AST::VariableDeclarationStmt *>(result.data.get()))

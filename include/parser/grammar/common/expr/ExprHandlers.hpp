@@ -25,6 +25,10 @@ namespace Parser
     parse_unary(Parser &parser, std::unique_ptr<AST::Expr> &left,
                 float right_bp, ExprParseResult &result);
 
+    std::unique_ptr<AST::BinaryExpr>
+    parse_memaccess(Parser &parser, std::unique_ptr<AST::Expr> &left,
+                    float right_bp, ExprParseResult &result);
+
     std::unique_ptr<AST::FunctionCalLExpr>
     parse_fncall(Parser &parser, std::unique_ptr<AST::Expr> &left,
                  float right_bp, ExprParseResult &result);

@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <variant>
 
+#include "ast/Node.hpp"
+#include "ast/type/Type.hpp"
 #include "diagnostic/Diagnostic.hpp"
 #include "lexer/Token.hpp"
 
@@ -33,10 +35,19 @@ namespace Diagnostic
         enum class Type
         {
             Mismatch = 1,
-            UnknownType,
+            UnrecognizedType,
+            InvalidVariableType,
             InvalidArgumentType,
             InvalidTypeArgumentType,
             InvalidReturnType,
+        };
+
+        enum class Semantic
+        {
+            NonCallableInvocation = 1,
+            UnrecognizedSymbol,
+            InvalidArgumentCount,
+            Duplication,
         };
 
         enum class Modification
@@ -54,7 +65,8 @@ namespace Diagnostic
 
     using ErrorType =
         std::variant<ErrorTypes::General, ErrorTypes::Syntax, ErrorTypes::Type,
-                     ErrorTypes::Modification, ErrorTypes::Uninitialization>;
+                     ErrorTypes::Semantic, ErrorTypes::Modification,
+                     ErrorTypes::Uninitialization>;
 
     extern std::unordered_map<ErrorType, const char *> ERROR_CODES;
 
@@ -65,7 +77,8 @@ namespace Diagnostic
 
       public:
         ErrorDiagnostic(AST::Node *node, ErrorType error_type,
-                        const std::string & message, const std::string & submessage);
+                        const std::string &message,
+                        const std::string &submessage);
 
         ErrorType error_type();
 
@@ -77,5 +90,7 @@ namespace Diagnostic
     std::unique_ptr<ErrorDiagnostic> create_syntax_error(
         Lexer::Token *token,
         std::optional<Lexer::TokenType> expected = std::nullopt);
+
+    std::unique_ptr<ErrorDiagnostic> create_unknown_type_error(AST::Type *type);
 
 } // namespace Diagnostic

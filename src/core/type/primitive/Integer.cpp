@@ -105,9 +105,9 @@ namespace Core
             value);
     }
 
-    bool IntegerType::assignable_with([[maybe_unused]] const Type &type) const
+    bool IntegerType::assignable_with(const Type &type) const
     {
-        return false;
+        return Type::assignable_with(type);
     }
 
     std::unique_ptr<Diagnostic::NoteDiagnostic> IntegerType::make_suggestion(
@@ -126,7 +126,7 @@ namespace Core
         auto max = (static_cast<uint64_t>(1) << (is_signed_ ? bw - 1 : bw)) - 1;
 
         return std::make_unique<Diagnostic::NoteDiagnostic>(
-            std::move(node), Diagnostic::NoteType::Suggestion,
+            node, Diagnostic::NoteType::Suggestion,
             std::string("Only values within ") + Diagnostic::NOTE_GEN +
                 std::to_string(min) + Utils::Styles::Reset + " to " +
                 Diagnostic::NOTE_GEN + std::to_string(max) +

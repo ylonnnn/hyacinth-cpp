@@ -34,6 +34,46 @@ namespace Core
         {
         }
 
+        virtual void adapt(Diagnostic::DiagnosticList diagnostics)
+        {
+            this->diagnostics.insert(
+                this->diagnostics.end(),
+                std::make_move_iterator(diagnostics.begin()),
+                std::make_move_iterator(diagnostics.end()));
+        }
+
+        virtual void adapt(ResultStatus status,
+                           Diagnostic::DiagnosticList diagnostics)
+        {
+            if (status == Core::ResultStatus::Fail)
+                this->status = status;
+
+            adapt(std::move(diagnostics));
+        }
+
+        template <typename U>
+        void adapt(ResultStatus status, Diagnostic::DiagnosticList diagnostics,
+                   U &&data)
+        {
+            adapt(status, std::move(diagnostics));
+            this->data = std::forward<U>(data);
+        }
+
+        // virtual void adapt(ResultStatus status,
+        //                    Diagnostic::DiagnosticList diagnostics, T &&data)
+        // {
+        //     adapt(status, std::move(diagnostics));
+        //     this->data = std::move(data);
+        // }
+
+        // virtual void adapt(ResultStatus status,
+        //                    Diagnostic::DiagnosticList diagnostics,
+        //                    const T &data)
+        // {
+        //     adapt(status, std::move(diagnostics));
+        //     this->data = data;
+        // }
+
         virtual void
         error(std::unique_ptr<Diagnostic::ErrorDiagnostic> diagnostic)
         {
@@ -42,8 +82,8 @@ namespace Core
         }
 
         virtual void error(AST::Node *node, Diagnostic::ErrorType error_type,
-                           const std::string & message,
-                           const std::string & submessage)
+                           const std::string &message,
+                           const std::string &submessage)
         {
             status = ResultStatus::Fail;
             diagnostics.push_back(std::make_unique<Diagnostic::ErrorDiagnostic>(
@@ -58,7 +98,8 @@ namespace Core
         }
 
         virtual void warn(AST::Node *node, Diagnostic::WarningType warn_type,
-                          const std::string & message, const std::string & submessage)
+                          const std::string &message,
+                          const std::string &submessage)
         {
             diagnostics.push_back(
                 std::make_unique<Diagnostic::WarningDiagnostic>(
@@ -73,7 +114,8 @@ namespace Core
         }
 
         virtual void note(AST::Node *node, Diagnostic::NoteType note_type,
-                          const std::string & message, const std::string & submessage)
+                          const std::string &message,
+                          const std::string &submessage)
         {
             diagnostics.push_back(std::make_unique<Diagnostic::NoteDiagnostic>(
                 node, note_type, message, submessage));

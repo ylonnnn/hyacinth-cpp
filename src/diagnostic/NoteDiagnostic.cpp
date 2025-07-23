@@ -32,7 +32,7 @@ namespace Diagnostic
     {
         auto it = NOTE_CODES.find(type);
         if (it == NOTE_CODES.end())
-            Utils::terminate("Unknown error type provided!", EXIT_FAILURE);
+            Utils::terminate("Unknown note type provided!", EXIT_FAILURE);
 
         return it->second;
     }

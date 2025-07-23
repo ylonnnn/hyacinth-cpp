@@ -1,8 +1,11 @@
-let test_integer: int[32] = 123_456;
+fn add -> int[32] (a: int[32], b: int[32]);
 
-fn main -> int[1] () {
-    let x: int[8] = 123;
-    let y: int[9] = 456;
+fn is_positive -> uint[1] (n: int[32]);
 
-    writeln("{x + y}");
+fn random_number -> int[32] ();
+
+fn main -> void () {
+    let x: int[32] = add(1, 2);
+    let y: uint[1] = is_positive(123);
+    let z: int[32] = random_number();
 }

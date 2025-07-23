@@ -14,6 +14,7 @@ namespace Semantic
     struct AnalysisResult : public Core::Result<Core::Type *>
     {
         std::optional<Core::Value> value = std::nullopt;
+        Core::Symbol *symbol = nullptr;
 
         AnalysisResult(std::optional<Core::Value> value,
                        Core::ResultStatus status, Core::Type *data,
@@ -32,17 +33,19 @@ namespace Semantic
       protected:
         Core::ProgramFile &program_;
         Core::Environment environment_;
-        // ScopeStack &scope_stack_;
 
-        Core::Environment &current_env_;
+        Core::Environment *current_env_ = nullptr;
 
       public:
         Analyzer(Core::ProgramFile &program);
 
+        void initialize_types();
+
         Core::ProgramFile &program();
         Core::Environment &environment();
 
-        Core::Environment &current_env();
+        Core::Environment *current_env();
+        void set_current_env(Core::Environment &env);
 
         template <typename T,
                   typename = std::enable_if_t<std::is_base_of_v<AST::Node, T>>>

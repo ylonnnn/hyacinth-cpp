@@ -14,6 +14,8 @@ namespace AST
 
         std::string to_string() const override;
         void print(std::ostream &os, uint8_t tab) const override;
+
+        bool operator==(const Type &other) const override;
     };
 
 } // namespace AST

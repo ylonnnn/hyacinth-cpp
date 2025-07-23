@@ -10,6 +10,17 @@ namespace AST
         : Node(callee->position()), callee_(std::move(callee)),
           arguments_(std::move(arguments))
     {
+        end_pos_ = arguments_.empty() ? callee_->end_pos()
+                                      : arguments_.back()->end_pos();
+    }
+
+    void FunctionCalLExpr::set_end_pos(size_t end_pos) { end_pos_ = end_pos; }
+
+    Expr &FunctionCalLExpr::callee() { return *callee_; }
+
+    std::vector<std::unique_ptr<Expr>> &FunctionCalLExpr::arguments()
+    {
+        return arguments_;
     }
 
     void FunctionCalLExpr::print(std::ostream &os, uint8_t tab) const

@@ -15,6 +15,8 @@ namespace AST
         FunctionCalLExpr(std::unique_ptr<Expr> callee,
                          std::vector<std::unique_ptr<Expr>> arguments);
 
+        void set_end_pos(size_t end_pos);
+
         Expr &callee();
         std::vector<std::unique_ptr<Expr>> &arguments();
 

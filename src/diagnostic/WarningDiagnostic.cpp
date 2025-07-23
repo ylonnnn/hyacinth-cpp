@@ -29,7 +29,7 @@ namespace Diagnostic
     {
         auto it = WARN_CODES.find(type);
         if (it == WARN_CODES.end())
-            Utils::terminate("Unknown error type provided!", EXIT_FAILURE);
+            Utils::terminate("Unknown warning type provided!", EXIT_FAILURE);
 
         return it->second;
     }

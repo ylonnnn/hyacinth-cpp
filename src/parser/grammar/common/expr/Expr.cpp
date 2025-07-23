@@ -134,6 +134,13 @@ namespace Parser
                 });
 
         // Member Access
+        float memaccess_bp = static_cast<int>(BindingPower::MemberAccess);
+        for (const auto &type :
+             std::vector<Lexer::TokenType>{Operator::Dot::Single})
+        {
+            add_led(type, parse_memaccess,
+                    std::pair<float, float>{memaccess_bp, memaccess_bp});
+        }
 
         // Function Call
         float fncall_bp = static_cast<int>(BindingPower::FunctionCall);
@@ -300,6 +307,10 @@ namespace Parser
     {
         ExprParseResult expr_result = parse_expr(parser, 0);
 
+        if (expr_result.data == nullptr)
+            return {parser, expr_result.status, nullptr,
+                    std::move(expr_result.diagnostics)};
+
         ParseResult result = {
             parser, expr_result.status,
             std::make_unique<AST::ExprStmt>(std::move(expr_result.data)),
@@ -319,10 +330,7 @@ namespace Parser
             result.data = nullptr;
         }
 
-        result.diagnostics.insert(
-            result.diagnostics.end(),
-            std::make_move_iterator(t_res.diagnostics.begin()),
-            std::make_move_iterator(t_res.diagnostics.end()));
+        result.adapt(std::move(t_res.diagnostics));
 
         return result;
     }

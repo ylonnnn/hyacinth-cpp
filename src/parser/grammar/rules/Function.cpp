@@ -60,14 +60,7 @@ namespace Parser
                     break;
                 }
 
-                if (i_res.status == Core::ResultStatus::Fail)
-                {
-                    result.status = i_res.status;
-                    result.diagnostics.insert(
-                        result.diagnostics.end(),
-                        std::make_move_iterator(i_res.diagnostics.begin()),
-                        std::make_move_iterator(i_res.diagnostics.end()));
-                }
+                result.adapt(i_res.status, std::move(i_res.diagnostics));
 
                 if (auto ptr =
                         dynamic_cast<IdentifierInitNode *>(i_res.data.get()))
@@ -118,15 +111,13 @@ namespace Parser
             name = lexer.next();
         else
         {
-            auto node = new AST::LiteralExpr(*lexer.peek());
+            auto node = AST::LiteralExpr(*lexer.peek());
             result.force_error(
-                node, Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
+                &node, Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
                 std::string("Missing function ") + Diagnostic::ERR_GEN +
                     "IDENTIFIER" + Utils::Styles::Reset +
                     " after function keyword.",
                 "Missing identifier here");
-
-            delete node;
         }
 
         // -> (ArrowLeftOperator)
@@ -134,9 +125,9 @@ namespace Parser
             lexer.next();
         else
         {
-            auto node = new AST::LiteralExpr(*lexer.peek());
+            auto node = AST::LiteralExpr(*lexer.peek());
             result.force_error(
-                node, Diagnostic::ErrorTypes::Syntax::MissingOperator,
+                &node, Diagnostic::ErrorTypes::Syntax::MissingOperator,
                 std::string("Missing ") + Diagnostic::ERR_GEN + "->" +
                     Utils::Styles::Reset + " after function identifier.",
                 "Missing arrow operator here");
@@ -150,25 +141,18 @@ namespace Parser
         {
             if (rt_initial_pos != lexer.position() &&
                 !rt_result.diagnostics.empty())
-            {
-                result.status = rt_result.status;
-                result.diagnostics.insert(
-                    result.diagnostics.end(),
-                    std::make_move_iterator(rt_result.diagnostics.begin()),
-                    std::make_move_iterator(rt_result.diagnostics.end()));
-            }
+                result.adapt(rt_result.status,
+                             std::move(rt_result.diagnostics));
 
             else
             {
-                auto node = new AST::LiteralExpr(*lexer.peek());
+                auto node = AST::LiteralExpr(*lexer.peek());
                 result.force_error(
-                    node, Diagnostic::ErrorTypes::Syntax::MissingReturnType,
+                    &node, Diagnostic::ErrorTypes::Syntax::MissingReturnType,
                     std::string("Missing function ") + Diagnostic::ERR_GEN +
                         "RETURN TYPE" + Utils::Styles::Reset +
                         " after function arrow operator.",
                     "Missing return type here");
-
-                delete node;
             }
         }
 
@@ -187,21 +171,19 @@ namespace Parser
         {
             if (pl_initial_pos != lexer.position() &&
                 !pl_res.diagnostics.empty())
-            {
-                result.status = pl_res.status;
-                result.diagnostics.insert(
-                    result.diagnostics.end(),
-                    std::make_move_iterator(pl_res.diagnostics.begin()),
-                    std::make_move_iterator(pl_res.diagnostics.end()));
-            }
+                result.adapt(pl_res.status, std::move(pl_res.diagnostics));
 
             else
                 parser.synchronize();
         }
 
         // ) (ParenthesisClose)
+        size_t fn_end_pos;
         if (parser.expect(Delimeter::ParenthesisClose, false))
-            lexer.next();
+        {
+            Lexer::Token *close = lexer.next();
+            fn_end_pos = close->position.col + close->value.size();
+        }
         else
             result.error(Diagnostic::create_syntax_error(
                 lexer.peek(), Delimeter::ParenthesisClose));
@@ -217,17 +199,14 @@ namespace Parser
                         dynamic_cast<AST::BlockStmt *>(b_res.data.release()))
                     body = std::unique_ptr<AST::BlockStmt>(ptr);
 
-            result.diagnostics.insert(
-                result.diagnostics.end(),
-                std::make_move_iterator(b_res.diagnostics.begin()),
-                std::make_move_iterator(b_res.diagnostics.end()));
-
-            if (b_res.status == Core::ResultStatus::Fail)
-                result.status = b_res.status;
-
-            result.data = std::make_unique<AST::FunctionDefinitionStmt>(
+            auto fn_node = std::make_unique<AST::FunctionDefinitionStmt>(
                 *name, std::move(rt_result.data), std::move(pl_res.data),
                 std::move(body));
+
+            fn_node->set_end_pos(fn_end_pos);
+
+            result.adapt(b_res.status, std::move(b_res.diagnostics),
+                         std::move(fn_node));
 
             return result;
         }
@@ -246,14 +225,15 @@ namespace Parser
             }
             else
             {
-                result.data = std::make_unique<AST::FunctionDeclarationStmt>(
+                auto fn_node = std::make_unique<AST::FunctionDeclarationStmt>(
                     *name, std::move(rt_result.data), std::move(pl_res.data));
+
+                fn_node->set_end_pos(fn_end_pos);
+
+                result.data = std::move(fn_node);
             }
 
-            result.diagnostics.insert(
-                result.diagnostics.end(),
-                std::make_move_iterator(t_res.diagnostics.begin()),
-                std::make_move_iterator(t_res.diagnostics.end()));
+            result.adapt(std::move(t_res.diagnostics));
 
             return result;
         }

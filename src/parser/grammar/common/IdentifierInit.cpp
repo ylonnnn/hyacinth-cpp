@@ -39,15 +39,13 @@ namespace Parser
             lexer.next();
         else
         {
-            auto node = new AST::LiteralExpr(*lexer.peek());
+            auto node = AST::LiteralExpr(*lexer.peek());
 
             result.force_error(
-                node, Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
+                &node, Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
                 std::string("Missing ") + Diagnostic::ERR_GEN + "IDENTIFIER" +
                     Utils::Styles::Reset + " before the mutability modifier.",
                 "Missing identifier here");
-
-            delete node;
         }
 
         // if (auto diagnostic = parser.expect_or_error(token_type_))
@@ -58,13 +56,7 @@ namespace Parser
         // Mutability Modifier
         auto mut_result = mutability_.parse(parser);
 
-        result.diagnostics.insert(
-            result.diagnostics.end(),
-            std::make_move_iterator(mut_result.diagnostics.begin()),
-            std::make_move_iterator(mut_result.diagnostics.end()));
-
-        if (mut_result.status == Core::ResultStatus::Fail)
-            result.status = mut_result.status;
+        result.adapt(mut_result.status, std::move(mut_result.diagnostics));
 
         bool mut = false;
         if (auto ptr = dynamic_cast<MutabilityNode *>(mut_result.data.get()))
@@ -76,13 +68,7 @@ namespace Parser
         if (t_result.status == Core::ResultStatus::Fail)
         {
             if (t_initial_pos != lexer.position())
-            {
-                result.status = t_result.status;
-                result.diagnostics.insert(
-                    result.diagnostics.end(),
-                    std::make_move_iterator(t_result.diagnostics.begin()),
-                    std::make_move_iterator(t_result.diagnostics.end()));
-            }
+                result.adapt(t_result.status, std::move(t_result.diagnostics));
 
             else
             {

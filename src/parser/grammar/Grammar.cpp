@@ -106,19 +106,16 @@ namespace Parser
         {
             ParseResult p_res = partial_parse(parser);
 
-            if (p_res.data == nullptr)
-                break;
+            if (p_res.data)
+                if (auto ptr = dynamic_cast<AST::DeclarationStmt *>(
+                        p_res.data.release()))
+                    result.data->declarations().push_back(
+                        std::unique_ptr<AST::DeclarationStmt>(ptr));
 
-            if (auto ptr =
-                    dynamic_cast<AST::DeclarationStmt *>(p_res.data.release()))
-                result.data->declarations().push_back(
-                    std::unique_ptr<AST::DeclarationStmt>(ptr));
-
-            if (!p_res.diagnostics.empty())
-                result.diagnostics.insert(
-                    result.diagnostics.end(),
-                    std::make_move_iterator(p_res.diagnostics.begin()),
-                    std::make_move_iterator(p_res.diagnostics.end()));
+            result.diagnostics.insert(
+                result.diagnostics.end(),
+                std::make_move_iterator(p_res.diagnostics.begin()),
+                std::make_move_iterator(p_res.diagnostics.end()));
 
             if (p_res.status == Core::ResultStatus::Fail)
                 result.status = p_res.status;

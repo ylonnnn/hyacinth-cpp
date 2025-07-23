@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast/stmt/DeclarationStmt.hpp"
+#include "ast/stmt/ExprStmt.hpp"
 #include "ast/stmt/function/FunctionDeclStmt.hpp"
 #include "ast/stmt/variable/VariableDeclStmt.hpp"
 #include "ast/stmt/variable/VariableDefStmt.hpp"
@@ -8,6 +9,16 @@
 
 namespace Semantic
 {
+    template <> struct AnalyzerImpl<AST::Stmt>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer, AST::Stmt &node);
+    };
+
+    template <> struct AnalyzerImpl<AST::ExprStmt>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer, AST::ExprStmt &node);
+    };
+
     template <> struct AnalyzerImpl<AST::DeclarationStmt>
     {
         static AnalysisResult analyze(Analyzer &analyzer,

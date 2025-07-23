@@ -1,8 +1,8 @@
 #pragma once
 
-#include <optional>
 #include <string>
 
+#include "ast/Node.hpp"
 #include "core/program/Program.hpp"
 
 namespace Core
@@ -11,7 +11,15 @@ namespace Core
     {
         std::string name;
         Core::Position declared_at;
-        std::optional<Core::Position> defined_at = std::nullopt;
+        Core::Position *defined_at = nullptr;
+        AST::Node *node = nullptr;
+
+        Symbol(std::string name, Core::Position declared_at,
+               AST::Node *node = nullptr);
+
+        virtual ~Symbol() = default;
+
+        void define(Core::Position *position);
     };
 
 } // namespace Core

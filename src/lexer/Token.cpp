@@ -91,8 +91,7 @@ namespace Lexer
                                     "%=");
 
         TOKEN_HANDLERS.emplace_back(TokenTypes::Operator::Arrow::Left, "->");
-        // TOKEN_HANDLERS.emplace_back(TokenTypes::Operator::Arrow::Right,
-        // "<-");
+        TOKEN_HANDLERS.emplace_back(TokenTypes::Operator::Arrow::Right, "<-");
 
         TOKEN_HANDLERS.emplace_back(TokenTypes::Operator::ArithmeticUnary::Plus,
                                     "\\+");

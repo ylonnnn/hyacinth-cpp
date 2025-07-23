@@ -74,12 +74,12 @@ namespace Diagnostic
         constructed_ +=
             (std::string("\n\t\t") + trace + "at " + program.path().string() +
              ":" + std::to_string(row) + ":" + std::to_string(col) +
-             Utils::Styles::Reset + "\n\n");
+             Utils::Styles::Reset + "\n");
     }
 
     void Diagnostic::report() const
     {
-        std::cout << constructed_ << "\n";
+        std::cout << constructed_;
 
         for (auto &detail : details_)
             detail->report();

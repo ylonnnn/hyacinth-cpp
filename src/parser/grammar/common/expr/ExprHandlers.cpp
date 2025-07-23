@@ -81,9 +81,47 @@ namespace Parser
             AST::UnaryType::Post, parser.lexer().current(), std::move(left));
     }
 
+    std::unique_ptr<AST::BinaryExpr>
+    parse_memaccess(Parser &parser, std::unique_ptr<AST::Expr> &left,
+                    float right_bp, ExprParseResult &result)
+    {
+        auto &lexer = parser.lexer();
+        Lexer::Token &operation = lexer.current();
+
+        Expr *expr_rule;
+        if (auto ptr = dynamic_cast<Expr *>(parser.grammar().fallback()))
+            expr_rule = ptr;
+
+        ExprParseResult r_res = expr_rule->parse_expr(parser, right_bp);
+
+        std::unique_ptr<AST::Expr> right = std::move(r_res.data);
+
+        if (r_res.status == Core::ResultStatus::Fail)
+            result.status = r_res.status;
+
+        result.diagnostics.insert(
+            result.diagnostics.end(),
+            std::make_move_iterator(r_res.diagnostics.begin()),
+            std::make_move_iterator(r_res.diagnostics.end()));
+
+        if (right == nullptr)
+        {
+            auto node = AST::LiteralExpr(lexer.current());
+            result.force_error(&node,
+                               Diagnostic::ErrorTypes::Syntax::MissingValue,
+                               std::string("Missing ") + Diagnostic::ERR_GEN +
+                                   "ACCESSOR" + Utils::Styles::Reset +
+                                   " for the the member access expression",
+                               "Accessing nothing after the dot operator");
+        }
+
+        return std::make_unique<AST::BinaryExpr>(std::move(left), operation,
+                                                 std::move(right));
+    }
+
     std::unique_ptr<AST::FunctionCalLExpr>
     parse_fncall(Parser &parser, std::unique_ptr<AST::Expr> &left,
-                 float right_bp, ExprParseResult &result)
+                 [[maybe_unused]] float right_bp, ExprParseResult &result)
     {
         auto &lexer = parser.lexer();
 
@@ -126,6 +164,8 @@ namespace Parser
             break;
         }
 
+        size_t fnc_end_pos;
+
         if (auto diagnostic = parser.expect_or_error(closing_token_type, false))
         {
             parser.panic();
@@ -135,7 +175,10 @@ namespace Parser
         }
 
         else
-            lexer.next();
+        {
+            Lexer::Token *close = lexer.next();
+            fnc_end_pos = close->position.col + close->value.size();
+        }
 
         // std.io.println
         // std <-> (io <-> println)
@@ -144,8 +187,12 @@ namespace Parser
         //     std::move(left), operation,
         //     expr_rule->parse_expr(parser, right_bp).data);
 
-        return std::make_unique<AST::FunctionCalLExpr>(std::move(left),
-                                                       std::move(arguments));
+        auto node = std::make_unique<AST::FunctionCalLExpr>(
+            std::move(left), std::move(arguments));
+
+        node->set_end_pos(fnc_end_pos);
+
+        return node;
     }
 
 } // namespace Parser

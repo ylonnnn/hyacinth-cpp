@@ -18,9 +18,12 @@ namespace AST
 
       public:
         Lexer::Token &value();
+        const Lexer::Token &value() const;
 
         virtual std::string to_string() const = 0;
         virtual void print(std::ostream &os, uint8_t tab) const = 0;
+
+        virtual bool operator==(const Type &other) const = 0;
     };
 
 } // namespace AST

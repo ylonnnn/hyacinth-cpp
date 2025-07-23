@@ -27,4 +27,9 @@ namespace AST
         os << "\n" << indentation << "}";
     }
 
+    bool ConstantType::operator==(const Type &other) const
+    {
+        return value_.value == other.value().value;
+    }
+
 } // namespace AST

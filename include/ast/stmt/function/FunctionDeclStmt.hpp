@@ -29,7 +29,7 @@ namespace AST
             parameters_;
 
         // Empty
-        std::unique_ptr<BlockStmt> body_; 
+        std::unique_ptr<BlockStmt> body_;
 
       public:
         FunctionDeclarationStmt(
@@ -38,6 +38,8 @@ namespace AST
                 parameters);
 
         virtual bool is_definition() const override;
+
+        void set_end_pos(size_t end_pos);
 
         Type &return_type();
         std::vector<std::unique_ptr<FunctionParameterIdentifier>> &parameters();

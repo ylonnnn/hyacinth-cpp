@@ -54,7 +54,8 @@ namespace Utils
 
                 case Primary::String:
                 {
-                    std::cout << token.value << "\n";
+                    result = value.substr(1, value.size() - 2);
+
                     break;
                 }
 

@@ -168,4 +168,9 @@ namespace Core
         return result;
     }
 
+    bool Type::assignable_with(const Type &type) const
+    {
+        return name_ == type.name_;
+    }
+
 } // namespace Core
