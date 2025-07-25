@@ -25,7 +25,6 @@ namespace Core
         if (type.type == nullptr)
             return false;
 
-        // TODO: assignable_with
         return this->type->assignable_with(*type.type);
     }
 
@@ -38,6 +37,9 @@ namespace Core
     std::string Type::to_string() const
     {
         std::string str(type->name_);
+
+        if (arguments.empty())
+            return str;
 
         str += "[";
 
@@ -58,10 +60,11 @@ namespace Core
                     *ptr);
             }
 
-            // else if (auto ptr = std::get_if<Type *>(&argument))
-            // {
-            //     // (*ptr)->``
-            // }
+            else if (auto ptr = std::get_if<Type>(&argument))
+                str += ptr->to_string();
+
+            if (&argument != &arguments.back())
+                str += ", ";
         }
 
         return str += "]";

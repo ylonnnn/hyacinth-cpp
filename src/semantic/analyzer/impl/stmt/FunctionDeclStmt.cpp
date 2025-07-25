@@ -22,7 +22,6 @@ namespace Semantic
         if (resolved == nullptr)
         {
             result.error(Diagnostic::create_unknown_type_error(&ast_type));
-
             return;
         }
 
@@ -44,21 +43,17 @@ namespace Semantic
 
         for (auto &param : node->parameters())
         {
+            auto &ast_type = param->type();
             Core::BaseType *resolved =
-                current->resolve_type(std::string(param->type().value().value));
+                current->resolve_type(std::string(ast_type.value().value));
 
-            // Invalid Parameter Type
             if (resolved == nullptr)
             {
-                result.error(
-                    Diagnostic::create_unknown_type_error(&param->type()));
-
+                result.error(Diagnostic::create_unknown_type_error(&ast_type));
                 continue;
             }
 
-            auto &ast_type = param->type();
             Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
-
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
             Core::FunctionParameter parameter{param->name().value,
@@ -145,10 +140,34 @@ namespace Semantic
                            Utils::Styles::Reset +
                            "\". Function signature mismatch.";
 
+        // Function Signatures
         if (fn->signature != declptr->signature)
         {
             error(std::move(err_message));
             return;
+        }
+    }
+
+    void analyze_body(Analyzer &analyzer,
+                      std::unique_ptr<Core::FunctionSymbol> &fn,
+                      AnalysisResult &result)
+    {
+        AST::FunctionDeclarationStmt *node = fn->node;
+
+        if (typeid(*node) != typeid(AST::FunctionDefinitionStmt))
+            return;
+
+        auto defptr = static_cast<AST::FunctionDefinitionStmt *>(node);
+        AST::BlockStmt &body = defptr->body();
+
+        fn->define(const_cast<Core::Position *>(&body.position()));
+
+        for (auto &stmt : body.statements())
+        {
+            AnalysisResult a_res =
+                AnalyzerImpl<AST::Stmt>::analyze(analyzer, *stmt);
+
+            result.adapt(a_res.status, std::move(a_res.diagnostics));
         }
     }
 
@@ -180,19 +199,7 @@ namespace Semantic
             current = body_env;
             analyzer.set_current_env(*body_env);
 
-            if (auto ptr = dynamic_cast<AST::FunctionDefinitionStmt *>(&node))
-            {
-                function->define(
-                    const_cast<Core::Position *>(&ptr->body().position()));
-
-                for (auto &stmt : ptr->body().statements())
-                {
-                    AnalysisResult a_res =
-                        AnalyzerImpl<AST::Stmt>::analyze(analyzer, *stmt);
-
-                    result.adapt(a_res.status, std::move(a_res.diagnostics));
-                }
-            }
+            analyze_body(analyzer, function, result);
         }
 
         closure->declare_symbol(std::move(function));

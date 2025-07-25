@@ -52,7 +52,6 @@ namespace Semantic
     AnalyzerImpl<AST::FunctionCalLExpr>::analyze(Analyzer &analyzer,
                                                  AST::FunctionCalLExpr &node)
     {
-        Core::Environment *current_env = analyzer.current_env();
         AnalysisResult result = {
             std::nullopt, Core::ResultStatus::Success, nullptr, {}};
 
