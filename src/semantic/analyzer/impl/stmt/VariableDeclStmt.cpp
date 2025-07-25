@@ -53,18 +53,27 @@ namespace Semantic
         }
     }
 
-    void validate_type(Analyzer &analyzer,
-                       std::unique_ptr<Core::VariableSymbol> &var,
-                       AnalysisResult &result)
+    void analyze_type([[maybe_unused]] Analyzer &analyzer,
+                      std::unique_ptr<Core::VariableSymbol> &var,
+                      AnalysisResult &result)
     {
-        AST::Type &ast_type = var->node->type();
-        Core::Type *type = var->type;
+        Core::Environment *current = analyzer.current_env();
 
-        if (type == nullptr)
+        AST::Type &ast_type = var->node->type();
+        Core::BaseType *resolved =
+            current->resolve_type(std::string(ast_type.value().value));
+
+        if (resolved == nullptr)
         {
             result.error(Diagnostic::create_unknown_type_error(&ast_type));
             return;
         }
+
+        Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
+        result.adapt(t_res.status, std::move(t_res.diagnostics));
+
+        var->type = std::move(t_res.data);
+        Core::Type *type = var->type.get();
 
         if (typeid(*type) == typeid(Core::Void))
         {
@@ -81,24 +90,21 @@ namespace Semantic
         result.data = type;
     }
 
-    void validate_value(Analyzer &analyzer,
-                        std::unique_ptr<Core::VariableSymbol> &var,
-                        AnalysisResult &result)
+    void analyze_value([[maybe_unused]] Analyzer &analyzer,
+                       std::unique_ptr<Core::VariableSymbol> &var,
+                       AnalysisResult &result)
     {
         if (var->node == nullptr)
             return;
 
         AST::VariableDeclarationStmt &node = *var->node;
-        Core::TypeResolutionResult t_res = result.data->resolve(node.type());
-
-        result.adapt(t_res.status, std::move(t_res.diagnostics));
 
         if (node.is_definition())
         {
             auto &stmt = static_cast<AST::VariableDefinitionStmt &>(node);
             AST::Expr &value = stmt.value();
-            AnalysisResult v_res = analyzer.analyze(stmt.value());
 
+            AnalysisResult v_res = analyzer.analyze(stmt.value());
             result.adapt(v_res.status, std::move(v_res.diagnostics));
 
             auto error = [&]() -> void
@@ -110,8 +116,7 @@ namespace Semantic
                         Utils::Styles::Reset + ".",
                     std::string(""));
 
-                diagnostic->add_detail(
-                    t_res.data->make_suggestion(&value, t_res.arguments));
+                diagnostic->add_detail(result.data->make_suggestion(&value));
 
                 result.error(std::move(diagnostic));
             };
@@ -121,13 +126,13 @@ namespace Semantic
             {
                 var->define(const_cast<Core::Position *>(&stmt.position()));
 
-                if (!t_res.data->assignable(*v_res.value, t_res.arguments))
+                if (!result.data->assignable(*v_res.value))
                     error();
             }
 
             // Analysis of returned type
             else if (v_res.data != nullptr &&
-                     !t_res.data->assignable_with(*v_res.data))
+                     !result.data->assignable_with(*v_res.data))
                 error();
         }
     }
@@ -139,18 +144,15 @@ namespace Semantic
         AnalysisResult result = {
             std::nullopt, Core::ResultStatus::Success, nullptr, {}};
 
-        auto &ast_type = node.type();
-
         auto variable = std::make_unique<Core::VariableSymbol>(
             std::string(node.name().value), node.position(), node.is_mutable(),
-            current->resolve_type(std::string(ast_type.value().value)),
-            Core::null{}, &node);
+            nullptr, Core::null{}, &node);
 
         validate_duplication(analyzer, variable, result);
 
-        validate_type(analyzer, variable, result);
+        analyze_type(analyzer, variable, result);
 
-        validate_value(analyzer, variable, result);
+        analyze_value(analyzer, variable, result);
 
         current->declare_variable(std::move(variable));
 

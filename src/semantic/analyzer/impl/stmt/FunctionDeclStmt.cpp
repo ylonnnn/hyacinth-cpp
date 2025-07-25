@@ -8,10 +8,34 @@
 
 namespace Semantic
 {
-    void validate_parameters(Analyzer &analyzer,
+    void analyze_return_type(Analyzer &analyzer,
                              std::unique_ptr<Core::FunctionSymbol> &fn,
-                             AnalysisResult &result,
-                             Core::Environment *body_env)
+                             AnalysisResult &result)
+    {
+        Core::Environment *current = analyzer.current_env();
+        AST::FunctionDeclarationStmt *node = fn->node;
+
+        auto &ast_type = node->return_type();
+        Core::BaseType *resolved =
+            current->resolve_type(std::string(ast_type.value().value));
+
+        if (resolved == nullptr)
+        {
+            result.error(Diagnostic::create_unknown_type_error(&ast_type));
+
+            return;
+        }
+
+        Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
+        result.adapt(t_res.status, std::move(t_res.diagnostics));
+
+        fn->return_type = std::move(t_res.data);
+        result.data = fn->return_type.get();
+    }
+
+    void analyze_parameters(Analyzer &analyzer,
+                            std::unique_ptr<Core::FunctionSymbol> &fn,
+                            AnalysisResult &result, Core::Environment *body_env)
     {
         Core::Environment *current = analyzer.current_env();
         AST::FunctionDeclarationStmt *node = fn->node;
@@ -20,11 +44,11 @@ namespace Semantic
 
         for (auto &param : node->parameters())
         {
-            Core::Type *type =
+            Core::BaseType *resolved =
                 current->resolve_type(std::string(param->type().value().value));
 
             // Invalid Parameter Type
-            if (type == nullptr)
+            if (resolved == nullptr)
             {
                 result.error(
                     Diagnostic::create_unknown_type_error(&param->type()));
@@ -32,21 +56,27 @@ namespace Semantic
                 continue;
             }
 
-            Core::FunctionParameter parameter{
-                param->name().value, param->is_mutable(), &param->type(), type};
+            auto &ast_type = param->type();
+            Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
+
+            result.adapt(t_res.status, std::move(t_res.diagnostics));
+
+            Core::FunctionParameter parameter{param->name().value,
+                                              param->is_mutable(),
+                                              std::move(t_res.data)};
 
             // Register/Declare the parameters as variables to the environment
             // for analysis
             if (is_def)
             {
-                auto p_variable = std::make_unique<Core::VariableSymbol>(
-                    std::string(param->name().value), param->position(),
-                    param->is_mutable(), type, Core::Value(Core::null{}),
-                    nullptr);
+                // auto p_variable = std::make_unique<Core::VariableSymbol>(
+                //     std::string(param->name().value), param->position(),
+                //     param->is_mutable(), nullptr, Core::Value(Core::null{}),
+                //     nullptr);
 
-                // TODO: .define() if defined
+                // // TODO: .define() if defined
 
-                body_env->declare_variable(std::move(p_variable));
+                // body_env->declare_variable(std::move(p_variable));
             }
 
             fn->parameters.push_back(std::move(parameter));
@@ -115,23 +145,10 @@ namespace Semantic
                            Utils::Styles::Reset +
                            "\". Function signature mismatch.";
 
-        auto &declared_params = declptr->parameters,
-             curr_params = fn->parameters;
-
-        size_t dp_size = declared_params.size();
-        if (dp_size != curr_params.size())
+        if (fn->signature != declptr->signature)
         {
             error(std::move(err_message));
             return;
-        }
-
-        for (size_t i = 0; i < dp_size; i++)
-        {
-            if (declared_params[i] == curr_params[i])
-                continue;
-
-            error(std::move(err_message));
-            break;
         }
     }
 
@@ -143,25 +160,19 @@ namespace Semantic
             std::nullopt, Core::ResultStatus::Success, nullptr, {}};
 
         auto function = std::make_unique<Core::FunctionSymbol>(
-            std::string(node.name().value), node.position(),
-            current->resolve_type(
-                std::string(node.return_type().value().value)),
+            std::string(node.name().value), node.position(), nullptr,
             std::vector<Core::FunctionParameter>{}, &node);
 
         auto is_def = node.is_definition();
         Core::Environment *body_env =
             is_def ? &current->create_child() : nullptr;
 
-        // Invalid Return Type
-        if (function->return_type == nullptr)
-            result.error(
-                Diagnostic::create_unknown_type_error(&node.return_type()));
+        analyze_return_type(analyzer, function, result);
+        analyze_parameters(analyzer, function, result, body_env);
 
-        result.data = function->return_type;
+        function->construct_signature();
 
         validate_duplication(analyzer, function, result);
-
-        validate_parameters(analyzer, function, result, body_env);
 
         // Analyze the body if the statement is a definition
         if (is_def)

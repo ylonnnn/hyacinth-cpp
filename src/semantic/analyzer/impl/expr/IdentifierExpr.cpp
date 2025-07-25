@@ -25,7 +25,7 @@ namespace Semantic
             if (auto ptr = dynamic_cast<Core::VariableSymbol *>(symbol))
             {
                 result.value = ptr->value;
-                result.data = ptr->type;
+                result.data = ptr->type.get();
             }
 
             return result;

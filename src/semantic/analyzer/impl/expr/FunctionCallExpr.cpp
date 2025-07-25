@@ -5,29 +5,17 @@
 
 namespace Semantic
 {
-    AnalysisResult
-    AnalyzerImpl<AST::FunctionCalLExpr>::analyze(Analyzer &analyzer,
-                                                 AST::FunctionCalLExpr &node)
+    bool analyze_callee(Analyzer &analyzer, AST::FunctionCalLExpr &node,
+                        AnalysisResult &result)
     {
-        Core::Environment *current_env = analyzer.current_env();
-        AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+        auto &callee = node.callee();
 
-        // TODO: Analyze Callee
         AnalysisResult c_res =
-            AnalyzerImpl<AST::Expr>::analyze(analyzer, node.callee());
+            AnalyzerImpl<AST::Expr>::analyze(analyzer, callee);
 
         Core::Type *callee_type = c_res.data;
 
-        if (c_res.status == Core::ResultStatus::Fail)
-            result.status = c_res.status;
-
-        result.diagnostics.insert(
-            result.diagnostics.end(),
-            std::make_move_iterator(c_res.diagnostics.begin()),
-            std::make_move_iterator(c_res.diagnostics.end()));
-
-        auto &callee = node.callee();
+        result.adapt(c_res.status, std::move(c_res.diagnostics));
 
         if (c_res.symbol == nullptr)
         {
@@ -36,11 +24,10 @@ namespace Semantic
                          std::string("Unrecognized symbol detected."),
                          "Unrecognized callee symbol detected here");
 
-            return result;
+            return false;
         }
 
-        auto symbol = dynamic_cast<Core::FunctionSymbol *>(c_res.symbol);
-        if (symbol == nullptr)
+        if (typeid(*c_res.symbol) != typeid(Core::FunctionSymbol))
         {
             result.error(
                 &callee,
@@ -50,12 +37,31 @@ namespace Semantic
                     Utils::Styles::Reset + "\".",
                 "Invoked here");
 
-            return result;
+            return false;
         }
 
-        result.data = symbol->return_type;
+        auto symbol = static_cast<Core::FunctionSymbol *>(c_res.symbol);
+
+        result.symbol = symbol;
+        result.data = symbol->return_type.get();
+
+        return true;
+    }
+
+    AnalysisResult
+    AnalyzerImpl<AST::FunctionCalLExpr>::analyze(Analyzer &analyzer,
+                                                 AST::FunctionCalLExpr &node)
+    {
+        Core::Environment *current_env = analyzer.current_env();
+        AnalysisResult result = {
+            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+
+        if (!analyze_callee(analyzer, node, result))
+            return result;
 
         // TODO: Analyze Arguments
+
+        auto symbol = static_cast<Core::FunctionSymbol *>(result.symbol);
 
         auto &parameters = symbol->parameters;
         auto &arguments = node.arguments();
@@ -63,84 +69,58 @@ namespace Semantic
         size_t param_count = parameters.size(), arg_count = arguments.size();
         if (param_count != arg_count)
         {
-            auto last_idx = param_count == 0 ? 0 : param_count;
+            auto arg__ = [](size_t n) -> std::string
+            { return std::string("argument") + (n > 1 ? "s" : ""); };
 
-            // Too few arguments
-            if (last_idx > arg_count)
-            {
-                last_idx = arg_count - 1;
-                result.error(
-                    arguments[last_idx].get(),
-                    Diagnostic::ErrorTypes::Semantic::InvalidArgumentCount,
-                    std::string("Too few arguments provided."),
-                    "Arguments provided here");
-            }
+            auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
+                &node, Diagnostic::ErrorTypes::Semantic::InvalidArgumentCount,
+                std::string("Function expects ") + Diagnostic::ERR_GEN +
+                    std::to_string(param_count) + Utils::Styles::Reset + " " +
+                    arg__(param_count) + ". Provided " + Diagnostic::ERR_GEN +
+                    std::to_string(arg_count) + Utils::Styles::Reset + " " +
+                    arg__(arg_count) + ".",
+                "");
 
-            // Too much arguments
-            else
-                result.error(
-                    arguments[last_idx].get(),
-                    Diagnostic::ErrorTypes::Semantic::InvalidArgumentCount,
-                    std::string("Too much arguments provided."),
-                    "Arguments provided here");
+            diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
+                symbol->node, Diagnostic::NoteType::Declaration,
+                std::string("Function is declared with a different signature "
+                            "from the intended usage."),
+                "Declared here"));
+
+            result.error(std::move(diagnostic));
 
             return result;
         }
 
         for (size_t i = 0; i < param_count; i++)
         {
-            Core::FunctionParameter parameter = parameters[i];
+            Core::FunctionParameter &parameter = parameters[i];
             std::unique_ptr<AST::Expr> &argument = arguments[i];
-
-            Core::TypeResolutionResult tr_res =
-                parameter.resolved_type->resolve(*parameter.type);
-
-            if (tr_res.status == Core::ResultStatus::Fail)
-                result.status = tr_res.status;
-
-            result.diagnostics.insert(
-                result.diagnostics.end(),
-                std::make_move_iterator(tr_res.diagnostics.begin()),
-                std::make_move_iterator(tr_res.diagnostics.end()));
 
             AnalysisResult a_res =
                 AnalyzerImpl<AST::Expr>::analyze(analyzer, *argument);
 
-            if (a_res.status == Core::ResultStatus::Fail)
-                result.status = a_res.status;
+            result.adapt(a_res.status, std::move(a_res.diagnostics));
 
-            result.diagnostics.insert(
-                result.diagnostics.end(),
-                std::make_move_iterator(a_res.diagnostics.begin()),
-                std::make_move_iterator(a_res.diagnostics.end()));
-
-            auto assignable = false;
-
-            if (a_res.value)
-                assignable = parameter.resolved_type->assignable(
-                    *a_res.value, tr_res.arguments);
-            else
-                assignable =
-                    parameter.resolved_type->assignable_with(*tr_res.data);
-
-            if (!assignable)
-            {
-                auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
-                    argument.get(),
-                    Diagnostic::ErrorTypes::Type::InvalidArgumentType,
-                    std::string(
-                        "Invalid argument provided. Expected value of type ") +
-                        Diagnostic::ERR_GEN + parameter.type->to_string() +
-                        Utils::Styles::Reset + ".",
-                    std::string(""));
-
-                diagnostic->add_detail(tr_res.data->make_suggestion(
-                    argument.get(), tr_res.arguments));
-
-                result.error(std::move(diagnostic));
-
+            if (a_res.value ? parameter.type->assignable(*a_res.value)
+                            : parameter.type->assignable_with(*a_res.data))
                 continue;
-            }
+
+            auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
+                argument.get(),
+                Diagnostic::ErrorTypes::Type::InvalidArgumentType,
+                std::string(
+                    "Invalid argument provided. Expected value of type ") +
+                    Diagnostic::ERR_GEN + parameter.type->to_string() +
+                    Utils::Styles::Reset + ".",
+                std::string(""));
+
+            diagnostic->add_detail(
+                parameter.type->make_suggestion(argument.get()));
+
+            result.error(std::move(diagnostic));
+
+            continue;
         }
 
         return result;

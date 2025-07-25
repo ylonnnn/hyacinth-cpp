@@ -4,6 +4,8 @@
 
 namespace Core
 {
+    null::operator std::string() const { return "null"; }
+
     Value *object::get(const std::string &key)
     {
         auto it = value_.find(key);
@@ -16,6 +18,12 @@ namespace Core
     void object::set(const std::string &key, Value value)
     {
         value_.insert_or_assign(key, std::move(value));
+    }
+
+    object::operator std::string() const
+    {
+        // TODO: object operator std::string
+        return "";
     }
 
     callable::callable(FunctionSymbol *value) : value_(value) {}
@@ -34,6 +42,12 @@ namespace Core
             }
 
         return null{};
+    }
+
+    callable::operator std::string() const
+    {
+        // TODO: callable operator std::string
+        return "";
     }
 
 } // namespace Core

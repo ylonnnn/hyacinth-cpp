@@ -1,4 +1,5 @@
 #include "semantic/analyzer/Analyzer.hpp"
+#include "core/type/primitive/Float.hpp"
 #include "core/type/primitive/Integer.hpp"
 #include "core/type/primitive/String.hpp"
 #include "core/type/primitive/Void.hpp"
@@ -28,6 +29,9 @@ namespace Semantic
             std::make_unique<Core::IntegerType>(current_env_, true));
         current_env_->declare_type(
             std::make_unique<Core::IntegerType>(current_env_, false));
+
+        current_env_->declare_type(
+            std::make_unique<Core::FloatType>(current_env_));
 
         current_env_->declare_type(
             std::make_unique<Core::StringType>(current_env_));

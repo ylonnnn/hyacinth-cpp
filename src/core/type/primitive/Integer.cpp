@@ -9,7 +9,10 @@
 
 namespace Core
 {
-    BitWidthType::BitWidthType() : Type(nullptr, "BitWidth") {}
+    BitWidthType::BitWidthType()
+        : BaseType(nullptr, "BitWidth"), min_(1), max_(64)
+    {
+    }
 
     bool BitWidthType::assignable(
         const Core::Value &value,
@@ -34,7 +37,8 @@ namespace Core
             value);
     }
 
-    bool BitWidthType::assignable_with([[maybe_unused]] const Type &type) const
+    bool
+    BitWidthType::assignable_with([[maybe_unused]] const BaseType &type) const
     {
         return false;
     }
@@ -46,16 +50,18 @@ namespace Core
         return std::make_unique<Diagnostic::NoteDiagnostic>(
             node, Diagnostic::NoteType::Suggestion,
             std::string("Only values within ") + Diagnostic::NOTE_GEN +
-                std::to_string(1) + Utils::Styles::Reset + " to " +
-                Diagnostic::NOTE_GEN + std::to_string(64) +
+                std::to_string(min_) + Utils::Styles::Reset + " to " +
+                Diagnostic::NOTE_GEN + std::to_string(max_) +
                 Utils::Styles::Reset + " are accepted.",
             "Implement suggestion here");
     }
 
     IntegerType::IntegerType(Environment *environment, bool is_signed)
-        : Type(environment, is_signed ? "int" : "uint"), is_signed_(is_signed)
+        : BaseType(environment, is_signed ? "int" : "uint"),
+          is_signed_(is_signed)
     {
-        create_parameter("_bw", TypeParameterType::Constant, &bw_type_);
+        create_parameter("_bw", TypeParameterType::Constant,
+                         Type(&bw_type_, {}));
     }
 
     bool IntegerType::is_signed() const { return is_signed_; }
@@ -105,9 +111,9 @@ namespace Core
             value);
     }
 
-    bool IntegerType::assignable_with(const Type &type) const
+    bool IntegerType::assignable_with(const BaseType &type) const
     {
-        return Type::assignable_with(type);
+        return BaseType::assignable_with(type);
     }
 
     std::unique_ptr<Diagnostic::NoteDiagnostic> IntegerType::make_suggestion(

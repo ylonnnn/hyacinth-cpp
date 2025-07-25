@@ -12,11 +12,11 @@ namespace Core
         AST::VariableDeclarationStmt *node = nullptr;
 
         bool is_mutable;
-        Type *type;
+        std::unique_ptr<Type> type;
         Value value;
 
         VariableSymbol(std::string name, Core::Position declared_at,
-                       bool is_mutable, Type *type,
+                       bool is_mutable, std::unique_ptr<Type> type,
                        std::optional<Value> value = std::nullopt,
                        AST::VariableDeclarationStmt *node = nullptr);
     };

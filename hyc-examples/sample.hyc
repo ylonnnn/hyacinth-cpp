@@ -1,11 +1,16 @@
 fn add -> int[32] (a: int[32], b: int[32]);
 
+// fn add -> str (a: str, b: str); // Error
+
 fn is_positive -> uint[1] (n: int[32]);
 
 fn random_number -> int[32] ();
 
 fn main -> void () {
+    // let x: int[16] = add(1); // Error
     let x: int[32] = add(1, 2);
     let y: uint[1] = is_positive(123);
     let z: int[32] = random_number();
+
+    let n: float[64] = 123.456f;
 }

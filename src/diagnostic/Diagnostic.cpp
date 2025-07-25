@@ -82,7 +82,12 @@ namespace Diagnostic
         std::cout << constructed_;
 
         for (auto &detail : details_)
+        {
+            if (detail == nullptr)
+                continue;
+
             detail->report();
+        }
     }
 
 } // namespace Diagnostic

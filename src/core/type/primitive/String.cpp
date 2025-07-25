@@ -1,11 +1,13 @@
-#include "core/type/primitive/String.hpp"
-#include "core/type/Type.hpp"
-#include "diagnostic/NoteDiagnostic.hpp"
 #include <variant>
+
+#include "core/type/Type.hpp"
+#include "core/type/primitive/String.hpp"
+#include "diagnostic/NoteDiagnostic.hpp"
 
 namespace Core
 {
-    StringType::StringType(Environment *environment) : Type(environment, "str")
+    StringType::StringType(Environment *environment)
+        : BaseType(environment, "str")
     {
     }
 
@@ -16,9 +18,9 @@ namespace Core
         return std::holds_alternative<std::string>(value);
     }
 
-    bool StringType::assignable_with(const Type &type) const
+    bool StringType::assignable_with(const BaseType &type) const
     {
-        return Type::assignable_with(type);
+        return BaseType::assignable_with(type);
     }
 
     std::unique_ptr<Diagnostic::NoteDiagnostic> StringType::make_suggestion(

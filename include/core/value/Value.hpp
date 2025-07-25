@@ -13,6 +13,7 @@ namespace Core
 
     struct null
     {
+        operator std::string() const;
     };
 
     using Value = std::variant<null, int64_t, uint64_t, double, bool, char,
@@ -26,6 +27,8 @@ namespace Core
       public:
         Value *get(const std::string &key);
         void set(const std::string &key, Value);
+
+        operator std::string() const;
     };
 
     struct callable
@@ -37,6 +40,8 @@ namespace Core
         callable(FunctionSymbol *value);
 
         Value call(std::vector<Value> args);
+         
+        operator std::string() const;
     };
 
     template <typename T> Value make_value(T raw)

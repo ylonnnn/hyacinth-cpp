@@ -22,10 +22,6 @@ namespace Utils
                     value.erase(std::remove(value.begin(), value.end(), '_'),
                                 value.end());
 
-                    // std::cout << value << "\n";
-                    // std::cout << std::stoll(value) << "\n";
-                    // std::cout << std::stoull(value) << "\n";
-
                     if (token.value[0] == '-')
                         result = int64_t(std::stoll(value));
                     else
@@ -36,7 +32,15 @@ namespace Utils
 
                 case Primary::Float:
                 {
-                    std::cout << token.value << "\n";
+                    value.erase(std::remove(value.begin(), value.end(), '_'),
+                                value.end());
+
+                    char &ext = value.back();
+                    if (ext == 'f')
+                        value.resize(value.size() - 1);
+
+                    result = std::stod(value);
+
                     break;
                 }
 

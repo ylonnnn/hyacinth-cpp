@@ -13,10 +13,28 @@
 
 namespace Core
 {
+    class BaseType;
     class Type;
     class Environment;
 
-    using TypeArgument = std::variant<Type *, Core::Value>;
+    using TypeArgument = std::variant<Type, Core::Value>;
+
+    class Type
+    {
+      public:
+        BaseType *type;
+        std::vector<TypeArgument> arguments;
+
+        Type(BaseType *type, std::vector<TypeArgument> arguments);
+
+        bool assignable(const Core::Value &value) const;
+        bool assignable_with(const Type &type) const;
+
+        std::unique_ptr<Diagnostic::NoteDiagnostic>
+        make_suggestion(AST::Node *node) const;
+
+        std::string to_string() const;
+    };
 
     enum class TypeParameterType
     {
@@ -28,25 +46,21 @@ namespace Core
     {
         std::string_view name;
         TypeParameterType param_type = TypeParameterType::Type;
-        Type *type = nullptr;
+        std::optional<Type> type = std::nullopt;
+
+        TypeParameter(std::string_view name, TypeParameterType param_type,
+                      std::optional<Type> type = std::nullopt);
 
         TypeArgument resolve(Environment &environment, AST::Type &type);
     };
 
-    struct TypeResolutionResult : public Result<Type *>
+    struct TypeResolutionResult : public Result<std::unique_ptr<Type>>
     {
-        std::vector<TypeArgument> arguments;
-
-        TypeResolutionResult(ResultStatus status, Type *data,
+        TypeResolutionResult(ResultStatus status, std::unique_ptr<Type> data,
                              Diagnostic::DiagnosticList diagnostics);
     };
 
-    struct TypeAssignabilityOptions
-    {
-        virtual ~TypeAssignabilityOptions() = default;
-    };
-
-    class Type
+    class BaseType
     {
       protected:
         Environment *environment_;
@@ -54,30 +68,36 @@ namespace Core
         std::vector<TypeParameter> parameters_;
 
       public:
-        Type(Environment *environment, std::string_view name);
+        BaseType(Environment *environment, std::string_view name);
 
+      protected:
+        virtual bool
+        assignable(const Core::Value &value,
+                   const std::vector<TypeArgument> &arguments) const = 0;
+
+        virtual std::unique_ptr<Diagnostic::NoteDiagnostic>
+        make_suggestion(AST::Node *node,
+                        const std::vector<TypeArgument> &arguments) const = 0;
+
+      public:
         Environment *environment();
         std::string_view name() const;
         std::vector<TypeParameter> &parameters();
 
         void create_parameter(std::string_view name,
                               TypeParameterType param_type,
-                              Type *type = nullptr);
+                              std::optional<Type> type = std::nullopt);
         std::pair<bool, TypeArgument> resolve_argument(size_t param_idx,
                                                        AST::Type &type);
 
         TypeResolutionResult resolve(AST::Type &type);
 
-        virtual bool
-        assignable(const Core::Value &value,
-                   const std::vector<TypeArgument> &arguments) const = 0;
-        virtual bool assignable_with(const Type &type) const;
+        virtual bool assignable_with(const BaseType &type) const;
 
-        virtual std::unique_ptr<Diagnostic::NoteDiagnostic>
-        make_suggestion(AST::Node *node,
-                        const std::vector<TypeArgument> &arguments) const = 0;
+        friend Type;
     };
 
-    using TypeTable = std::unordered_map<std::string, std::unique_ptr<Type>>;
+    using TypeTable =
+        std::unordered_map<std::string, std::unique_ptr<BaseType>>;
 
 } // namespace Core

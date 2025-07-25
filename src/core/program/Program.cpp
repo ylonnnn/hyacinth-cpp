@@ -16,6 +16,8 @@ namespace Core
     ProgramFile::ProgramFile(const char *path)
         : path_(std::filesystem::absolute(path))
     {
+        std::cout << path_.c_str() << "\n";
+
         read();
     }
 
@@ -73,6 +75,8 @@ namespace Core
         Lexer::Lexer lexer(*this);
         lexer.tokenize();
 
+        auto lexer_end = std::chrono::high_resolution_clock::now();
+
         // Parsing
         Parser::Parser parser(*this, lexer);
         Parser::ProgramParseResult parse_result = parser.parse();
@@ -82,7 +86,9 @@ namespace Core
 
         result.adapt(std::move(parse_result.diagnostics));
 
-        std::cout << *parse_result.data << "\n";
+        auto parser_end = std::chrono::high_resolution_clock::now();
+
+        // std::cout << *parse_result.data << "\n";
 
         // Semantic Analysis
         if (succeed)
@@ -97,16 +103,36 @@ namespace Core
             result.adapt(std::move(semantic_result.diagnostics));
         }
 
+        auto semantic_analysis_end = std::chrono::high_resolution_clock::now();
+
         // After Execution
+
+        // Time Elapsed
+        auto end = std::chrono::high_resolution_clock::now();
+        auto microseconds =
+            std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+        std::cout << "[Lexer] "
+                  << std::chrono::duration_cast<std::chrono::microseconds>(
+                         lexer_end - start)
+                         .count()
+                  << "\n";
+
+        std::cout << "[Parser] "
+                  << std::chrono::duration_cast<std::chrono::microseconds>(
+                         parser_end - lexer_end)
+                         .count()
+                  << "\n";
+
+        std::cout << "[Semantic] "
+                  << std::chrono::duration_cast<std::chrono::microseconds>(
+                         semantic_analysis_end - parser_end)
+                         .count()
+                  << "\n";
 
         // Diagnostics
         for (auto &diagnostic : result.diagnostics)
             diagnostic->report();
-
-        // Time Elapsed
-        auto microseconds =
-            std::chrono::duration_cast<std::chrono::microseconds>(
-                std::chrono::high_resolution_clock::now() - start);
 
         Utils::TextStyle color =
             succeed ? Utils::Colors::Green : Utils::Colors::Red;

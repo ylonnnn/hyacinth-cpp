@@ -28,13 +28,13 @@ namespace Core
         std::vector<std::unique_ptr<Environment>> &children();
         Environment &create_child();
 
-        void declare_type(std::unique_ptr<Type> type);
+        void declare_type(std::unique_ptr<BaseType> type);
         void declare_symbol(std::unique_ptr<Symbol> symbol);
         void declare_variable(std::unique_ptr<VariableSymbol> variable);
 
         void update_variable(const std::string &name, Value value);
 
-        Type *resolve_type(const std::string &name);
+        BaseType *resolve_type(const std::string &name);
         Symbol *resolve_symbol(const std::string &name);
         VariableSymbol *resolve_variable(const std::string &name);
     };

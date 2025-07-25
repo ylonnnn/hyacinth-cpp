@@ -25,7 +25,7 @@ namespace Core
         return *children_.back();
     }
 
-    void Environment::declare_type(std::unique_ptr<Type> type)
+    void Environment::declare_type(std::unique_ptr<BaseType> type)
     {
         std::string name = std::string(type->name());
 
@@ -62,7 +62,7 @@ namespace Core
         variables_.insert_or_assign(name, value);
     }
 
-    Type *Environment::resolve_type(const std::string &name)
+    BaseType *Environment::resolve_type(const std::string &name)
     {
         auto it = types_.find(name);
         if (it == types_.end())
