@@ -53,7 +53,7 @@ namespace Semantic
         }
     }
 
-    void analyze_type([[maybe_unused]] Analyzer &analyzer,
+    bool analyze_type([[maybe_unused]] Analyzer &analyzer,
                       std::unique_ptr<Core::VariableSymbol> &var,
                       AnalysisResult &result)
     {
@@ -66,16 +66,18 @@ namespace Semantic
         if (resolved == nullptr)
         {
             result.error(Diagnostic::create_unknown_type_error(&ast_type));
-            return;
+            return false;
         }
 
         Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
         result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-        var->type = std::move(t_res.data);
-        Core::Type *type = var->type.get();
+        Core::Type *type = t_res.data.get();
+        result.data = type;
 
-        if (typeid(*type) == typeid(Core::Void))
+        var->type = std::move(t_res.data);
+
+        if (typeid(*type->type) == typeid(Core::Void))
         {
             result.error(&ast_type,
                          Diagnostic::ErrorTypes::Type::InvalidVariableType,
@@ -84,10 +86,10 @@ namespace Semantic
                              "\" can only be used as a function return type.",
                          "Only functions can have return types of this type");
 
-            return;
+            return false;
         }
 
-        result.data = type;
+        return true;
     }
 
     void analyze_value([[maybe_unused]] Analyzer &analyzer,
@@ -150,7 +152,8 @@ namespace Semantic
 
         validate_duplication(analyzer, variable, result);
 
-        analyze_type(analyzer, variable, result);
+        if (!analyze_type(analyzer, variable, result))
+            return result;
 
         analyze_value(analyzer, variable, result);
 

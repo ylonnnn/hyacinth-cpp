@@ -176,12 +176,16 @@ namespace Core
         return result;
     }
 
+    std::unique_ptr<Type> BaseType::construct_wrapper() const
+    {
+        return std::make_unique<Type>(const_cast<BaseType *>(this),
+                                      std::vector<TypeArgument>{});
+    }
+
     TypeResolutionResult BaseType::resolve(AST::Type &type)
     {
         TypeResolutionResult result = {
-            ResultStatus::Success,
-            std::make_unique<Type>(this, std::vector<TypeArgument>{}),
-            {}};
+            ResultStatus::Success, construct_wrapper(), {}};
 
         bool is_generic = typeid(type) == typeid(AST::GenericType);
 

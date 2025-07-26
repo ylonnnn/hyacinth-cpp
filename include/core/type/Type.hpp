@@ -28,7 +28,7 @@ namespace Core
         Type(BaseType *type, std::vector<TypeArgument> arguments);
 
         bool assignable(const Core::Value &value) const;
-        bool assignable_with(const Type &type) const;
+        virtual bool assignable_with(const Type &type) const;
 
         std::unique_ptr<Diagnostic::NoteDiagnostic>
         make_suggestion(AST::Node *node) const;
@@ -89,6 +89,8 @@ namespace Core
                               std::optional<Type> type = std::nullopt);
         std::pair<bool, TypeArgument> resolve_argument(size_t param_idx,
                                                        AST::Type &type);
+
+        virtual std::unique_ptr<Type> construct_wrapper() const;
 
         TypeResolutionResult resolve(AST::Type &type);
 

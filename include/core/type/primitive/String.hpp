@@ -6,16 +6,18 @@ namespace Core
 {
     class StringType : public BaseType
     {
-      private:
       public:
         StringType(Environment *environment);
 
+      protected:
         bool
         assignable(const Core::Value &value,
                    const std::vector<TypeArgument> &arguments) const override;
-        bool assignable_with(const BaseType &type) const override;
         std::unique_ptr<Diagnostic::NoteDiagnostic> make_suggestion(
             AST::Node *node,
             const std::vector<TypeArgument> &arguments) const override;
+
+      public:
+        bool assignable_with(const BaseType &type) const override;
     };
 } // namespace Core

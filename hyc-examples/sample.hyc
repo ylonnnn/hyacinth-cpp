@@ -6,11 +6,18 @@ fn is_positive -> uint[1] (n: int[32]);
 
 fn random_number -> int[32] ();
 
+fn some_uint8_fn -> int[4] ();
+
 fn main -> void () {
     // let x: int[16] = add(1); // Error
     let x: int[32] = add(1, 2);
     let y: uint[1] = is_positive(123);
     let z: int[32] = random_number();
+
+    let a: int[8] = some_uint8_fn();
+
+    let some_str: str = "Hello, World";
+    let void_var: void = 123;
 
     let n: float[64] = 123.456f;
 }

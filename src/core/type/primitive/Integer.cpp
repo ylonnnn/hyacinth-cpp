@@ -56,6 +56,41 @@ namespace Core
             "Implement suggestion here");
     }
 
+    bool IntegerType::Wrapper::assignable_with(const Type &type) const
+    {
+        const TypeArgument &bw = type.arguments[0], &bw_ = arguments[0];
+
+        return Type::assignable_with(type) &&
+               std::visit(
+                   [&](const auto &val, const auto &val_) -> bool
+                   {
+                       using Ty = std::decay_t<decltype(val)>;
+                       using Ty_ = std::decay_t<decltype(val_)>;
+
+                       if constexpr (std::is_same_v<Ty, Core::Value> &&
+                                     std::is_same_v<Ty_, Core::Value>)
+
+                           return std::visit(
+                               [&](const auto &v, const auto &v_) -> bool
+                               {
+                                   using T = std::decay_t<decltype(v)>;
+                                   using T_ = std::decay_t<decltype(v_)>;
+
+                                   if constexpr (std::is_same_v<T, uint64_t> &&
+                                                 std::is_same_v<T_, uint64_t>)
+                                       return v <= v_;
+
+                                   else
+                                       return false;
+                               },
+                               val, val_);
+
+                       else
+                           return false;
+                   },
+                   bw, bw_);
+    }
+
     IntegerType::IntegerType(Environment *environment, bool is_signed)
         : BaseType(environment, is_signed ? "int" : "uint"),
           is_signed_(is_signed)
@@ -109,6 +144,12 @@ namespace Core
                     return false;
             },
             value);
+    }
+
+    std::unique_ptr<Type> IntegerType::construct_wrapper() const
+    {
+        return std::make_unique<Wrapper>(const_cast<IntegerType *>(this),
+                                         std::vector<TypeArgument>{});
     }
 
     bool IntegerType::assignable_with(const BaseType &type) const
