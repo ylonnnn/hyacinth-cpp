@@ -27,7 +27,6 @@ namespace Lexer
             Float,
             Boolean,
             Character,
-            InvalidCharacter,
             String,
         };
 
@@ -82,6 +81,14 @@ namespace Lexer
                 Or,
             };
 
+            enum class Bitwise
+            {
+                Not,
+                And,
+                Or,
+                Xor,
+            };
+
             enum class Relational
             {
                 Equal,
@@ -114,6 +121,12 @@ namespace Lexer
             LineBreak,
             Whitespace,
             EndOfFile,
+        };
+
+        enum class Invalid
+        {
+            UnknownToken,
+            InvalidCharacter,
         };
 
         inline const char *to_string(TokenTypes::Reserved value)
@@ -163,8 +176,6 @@ namespace Lexer
                     return "Primary::Boolean";
                 case TokenTypes::Primary::Character:
                     return "Primary::Character";
-                case TokenTypes::Primary::InvalidCharacter:
-                    return "Primary::InvalidCharacter";
                 case TokenTypes::Primary::String:
                     return "Primary::String";
             }
@@ -192,7 +203,7 @@ namespace Lexer
                 case TokenTypes::Operator::Arrow::Left:
                     return "Operator::Arrow::Left";
                 case TokenTypes::Operator::Arrow::Right:
-                    return "Operator::Arrow::Left";
+                    return "Operator::Arrow::Right";
             }
 
             return "Operator::Arrow::Unknown";
@@ -276,6 +287,23 @@ namespace Lexer
             return "Operator::Logical::Unknown";
         }
 
+        inline const char *to_string(TokenTypes::Operator::Bitwise value)
+        {
+            switch (value)
+            {
+                case TokenTypes::Operator::Bitwise::Not:
+                    return "Operator::Bitwise::Not";
+                case TokenTypes::Operator::Bitwise::And:
+                    return "Operator::Bitwise::And";
+                case TokenTypes::Operator::Bitwise::Or:
+                    return "Operator::Bitwise::Or";
+                case TokenTypes::Operator::Bitwise::Xor:
+                    return "Operator::Bitwise::Xor";
+            }
+
+            return "Operator::Bitwise::Unknown";
+        }
+
         inline const char *to_string(TokenTypes::Operator::Relational value)
         {
             switch (value)
@@ -343,6 +371,21 @@ namespace Lexer
             return "Unknown";
         }
 
+        inline const char *to_string(TokenTypes::Invalid value)
+        {
+            switch (value)
+            {
+                case TokenTypes::Invalid::UnknownToken:
+                    return "UnknownToken";
+
+                case TokenTypes::Invalid::InvalidCharacter:
+
+                    return "InvalidCharacter";
+            }
+
+            return "Unknown";
+        }
+
     } // namespace TokenTypes
 
     using TokenType = std::variant<
@@ -350,8 +393,8 @@ namespace Lexer
         TokenTypes::Operator::Arrow, TokenTypes::Operator::Assignment,
         TokenTypes::Operator::ArithmeticUnary, TokenTypes::Operator::Arithmetic,
         TokenTypes::Operator::Unary, TokenTypes::Operator::Logical,
-        TokenTypes::Operator::Relational, TokenTypes::Delimeter,
-        TokenTypes::Miscellaneous>;
+        TokenTypes::Operator::Bitwise, TokenTypes::Operator::Relational,
+        TokenTypes::Delimeter, TokenTypes::Miscellaneous, TokenTypes::Invalid>;
 
     inline const char *type_to_string(TokenType type)
     {

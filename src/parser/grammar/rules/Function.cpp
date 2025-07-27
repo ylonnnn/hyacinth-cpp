@@ -121,7 +121,7 @@ namespace Parser
         }
 
         // -> (ArrowLeftOperator)
-        if (parser.expect(Operator::Arrow::Left, false))
+        if (parser.expect(Operator::Arrow::Right, false))
             lexer.next();
         else
         {

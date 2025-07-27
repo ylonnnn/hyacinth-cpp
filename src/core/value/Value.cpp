@@ -4,6 +4,21 @@
 
 namespace Core
 {
+    std::ostream &operator<<(std::ostream &os, const Value &value)
+    {
+        return std::visit(
+            [&](const auto &val) -> std::ostream &
+            {
+                using T = std::decay_t<decltype(val)>;
+
+                if constexpr (std::is_convertible_v<T, std::string>)
+                    return os << std::string(val);
+                else
+                    return os << std::to_string(val);
+            },
+            value);
+    }
+
     null::operator std::string() const { return "null"; }
 
     Value *object::get(const std::string &key)

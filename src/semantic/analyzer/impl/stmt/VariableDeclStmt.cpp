@@ -130,12 +130,16 @@ namespace Semantic
 
                 if (!result.data->assignable(*v_res.value))
                     error();
+
+                var->value = std::move(*v_res.value);
             }
 
             // Analysis of returned type
-            else if (v_res.data != nullptr &&
-                     !result.data->assignable_with(*v_res.data))
-                error();
+            else if (v_res.data != nullptr)
+            {
+                if (!result.data->assignable_with(*v_res.data))
+                    error();
+            }
         }
     }
 

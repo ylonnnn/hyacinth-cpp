@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "core/program/Program.hpp"
 
 void execute_file(const char *file)
@@ -18,7 +16,7 @@ int main(int argc, char **argv)
     //     return 1;
     // }
 
-    const char *file = argc < 2 ? "hyc-examples/sample.hyc" : argv[1];
+    const char *file = argc < 2 ? "hyc-examples/lexer-test.hyc" : argv[1];
 
     execute_file(file);
 

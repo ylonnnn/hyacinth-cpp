@@ -4,6 +4,7 @@
 #include <string>
 
 #include "core/program/Program.hpp"
+#include "core/result/Result.hpp"
 #include "lexer/Lexer.hpp"
 #include "parser/Parser.hpp"
 #include "semantic/analyzer/Analyzer.hpp"
@@ -73,7 +74,12 @@ namespace Core
 
         // Lexical Analysis
         Lexer::Lexer lexer(*this);
-        lexer.tokenize();
+        Lexer::LexerResult lexer_result = lexer.tokenize();
+
+        if (lexer_result.status != ResultStatus::Success)
+            succeed = false;
+
+        result.adapt(lexer_result.status, std::move(lexer_result.diagnostics));
 
         auto lexer_end = std::chrono::high_resolution_clock::now();
 
@@ -81,7 +87,7 @@ namespace Core
         Parser::Parser parser(*this, lexer);
         Parser::ProgramParseResult parse_result = parser.parse();
 
-        if (parse_result.status != Core::ResultStatus::Success)
+        if (parse_result.status != ResultStatus::Success)
             succeed = false;
 
         result.adapt(std::move(parse_result.diagnostics));

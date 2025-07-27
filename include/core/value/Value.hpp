@@ -19,6 +19,8 @@ namespace Core
     using Value = std::variant<null, int64_t, uint64_t, double, bool, char,
                                std::string, object>;
 
+    std::ostream &operator<<(std::ostream &os, const Value &value);
+
     struct object
     {
       private:
@@ -40,7 +42,7 @@ namespace Core
         callable(FunctionSymbol *value);
 
         Value call(std::vector<Value> args);
-         
+
         operator std::string() const;
     };
 

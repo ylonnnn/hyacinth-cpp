@@ -1,18 +1,25 @@
 #include <algorithm>
 #include <cstddef>
 #include <iostream>
-#include <re2/re2.h>
-#include <string_view>
-#include <variant>
 
+#include "core/result/Result.hpp"
 #include "lexer/Lexer.hpp"
 
 namespace Lexer
 {
-
-    Lexer::Lexer(Core::ProgramFile &program) : program_(program)
+    LexerResult::LexerResult(Core::ResultStatus status,
+                             std::vector<Token> &&data,
+                             Diagnostic::DiagnosticList diagnostics)
+        : Core::Result<std::vector<Token>>(status, std::move(data),
+                                           std::move(diagnostics))
     {
-        tokens_.reserve(std::max((size_t)256, program.source().size() / 4));
+    }
+
+    Lexer::Lexer(Core::ProgramFile &program)
+        : program_(program), tokenizer_(*this)
+    {
+        tokens_.reserve(
+            std::max(static_cast<size_t>(256), program.source().size() / 4));
     }
 
     Core::ProgramFile &Lexer::program() { return program_; }
@@ -21,60 +28,13 @@ namespace Lexer
 
     size_t Lexer::size() { return tokens_.size(); }
 
-    void Lexer::tokenize()
+    LexerResult Lexer::tokenize()
     {
-        const std::string &source = program_.source();
-        size_t row = 1, col = 1;
+        LexerResult result = tokenizer_.scan();
 
-        for (size_t cursor = 0; cursor < source.size();)
-        {
-            re2::StringPiece source_piece(source.data() + cursor);
+        tokens_ = std::move(result.data);
 
-            for (auto &handler : TOKEN_HANDLERS)
-            {
-                const re2::RE2 &regex = handler.get_regex();
-                re2::StringPiece matches[1];
-
-                if (!regex.Match(source_piece, 0, source_piece.size(),
-                                 re2::RE2::ANCHOR_START, matches, 1))
-                    continue;
-
-                auto &[full] = matches;
-
-                const auto *misc =
-                    std::get_if<TokenTypes::Miscellaneous>(&handler.type);
-
-                if (misc == nullptr)
-                    tokens_.push_back((Token){
-                        full, program_.position_at(row, col), handler.type});
-
-                size_t full_size = full.size();
-
-                cursor += full_size;
-                col += full_size;
-
-                if (const auto *misc =
-                        std::get_if<TokenTypes::Miscellaneous>(&handler.type))
-                {
-                    if (*misc == TokenTypes::Miscellaneous::LineBreak)
-
-                    {
-                        row++;
-                        col = 1;
-                    }
-                }
-
-                break;
-            }
-        }
-
-        Token &last = tokens_.back();
-
-        Core::Position position = last.position;
-        position.col += last.value.size();
-
-        tokens_.push_back((Token){" ", std::move(position),
-                                  TokenTypes::Miscellaneous::EndOfFile});
+        return result;
     }
 
     bool Lexer::eof(bool absolute)
@@ -97,19 +57,6 @@ namespace Lexer
     }
 
     void Lexer::move(size_t pos) { position_ = pos; }
-
-    void Lexer::skip(LexerTokenSkipPredicate predicate)
-    {
-        Token *next_token = peek();
-        while (next_token != nullptr)
-        {
-            next_token = peek();
-            if (next_token == nullptr || predicate(*next_token))
-                break;
-
-            next();
-        }
-    }
 
     Token *Lexer::next()
     {

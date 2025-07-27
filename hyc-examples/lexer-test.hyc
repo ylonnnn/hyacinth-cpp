@@ -1,0 +1,28 @@
+fn add -> int[32] (a: int[32], b: int[32]);
+
+// fn is_positive -> bool (n: int[32]);
+
+fn concat -> str (a: str, b: str);
+
+fn some_other_fn -> void ();
+
+fn printfn -> void (content: str);
+
+fn some_function_with_impl -> void () {
+    let some_int: int[32] = 123123;
+    let some_str: str = "This is just some internal string";
+
+    let some_var: int[16] = 123;
+
+    let internal_str: str = concat(some_str, "-internal_str_data");
+    let another_internal_str: str = concat(internal_str, some_str);
+}
+
+fn main -> void () {
+    // let some_char: char = 'x';
+    let sum: int[64] = add(12, 13);
+
+    let first_str: str = "Hello, ";
+    let second_str: str = "World";
+    let concatenated: str = concat(first_str, second_str);
+}

@@ -1,14 +1,19 @@
 #pragma once
 
-#include <functional>
 #include <vector>
 
 #include "core/program/Program.hpp"
+#include "core/result/Result.hpp"
 #include "lexer/Token.hpp"
+#include "lexer/Tokenizer.hpp"
 
 namespace Lexer
 {
-    using LexerTokenSkipPredicate = std::function<bool(Token &current)>;
+    struct LexerResult : public Core::Result<std::vector<Token>>
+    {
+        LexerResult(Core::ResultStatus status, std::vector<Token> &&data,
+                    Diagnostic::DiagnosticList diagnostics);
+    };
 
     class Lexer
     {
@@ -16,6 +21,8 @@ namespace Lexer
         Core::ProgramFile &program_;
         std::vector<Token> tokens_;
         size_t position_ = 0;
+
+        Tokenizer tokenizer_;
 
       public:
         Lexer(Core::ProgramFile &program);
@@ -26,13 +33,12 @@ namespace Lexer
         size_t position();
         size_t size();
 
-        void tokenize();
+        LexerResult tokenize();
         bool eof(bool absolute = true);
         Token *at(size_t pos);
 
         void rewind(size_t pos = 0);
         void move(size_t pos);
-        void skip(LexerTokenSkipPredicate predicate);
         Token *next();
         Token *peek();
         Token *peekn(size_t idx_pos);
