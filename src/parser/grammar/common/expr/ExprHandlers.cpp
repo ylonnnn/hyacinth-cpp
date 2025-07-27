@@ -180,9 +180,6 @@ namespace Parser
             fnc_end_pos = close->position.col + close->value.size();
         }
 
-        // std.io.println
-        // std <-> (io <-> println)
-
         // return std::make_unique<AST::BinaryExpr>(
         //     std::move(left), operation,
         //     expr_rule->parse_expr(parser, right_bp).data);

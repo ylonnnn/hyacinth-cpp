@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cctype>
 #include <cwctype>
-#include <functional>
 #include <iostream>
 #include <string_view>
 
@@ -116,7 +115,6 @@ namespace Lexer
                 continue;
             }
 
-            // std::cout << token << "\n";
             result.data.push_back(std::move(token));
         }
 
@@ -168,9 +166,11 @@ namespace Lexer
 
             case '\n':
             {
-                row_++, col_ = 0;
+                Token token =
+                    create_token({pos, pos}, Miscellaneous::LineBreak);
+                row_++, col_ = 1;
 
-                return create_token({pos, pos}, Miscellaneous::LineBreak);
+                return token;
             }
 
             case '{':
@@ -308,10 +308,12 @@ namespace Lexer
                     while (!match('\n'))
                         next();
 
-                    row_++;
+                    Token token = create_token({pos, curr_pos()},
+                                               Miscellaneous::CommentSingle);
 
-                    return create_token({pos, curr_pos()},
-                                        Miscellaneous::CommentSingle);
+                    row_++, col_ = 1;
+
+                    return token;
                 }
 
                 // /=

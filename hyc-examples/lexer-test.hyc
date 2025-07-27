@@ -20,7 +20,7 @@ fn some_function_with_impl -> void () {
 
 fn main -> void () {
     // let some_char: char = 'x';
-    let sum: int[64] = add(12, 13);
+    let sum: int[31] = add(12, 13);
 
     let first_str: str = "Hello, ";
     let second_str: str = "World";
