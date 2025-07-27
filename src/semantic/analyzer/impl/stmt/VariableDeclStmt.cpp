@@ -135,8 +135,14 @@ namespace Semantic
             }
 
             // Analysis of returned type
-            else if (v_res.data != nullptr)
+            else
             {
+                if (v_res.data == nullptr)
+                {
+                    error();
+                    return;
+                }
+
                 if (!result.data->assignable_with(*v_res.data))
                     error();
             }

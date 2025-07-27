@@ -1,4 +1,6 @@
 #include "semantic/analyzer/Analyzer.hpp"
+#include "core/type/primitive/Boolean.hpp"
+#include "core/type/primitive/Character.hpp"
 #include "core/type/primitive/Float.hpp"
 #include "core/type/primitive/Integer.hpp"
 #include "core/type/primitive/String.hpp"
@@ -32,6 +34,12 @@ namespace Semantic
 
         current_env_->declare_type(
             std::make_unique<Core::FloatType>(current_env_));
+
+        current_env_->declare_type(
+            std::make_unique<Core::BooleanType>(current_env_));
+
+        current_env_->declare_type(
+            std::make_unique<Core::CharacterType>(current_env_));
 
         current_env_->declare_type(
             std::make_unique<Core::StringType>(current_env_));

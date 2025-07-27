@@ -29,12 +29,10 @@ namespace Core
     {
         return std::make_unique<Diagnostic::NoteDiagnostic>(
             node, Diagnostic::NoteType::Suggestion,
-            std::string("Only values that are ") + Diagnostic::NOTE_GEN +
-                "Character Sequences" + Utils::Styles::Reset +
-                " surrounded by " + Diagnostic::NOTE_GEN +
-                "Double Quotation Marks" + Utils::Styles::Reset +
-                " are accepted.",
-            "Implement suggestion here");
+            std::string("Only values of type \"") + Diagnostic::ERR_GEN +
+                "string" + Utils::Styles::Reset + "\" are accepted.",
+            "Use sequences of characters surrounded by double quotation "
+            "marks.\n\t\t- Or a Locator Value (L-value) that holds a string.");
     }
 
 } // namespace Core

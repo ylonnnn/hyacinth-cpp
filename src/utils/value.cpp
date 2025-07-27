@@ -47,13 +47,15 @@ namespace Utils
 
                 case Primary::Boolean:
                 {
-                    std::cout << token.value << "\n";
+                    result = value == "true" ? true : false;
+
                     break;
                 }
 
                 case Primary::Character:
                 {
-                    std::cout << token.value << "\n";
+                    result = value[1];
+
                     break;
                 }
 

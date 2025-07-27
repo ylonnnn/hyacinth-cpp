@@ -19,8 +19,9 @@ fn some_function_with_impl -> void () {
 }
 
 fn main -> void () {
-    // let some_char: char = 'x';
-    let sum: int[31] = add(12, 13);
+    let some_char: char = 'a';
+    let sum: int[32] = add(12, 13);
+    let some_bool: bool = true;
 
     let first_str: str = "Hello, ";
     let second_str: str = "World";

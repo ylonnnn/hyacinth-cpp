@@ -32,9 +32,7 @@ namespace Semantic
         }
 
         else
-        {
             return result;
-        }
     }
 
 } // namespace Semantic
