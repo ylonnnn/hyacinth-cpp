@@ -3,8 +3,9 @@
 #include "ast/stmt/DeclarationStmt.hpp"
 #include "ast/stmt/ExprStmt.hpp"
 #include "ast/stmt/function/FunctionDeclStmt.hpp"
+#include "ast/stmt/function/FunctionRetStmt.hpp"
+#include "ast/stmt/types/struct/StructDeclStmt.hpp"
 #include "ast/stmt/variable/VariableDeclStmt.hpp"
-#include "ast/stmt/variable/VariableDefStmt.hpp"
 #include "semantic/analyzer/Analyzer.hpp"
 
 namespace Semantic
@@ -31,16 +32,22 @@ namespace Semantic
                                       AST::VariableDeclarationStmt &node);
     };
 
-    template <> struct AnalyzerImpl<AST::VariableDefinitionStmt>
-    {
-        static AnalysisResult analyze(Analyzer &analyzer,
-                                      AST::VariableDefinitionStmt &node);
-    };
-
     template <> struct AnalyzerImpl<AST::FunctionDeclarationStmt>
     {
         static AnalysisResult analyze(Analyzer &analyzer,
                                       AST::FunctionDeclarationStmt &node);
+    };
+
+    template <> struct AnalyzerImpl<AST::FunctionReturnStmt>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer,
+                                      AST::FunctionReturnStmt &node);
+    };
+
+    template <> struct AnalyzerImpl<AST::StructDeclarationStmt>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer,
+                                      AST::StructDeclarationStmt &node);
     };
 
 } // namespace Semantic

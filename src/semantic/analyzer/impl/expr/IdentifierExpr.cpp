@@ -14,8 +14,8 @@ namespace Semantic
         // Core::Symbol *symbol =
         //     current.resolve_symbol(std::string(node.identifier().value));
 
-        Core::Symbol *symbol =
-            current->resolve_symbol(std::string(node.identifier().value));
+        auto identifier = std::string(node.identifier().value);
+        Core::Symbol *symbol = current->resolve_symbol(identifier);
 
         if (symbol != nullptr)
         {
@@ -32,7 +32,15 @@ namespace Semantic
         }
 
         else
+        {
+            result.error(
+                &node, Diagnostic::ErrorTypes::Semantic::UnrecognizedSymbol,
+                std::string("Unrecognized symbol \"") + Diagnostic::ERR_GEN +
+                    identifier + Utils::Styles::Reset + "\" provided.",
+                "Used unrecognized symbol here");
+
             return result;
+        }
     }
 
 } // namespace Semantic

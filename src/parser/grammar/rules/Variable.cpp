@@ -128,7 +128,6 @@ namespace Parser
 
         // TERMINATOR ::= ";"
         ParseResult t_res = Common::Terminator.parse(parser);
-
         result.adapt(t_res.status, std::move(t_res.diagnostics));
 
         if (auto ptr =

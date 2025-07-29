@@ -2,15 +2,16 @@
 
 #include "ast/expr/LiteralExpr.hpp"
 #include "ast/stmt/function/FunctionDefStmt.hpp"
+#include "core/environment/FunctionEnvironment.hpp"
 #include "core/symbol/FunctionSymbol.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "semantic/analyzer/impl/Stmt.hpp"
 
 namespace Semantic
 {
-    void analyze_return_type(Analyzer &analyzer,
-                             std::unique_ptr<Core::FunctionSymbol> &fn,
-                             AnalysisResult &result)
+    static void analyze_return_type(Analyzer &analyzer,
+                                    std::unique_ptr<Core::FunctionSymbol> &fn,
+                                    AnalysisResult &result)
     {
         Core::Environment *current = analyzer.current_env();
         AST::FunctionDeclarationStmt *node = fn->node;
@@ -32,9 +33,10 @@ namespace Semantic
         result.data = fn->return_type.get();
     }
 
-    void analyze_parameters(Analyzer &analyzer,
-                            std::unique_ptr<Core::FunctionSymbol> &fn,
-                            AnalysisResult &result, Core::Environment *body_env)
+    static void analyze_parameters(Analyzer &analyzer,
+                                   std::unique_ptr<Core::FunctionSymbol> &fn,
+                                   AnalysisResult &result,
+                                   Core::Environment *body_env)
     {
         Core::Environment *current = analyzer.current_env();
         AST::FunctionDeclarationStmt *node = fn->node;
@@ -43,7 +45,7 @@ namespace Semantic
 
         for (auto &param : node->parameters())
         {
-            auto &ast_type = param->type();
+            auto &ast_type = param.type();
             Core::BaseType *resolved =
                 current->resolve_type(std::string(ast_type.value().value));
 
@@ -56,9 +58,8 @@ namespace Semantic
             Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-            Core::FunctionParameter parameter{param->name().value,
-                                              param->is_mutable(),
-                                              std::move(t_res.data)};
+            Core::FunctionParameter parameter{
+                param.name().value, param.is_mutable(), std::move(t_res.data)};
 
             // Register/Declare the parameters as variables to the environment
             // for analysis
@@ -78,9 +79,9 @@ namespace Semantic
         }
     }
 
-    void validate_duplication(Analyzer &analyzer,
-                              std::unique_ptr<Core::FunctionSymbol> &fn,
-                              AnalysisResult &result)
+    static void validate_duplication(Analyzer &analyzer,
+                                     std::unique_ptr<Core::FunctionSymbol> &fn,
+                                     AnalysisResult &result)
     {
         Core::Environment *current = analyzer.current_env();
         AST::FunctionDeclarationStmt *node = fn->node;
@@ -148,9 +149,9 @@ namespace Semantic
         }
     }
 
-    void analyze_body(Analyzer &analyzer,
-                      std::unique_ptr<Core::FunctionSymbol> &fn,
-                      AnalysisResult &result)
+    static void analyze_body(Analyzer &analyzer,
+                             std::unique_ptr<Core::FunctionSymbol> &fn,
+                             AnalysisResult &result)
     {
         AST::FunctionDeclarationStmt *node = fn->node;
 
@@ -162,7 +163,13 @@ namespace Semantic
 
         fn->define(const_cast<Core::Position *>(&body.position()));
 
-        for (auto &stmt : body.statements())
+        std::vector<std::unique_ptr<AST::Stmt>> &statements = body.statements();
+        size_t r_size = statements.size() * 2;
+
+        if (result.diagnostics.size() - r_size < result.diagnostics.capacity())
+            result.diagnostics.reserve(r_size);
+
+        for (auto &stmt : statements)
         {
             AnalysisResult a_res =
                 AnalyzerImpl<AST::Stmt>::analyze(analyzer, *stmt);
@@ -178,13 +185,24 @@ namespace Semantic
         AnalysisResult result = {
             std::nullopt, Core::ResultStatus::Success, nullptr, {}};
 
+        result.diagnostics.reserve(8);
+
         auto function = std::make_unique<Core::FunctionSymbol>(
             std::string(node.name().value), node.position(), nullptr,
             std::vector<Core::FunctionParameter>{}, &node);
 
         auto is_def = node.is_definition();
-        Core::Environment *body_env =
-            is_def ? &current->create_child() : nullptr;
+        Core::Environment *body_env = nullptr;
+
+        // Create function environment if the node is a function definition
+        if (is_def)
+        {
+            auto &children = current->children();
+
+            children.push_back(std::make_unique<Core::FunctionEnvironment>(
+                current, function.get()));
+            body_env = children.back().get();
+        }
 
         analyze_return_type(analyzer, function, result);
         analyze_parameters(analyzer, function, result, body_env);

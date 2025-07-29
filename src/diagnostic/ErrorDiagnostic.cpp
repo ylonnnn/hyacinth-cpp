@@ -30,6 +30,10 @@ namespace Diagnostic
             "HYC::SYNTAX:MISSING_RETURN_TYPE";
         ERROR_CODES[ErrorTypes::Syntax::MissingMutabilityModifier] =
             "HYC::SYNTAX:MISSING_MUTABILITY_MODIFIER";
+        ERROR_CODES[ErrorTypes::Syntax::InvalidFieldSpecifier] =
+            "HYC::SYNTAX:INVALID_FIELD_SPECIFIER";
+        ERROR_CODES[ErrorTypes::Syntax::FieldDuplcation] =
+            "HYC::SYNTAX:FIELD_DUPLICATION";
 
         ERROR_CODES[ErrorTypes::Type::Mismatch] = "HYC::TYPE:MISMATCH";
         ERROR_CODES[ErrorTypes::Type::UnrecognizedType] =
@@ -51,6 +55,8 @@ namespace Diagnostic
             "HYC::SEMANTIC:INVALID_ARGUMENT_COUNT";
         ERROR_CODES[ErrorTypes::Semantic::Duplication] =
             "HYC::SEMANTIC::DUPLICATION";
+        ERROR_CODES[ErrorTypes::Semantic::InvalidReturnUsage] =
+            "HYC::SEMANTIC::INVALID_RETURN_USAGE";
 
         ERROR_CODES[ErrorTypes::Modification::ReadValueModification] =
             "HYC::MODIFICATION:RVALUE_MODIFICATION";

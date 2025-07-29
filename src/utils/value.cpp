@@ -4,6 +4,7 @@
 
 #include "core/value/Value.hpp"
 #include "lexer/Token.hpp"
+#include "utils/value.hpp"
 
 namespace Utils
 {
@@ -11,68 +12,52 @@ namespace Utils
     {
         using Lexer::TokenTypes::Primary;
 
-        Core::Value result = Core::null{};
+        auto ptr = std::get_if<Primary>(&token.type);
+        if (ptr == nullptr)
+            return Core::null{};
+
         std::string value = std::string(token.value);
 
-        if (auto ptr = std::get_if<Primary>(&token.type))
+        switch (*ptr)
         {
-            switch (*ptr)
+            case Primary::Int:
             {
-                case Primary::Int:
-                {
-                    value.erase(std::remove(value.begin(), value.end(), '_'),
-                                value.end());
+                value.erase(std::remove(value.begin(), value.end(), '_'),
+                            value.end());
 
-                    if (token.value[0] == '-')
-                        result = int64_t(std::stoll(value));
-                    else
-                        result = uint64_t(std::stoull(value));
+                if (token.value[0] == '-')
+                    return int64_t(std::stoll(value));
+                else
+                    return uint64_t(std::stoull(value));
+            }
 
-                    break;
-                }
+            case Primary::Float:
+            {
+                value.erase(std::remove(value.begin(), value.end(), '_'),
+                            value.end());
 
-                case Primary::Float:
-                {
-                    value.erase(std::remove(value.begin(), value.end(), '_'),
-                                value.end());
+                char &ext = value.back();
+                if (ext == 'f')
+                    value.resize(value.size() - 1);
 
-                    char &ext = value.back();
-                    if (ext == 'f')
-                        value.resize(value.size() - 1);
+                return std::stod(value);
+            }
 
-                    result = std::stod(value);
+            case Primary::Boolean:
+                return value == "true" ? true : false;
 
-                    break;
-                }
+            case Primary::Character:
+                return value[1];
 
-                case Primary::Boolean:
-                {
-                    result = value == "true" ? true : false;
+            case Primary::String:
+                return value.substr(1, value.size() - 2);
 
-                    break;
-                }
-
-                case Primary::Character:
-                {
-                    result = value[1];
-
-                    break;
-                }
-
-                case Primary::String:
-                {
-                    result = value.substr(1, value.size() - 2);
-
-                    break;
-                }
-
-                default:
-                    std::cout << "invalid: " << token.value << "\n";
-                    break;
+            default:
+            {
+                std::cout << "invalid: " << token.value << "\n";
+                return Core::null{};
             }
         }
-
-        return result;
     }
 
 } // namespace Utils

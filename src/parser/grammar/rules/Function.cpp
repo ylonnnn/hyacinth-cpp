@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "ast/NodeCollection.hpp"
 #include "ast/expr/LiteralExpr.hpp"
 #include "ast/stmt/function/FunctionDeclStmt.hpp"
 #include "ast/stmt/function/FunctionDefStmt.hpp"
+#include "ast/stmt/function/FunctionRetStmt.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "parser/grammar/GrammarRule.hpp"
 #include "parser/grammar/common/Common.hpp"
@@ -16,59 +16,39 @@ namespace Parser
 {
     using namespace Lexer::TokenTypes;
 
-    FunctionParameterListParseResult::FunctionParameterListParseResult(
-        Core::ResultStatus status,
-        std::unique_ptr<AST::NodeCollection<AST::FunctionParameterIdentifier>>
-            data,
-        Diagnostic::DiagnosticList diagnostics)
-        : Core::Result<std::unique_ptr<
-              AST::NodeCollection<AST::FunctionParameterIdentifier>>>(
-              status, std::move(data), std::move(diagnostics)) {};
-
     FunctionDefinition::FunctionDefinition() : GrammarRule(Hyacinth::FUNCTION)
     {
     }
 
-    FunctionParameterListParseResult
-    FunctionDefinition::parse_param_list(Parser &parser)
+    static std::vector<AST::FunctionParameter>
+    parse_parameters(Parser &parser, ParseResult &result)
     {
         auto &lexer = parser.lexer();
-        FunctionParameterListParseResult result = {
-            Core::ResultStatus::Success, nullptr, {}};
 
-        std::vector<std::unique_ptr<AST::FunctionParameterIdentifier>>
-            parameters;
+        std::vector<AST::FunctionParameter> parameters;
         parameters.reserve(8);
 
-        Lexer::Token &opening_token = lexer.current();
+        Lexer::TokenType closing = Delimeter::ParenthesisClose;
 
         auto &identifier = Common::IdentifierInitialization;
         auto expect_param = true;
 
-        while (!parser.expect(Lexer::TokenTypes::Delimeter::ParenthesisClose,
-                              false))
+        while (!parser.expect(closing, false))
         {
             if (expect_param)
             {
                 ParseResult i_res = identifier.parse(parser);
+                result.adapt(i_res.status, std::move(i_res.diagnostics));
 
                 if (i_res.data == nullptr)
-                {
-                    result.error(
-                        Diagnostic::create_syntax_error(&lexer.current()));
-
                     break;
-                }
-
-                result.adapt(i_res.status, std::move(i_res.diagnostics));
 
                 if (auto ptr =
                         dynamic_cast<IdentifierInitNode *>(i_res.data.get()))
                 {
                     parameters.push_back(
-                        std::make_unique<AST::FunctionParameterIdentifier>(
-                            ptr->name(), ptr->mut_state(),
-                            std::move(ptr->type_ptr())));
+                        AST::FunctionParameter{ptr->name(), ptr->mut_state(),
+                                               std::move(ptr->type_ptr())});
                 }
 
                 expect_param = false;
@@ -85,11 +65,28 @@ namespace Parser
             break;
         }
 
-        result.data = std::make_unique<
-            AST::NodeCollection<AST::FunctionParameterIdentifier>>(
-            opening_token.position, std::move(parameters));
+        return parameters;
+    }
 
-        return result;
+    static size_t parse_closing(Parser &parser, ParseResult &result,
+                                Lexer::TokenType expected)
+    {
+        auto &lexer = parser.lexer();
+
+        if (auto diagnostic = parser.expect_or_error(expected, false))
+        {
+            parser.panic();
+            result.adapt(Core::ResultStatus::Fail,
+                         Diagnostic::DiagnosticList{
+                             std::make_move_iterator(&diagnostic),
+                             std::make_move_iterator(&diagnostic + 1)});
+
+            return SIZE_MAX;
+        }
+
+        Lexer::Token *close = lexer.next();
+
+        return close->position.col + close->value.size();
     }
 
     ParseResult FunctionDefinition::parse(Parser &parser)
@@ -164,29 +161,10 @@ namespace Parser
                 lexer.peek(), Delimeter::ParenthesisOpen));
 
         // PARAM_LIST
-        size_t pl_initial_pos = lexer.position();
-        FunctionParameterListParseResult pl_res = parse_param_list(parser);
-
-        if (pl_res.status == Core::ResultStatus::Fail)
-        {
-            if (pl_initial_pos != lexer.position() &&
-                !pl_res.diagnostics.empty())
-                result.adapt(pl_res.status, std::move(pl_res.diagnostics));
-
-            else
-                parser.synchronize();
-        }
-
-        // ) (ParenthesisClose)
-        size_t fn_end_pos;
-        if (parser.expect(Delimeter::ParenthesisClose, false))
-        {
-            Lexer::Token *close = lexer.next();
-            fn_end_pos = close->position.col + close->value.size();
-        }
-        else
-            result.error(Diagnostic::create_syntax_error(
-                lexer.peek(), Delimeter::ParenthesisClose));
+        std::vector<AST::FunctionParameter> parameters =
+            parse_parameters(parser, result);
+        size_t fn_end_pos =
+            parse_closing(parser, result, Delimeter::ParenthesisClose);
 
         // { (BraceOpen)
         if (parser.expect(Delimeter::BraceOpen, false))
@@ -199,14 +177,10 @@ namespace Parser
                         dynamic_cast<AST::BlockStmt *>(b_res.data.release()))
                     body = std::unique_ptr<AST::BlockStmt>(ptr);
 
-            auto fn_node = std::make_unique<AST::FunctionDefinitionStmt>(
-                *name, std::move(rt_result.data), std::move(pl_res.data),
-                std::move(body));
-
-            fn_node->set_end_pos(fn_end_pos);
-
             result.adapt(b_res.status, std::move(b_res.diagnostics),
-                         std::move(fn_node));
+                         std::make_unique<AST::FunctionDefinitionStmt>(
+                             *name, std::move(rt_result.data),
+                             std::move(parameters), std::move(body)));
 
             return result;
         }
@@ -226,7 +200,7 @@ namespace Parser
             else
             {
                 auto fn_node = std::make_unique<AST::FunctionDeclarationStmt>(
-                    *name, std::move(rt_result.data), std::move(pl_res.data));
+                    *name, std::move(rt_result.data), std::move(parameters));
 
                 fn_node->set_end_pos(fn_end_pos);
 
@@ -237,6 +211,47 @@ namespace Parser
 
             return result;
         }
+    }
+
+    FunctionDefinitionReturn::FunctionDefinitionReturn()
+        : GrammarRule(Lexer::TokenTypes::Reserved::Return)
+    {
+    }
+
+    ParseResult FunctionDefinitionReturn::parse(Parser &parser)
+    {
+        auto &lexer = parser.lexer();
+        ParseResult result = {parser, Core::ResultStatus::Success, nullptr, {}};
+
+        std::unique_ptr<AST::FunctionReturnStmt> node;
+
+        // return (KeywordReturn)
+        Core::Position *ret_pos;
+        if (auto diagnostic = parser.expect_or_error(token_type_, false))
+            result.diagnostics.push_back(std::move(diagnostic));
+        else
+        {
+            Lexer::Token *ret = lexer.next();
+            ret_pos = &ret->position;
+        }
+
+        // [VALUE] (ReturnValue)
+        ExprParseResult v_res = Common::Expr.parse_expr(parser, 0);
+
+        result.adapt(std::move(v_res.diagnostics));
+        node = std::make_unique<AST::FunctionReturnStmt>(*ret_pos,
+                                                         std::move(v_res.data));
+
+        // ; (Terminator)
+        ParseResult t_res = Common::Terminator.parse(parser);
+        result.adapt(t_res.status, std::move(t_res.diagnostics));
+
+        if (t_res.data != nullptr)
+            node->set_end_pos(t_res.data->end_pos());
+
+        result.data = std::move(node);
+
+        return result;
     }
 
 } // namespace Parser

@@ -23,6 +23,10 @@ namespace AST
 
     Expr &BinaryExpr::right() { return *right_; }
 
+    std::unique_ptr<Expr> &BinaryExpr::left_ptr() { return left_; }
+
+    std::unique_ptr<Expr> &BinaryExpr::right_ptr() { return right_; }
+
     void BinaryExpr::print(std::ostream &os, uint8_t tab) const
     {
         std::string indentation = Utils::tab(tab - 1, 4),

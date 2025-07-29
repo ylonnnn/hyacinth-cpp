@@ -7,7 +7,6 @@
 namespace AST
 {
 
-
     class BlockStmt : public Stmt
     {
       protected:
@@ -18,7 +17,8 @@ namespace AST
                   std::vector<std::unique_ptr<Stmt>> statements);
 
         size_t end_pos() const override;
-        size_t end_pos();
+
+        void set_end_pos(size_t end_pos);
 
         std::vector<std::unique_ptr<Stmt>> &statements();
 

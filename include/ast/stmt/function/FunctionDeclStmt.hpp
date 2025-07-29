@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ast/NodeCollection.hpp"
 #include "ast/common/Identifier.hpp"
 #include "ast/stmt/BlockStmt.hpp"
 #include "ast/stmt/DeclarationStmt.hpp"
@@ -8,15 +7,15 @@
 
 namespace AST
 {
-    class FunctionParameterIdentifier : public Identifier
+    class FunctionParameter : public Identifier
     {
       protected:
         // TODO: Default Value
 
       public:
-        FunctionParameterIdentifier(Lexer::Token &name,
-                                    IdentifierMutabilityState mut_state,
-                                    std::unique_ptr<Type> type);
+        FunctionParameter(Lexer::Token &name,
+                          IdentifierMutabilityState mut_state,
+                          std::unique_ptr<Type> type);
 
         void print(std::ostream &os, uint8_t tab) const override;
     };
@@ -25,24 +24,22 @@ namespace AST
     {
       protected:
         std::unique_ptr<Type> return_type_;
-        std::unique_ptr<NodeCollection<FunctionParameterIdentifier>>
-            parameters_;
+        std::vector<FunctionParameter> parameters_;
 
         // Empty
         std::unique_ptr<BlockStmt> body_;
 
       public:
-        FunctionDeclarationStmt(
-            Lexer::Token &name, std::unique_ptr<Type> return_type,
-            std::unique_ptr<NodeCollection<FunctionParameterIdentifier>>
-                parameters);
+        FunctionDeclarationStmt(Lexer::Token &name,
+                                std::unique_ptr<Type> return_type,
+                                std::vector<FunctionParameter> parameters);
 
         virtual bool is_definition() const override;
 
         void set_end_pos(size_t end_pos);
 
         Type &return_type();
-        std::vector<std::unique_ptr<FunctionParameterIdentifier>> &parameters();
+        std::vector<FunctionParameter> &parameters();
 
         std::unique_ptr<Type> &return_type_ptr();
 

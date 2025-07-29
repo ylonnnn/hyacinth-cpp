@@ -8,14 +8,15 @@
 
 namespace AST
 {
-    class CollectionExpr : public NodeCollection<Expr>
+    class ArrayExpr : public NodeCollection<Expr>
     {
-      public:
-        CollectionExpr(Core::Position position,
-                       std::vector<std::unique_ptr<Expr>> collection);
-        ~CollectionExpr() override = default;
+      private:
+        std::vector<std::unique_ptr<Expr>> elements_;
 
       public:
+        ArrayExpr(Core::Position position,
+                  std::vector<std::unique_ptr<Expr>> collection);
+
         void print(std::ostream &os, uint8_t tab) const override;
     };
 

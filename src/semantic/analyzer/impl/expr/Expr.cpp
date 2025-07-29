@@ -17,6 +17,10 @@ namespace Semantic
             return AnalyzerImpl<AST::FunctionCalLExpr>::analyze(
                 analyzer, static_cast<AST::FunctionCalLExpr &>(node));
 
+        else if (typeid(node) == typeid(AST::InstanceExpr))
+            return AnalyzerImpl<AST::InstanceExpr>::analyze(
+                analyzer, static_cast<AST::InstanceExpr &>(node));
+
         return {std::nullopt, Core::ResultStatus::Fail, nullptr, {}};
     }
 

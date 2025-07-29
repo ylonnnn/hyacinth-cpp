@@ -17,6 +17,10 @@ namespace Semantic
             return AnalyzerImpl<AST::FunctionDeclarationStmt>::analyze(analyzer,
                                                                        *ptr);
 
+        else if (auto ptr = dynamic_cast<AST::StructDeclarationStmt *>(stmt))
+            return AnalyzerImpl<AST::StructDeclarationStmt>::analyze(analyzer,
+                                                                     *ptr);
+
         return {std::nullopt, Core::ResultStatus::Fail, nullptr, {}};
     }
 

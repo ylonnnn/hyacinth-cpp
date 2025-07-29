@@ -10,12 +10,7 @@ namespace AST
 
     size_t BlockStmt::end_pos() const { return end_pos_; }
 
-    size_t BlockStmt::end_pos()
-    {
-        end_pos_ = statements_.back()->end_pos();
-
-        return end_pos_;
-    }
+    void BlockStmt::set_end_pos(size_t end_pos) { end_pos_ = end_pos; }
 
     std::vector<std::unique_ptr<Stmt>> &BlockStmt::statements()
     {

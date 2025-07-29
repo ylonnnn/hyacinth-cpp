@@ -25,12 +25,16 @@ namespace Parser
         std::vector<std::unique_ptr<AST::Stmt>> &statements =
             body->statements();
 
-        statements.reserve(32);
+        AST::BlockStmt *block = body.get();
 
+        statements.reserve(32);
         result.data = std::move(body);
 
         if (parser.expect(pair_.first, false))
-            lexer.next();
+        {
+            Lexer::Token *open = lexer.next();
+            block->set_end_pos(open->position.col + open->value.size());
+        }
         else
         {
             result.status = Core::ResultStatus::Fail;
@@ -64,7 +68,10 @@ namespace Parser
         }
 
         else
-            lexer.next();
+        {
+            Lexer::Token *close = lexer.next();
+            block->set_end_pos(close->position.col + close->value.size());
+        }
 
         return result;
     }

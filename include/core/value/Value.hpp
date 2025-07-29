@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <variant>
@@ -8,9 +9,10 @@
 
 namespace Core
 {
+    struct Type;
     struct FunctionSymbol;
-    struct object;
 
+    struct object;
     struct null
     {
         operator std::string() const;
@@ -21,16 +23,31 @@ namespace Core
 
     std::ostream &operator<<(std::ostream &os, const Value &value);
 
+    struct object_entry;
     struct object
     {
       private:
-        std::unordered_map<std::string, Value> value_;
+      private:
+        std::unordered_map<std::string_view, object_entry> value_;
 
       public:
-        Value *get(const std::string &key);
-        void set(const std::string &key, Value);
+        object_entry *get(const std::string &key);
+        bool set(const std::string &key, object_entry &&value);
+
+        Value *get_value(const std::string &key);
+        Type *get_type(const std::string &key);
+
+        size_t size() const;
+
+        std::unordered_map<std::string_view, object_entry> &value();
 
         operator std::string() const;
+    };
+
+    struct object_entry
+    {
+        std::optional<Value> value = std::nullopt;
+        Type *type = nullptr;
     };
 
     struct callable

@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <unordered_map>
-#include <variant>
 
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "lexer/Lexer.hpp"
@@ -79,16 +78,8 @@ namespace Parser
         }
 
         ParseResult p_res = rule->parse(parser);
-
-        result.data = std::move(p_res.data);
-
-        result.diagnostics.insert(
-            result.diagnostics.end(),
-            std::make_move_iterator(p_res.diagnostics.begin()),
-            std::make_move_iterator(p_res.diagnostics.end()));
-
-        if (p_res.status == Core::ResultStatus::Fail)
-            result.status = p_res.status;
+        result.adapt(p_res.status, std::move(p_res.diagnostics),
+                     std::move(p_res.data));
 
         return result;
     }

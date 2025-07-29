@@ -8,11 +8,10 @@ namespace AST
     class FunctionDefinitionStmt : public FunctionDeclarationStmt
     {
       public:
-        FunctionDefinitionStmt(
-            Lexer::Token &name, std::unique_ptr<Type> return_type,
-            std::unique_ptr<NodeCollection<FunctionParameterIdentifier>>
-                parameters,
-            std::unique_ptr<BlockStmt> body);
+        FunctionDefinitionStmt(Lexer::Token &name,
+                               std::unique_ptr<Type> return_type,
+                               std::vector<FunctionParameter> parameters,
+                               std::unique_ptr<BlockStmt> body);
 
         bool is_definition() const override;
 

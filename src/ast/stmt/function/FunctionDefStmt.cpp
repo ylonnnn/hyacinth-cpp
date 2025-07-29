@@ -1,16 +1,19 @@
 #include "ast/stmt/function/FunctionDefStmt.hpp"
+#include "utils/style.hpp"
 
 namespace AST
 {
     FunctionDefinitionStmt::FunctionDefinitionStmt(
         Lexer::Token &name, std::unique_ptr<Type> return_type,
-        std::unique_ptr<NodeCollection<FunctionParameterIdentifier>> parameters,
+        std::vector<FunctionParameter> parameters,
         std::unique_ptr<BlockStmt> body)
         : Node(name.position),
           FunctionDeclarationStmt(name, std::move(return_type),
                                   std::move(parameters))
     {
         body_ = std::move(body);
+
+        end_pos_ = body_->end_pos();
     }
 
     bool FunctionDefinitionStmt::is_definition() const { return true; }
@@ -34,12 +37,12 @@ namespace AST
         return_type_->print(os, tab + 1);
 
         os << "\n" << inner_indentation << "parameters: {";
-        for (auto &param : parameters_->collection())
+        for (auto &param : parameters_)
         {
             std::string inner_indentation = Utils::tab(tab + 1, 4);
 
             os << "\n" << inner_indentation;
-            param->print(os, tab + 2);
+            param.print(os, tab + 2);
         }
 
         os << "\n"

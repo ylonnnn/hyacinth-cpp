@@ -31,14 +31,7 @@ namespace AST
         virtual ~NodeCollection() override = default;
 
       public:
-        virtual size_t end_pos() const override { return end_pos_; }
-
-        size_t end_pos()
-        {
-            end_pos_ = collection_.back()->end_pos();
-
-            return end_pos_;
-        }
+        virtual void set_end_pos(size_t end_pos) { end_pos_ = end_pos; }
 
         virtual void print(std::ostream &os, uint8_t tab) const override
         {

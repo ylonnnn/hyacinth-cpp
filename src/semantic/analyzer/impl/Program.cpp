@@ -8,6 +8,7 @@ namespace Semantic
     {
         AnalysisResult result = {
             std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+        result.diagnostics.reserve(32);
 
         for (auto &declaration : node.declarations())
         {
@@ -15,13 +16,8 @@ namespace Semantic
                 AnalyzerImpl<std::remove_cv_t<std::remove_reference_t<
                     decltype(*declaration)>>>::analyze(analyzer, *declaration);
 
-            result.diagnostics.insert(
-                result.diagnostics.end(),
-                std::make_move_iterator(decl_result.diagnostics.begin()),
-                std::make_move_iterator(decl_result.diagnostics.end()));
-
-            if (decl_result.status == Core::ResultStatus::Fail)
-                result.status = decl_result.status;
+            result.adapt(decl_result.status,
+                         std::move(decl_result.diagnostics));
         }
 
         return result;

@@ -66,15 +66,15 @@ namespace Parser
         if (auto diagnostic = parser.expect_or_error(closing_token, false))
         {
             parser.panic();
-
-            result.status = Core::ResultStatus::Fail;
-            result.diagnostics.push_back(std::move(diagnostic));
+            result.adapt(Core::ResultStatus::Fail,
+                         Diagnostic::DiagnosticList{
+                             std::make_move_iterator(&diagnostic),
+                             std::make_move_iterator(&diagnostic + 1)});
         }
 
         else
         {
             Lexer::Token *n_token = lexer.next();
-
             type->set_end_pos(n_token->position.col + n_token->value.size());
         }
 
@@ -84,18 +84,4 @@ namespace Parser
         return type;
     }
 
-    // std::unique_ptr<AST::IdentifierExpr>
-    // parse_identifier(Parser &parser, Diagnostic::DiagnosticList
-    // &diagnostics);
-
-    // std::unique_ptr<AST::BinaryExpr>
-    // parse_binary(Parser &parser, std::unique_ptr<AST::Expr> &left,
-    //              float right_bp, Diagnostic::DiagnosticList &diagnostics);
-
-    // std::unique_ptr<AST::UnaryExpr> parse_unary(Parser &parser,
-    //                                             Diagnostic::DiagnosticList
-    //                                             &diagnostics);
-    // std::unique_ptr<AST::UnaryExpr>
-    // parse_unary(Parser &parser, std::unique_ptr<AST::Expr> &left,
-    //             float right_bp, Diagnostic::DiagnosticList &diagnostics);
 } // namespace Parser

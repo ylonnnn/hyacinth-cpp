@@ -112,13 +112,8 @@ namespace Parser
                     ExprParseResult expr_res = expr_rule.parse_expr(parser, 0);
                     std::unique_ptr<AST::Expr> expr = std::move(expr_res.data);
 
-                    if (expr_res.status == Core::ResultStatus::Fail)
-                        result.status = expr_res.status;
-
-                    result.diagnostics.insert(
-                        result.diagnostics.end(),
-                        std::make_move_iterator(expr_res.diagnostics.begin()),
-                        std::make_move_iterator(expr_res.diagnostics.end()));
+                    result.adapt(expr_res.status,
+                                 std::move(expr_res.diagnostics));
 
                     if (auto diagnostic = parser.expect_or_error(
                             Delimeter::ParenthesisClose, false))
@@ -132,6 +127,9 @@ namespace Parser
 
                     return expr;
                 });
+
+        // Compound
+        add_nud(Delimeter::BraceOpen, parse_instance);
 
         // Member Access
         float memaccess_bp = static_cast<int>(BindingPower::MemberAccess);

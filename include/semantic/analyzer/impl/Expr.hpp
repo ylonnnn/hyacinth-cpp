@@ -3,6 +3,7 @@
 #include "ast/expr/FunctionCallExpr.hpp"
 #include "ast/expr/IdentifierExpr.hpp"
 #include "ast/expr/LiteralExpr.hpp"
+#include "ast/expr/compound/InstanceExpr.hpp"
 #include "semantic/analyzer/Analyzer.hpp"
 
 namespace Semantic
@@ -28,6 +29,12 @@ namespace Semantic
     {
         static AnalysisResult analyze(Analyzer &analyzer,
                                       AST::FunctionCalLExpr &node);
+    };
+
+    template <> struct AnalyzerImpl<AST::InstanceExpr>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer,
+                                      AST::InstanceExpr &node);
     };
 
 } // namespace Semantic

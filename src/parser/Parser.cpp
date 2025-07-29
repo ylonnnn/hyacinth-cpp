@@ -48,7 +48,7 @@ namespace Parser
         Lexer::Token *token =
             lexer_.eof() ? nullptr : (consume ? lexer_.next() : lexer_.peek());
         auto expected = token == nullptr ? false : token->type == type;
-
+        
         if (expected)
             synchronize();
 

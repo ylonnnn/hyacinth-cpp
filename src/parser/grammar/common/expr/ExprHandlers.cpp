@@ -34,14 +34,7 @@ namespace Parser
         ExprParseResult r_res = expr_rule->parse_expr(parser, right_bp);
 
         std::unique_ptr<AST::Expr> right = std::move(r_res.data);
-
-        if (r_res.status == Core::ResultStatus::Fail)
-            result.status = r_res.status;
-
-        result.diagnostics.insert(
-            result.diagnostics.end(),
-            std::make_move_iterator(r_res.diagnostics.begin()),
-            std::make_move_iterator(r_res.diagnostics.end()));
+        result.adapt(r_res.status, std::move(r_res.diagnostics));
 
         if (right == nullptr)
         {
@@ -95,14 +88,7 @@ namespace Parser
         ExprParseResult r_res = expr_rule->parse_expr(parser, right_bp);
 
         std::unique_ptr<AST::Expr> right = std::move(r_res.data);
-
-        if (r_res.status == Core::ResultStatus::Fail)
-            result.status = r_res.status;
-
-        result.diagnostics.insert(
-            result.diagnostics.end(),
-            std::make_move_iterator(r_res.diagnostics.begin()),
-            std::make_move_iterator(r_res.diagnostics.end()));
+        result.adapt(r_res.status, std::move(r_res.diagnostics));
 
         if (right == nullptr)
         {
@@ -188,6 +174,115 @@ namespace Parser
             std::move(left), std::move(arguments));
 
         node->set_end_pos(fnc_end_pos);
+
+        return node;
+    }
+
+    std::unique_ptr<AST::InstanceExpr> parse_instance(Parser &parser,
+                                                      ExprParseResult &result)
+    {
+        using namespace Lexer::TokenTypes;
+        auto &lexer = parser.lexer();
+
+        Lexer::Token &open = lexer.current();
+        Core::Position pos = open.position;
+
+        Expr *expr_rule;
+        if (auto ptr = dynamic_cast<Expr *>(parser.grammar().fallback()))
+            expr_rule = ptr;
+
+        std::unordered_map<std::string, std::unique_ptr<AST::Expr>> fields;
+        fields.reserve(8);
+
+        auto expect_field = true;
+        auto closing = Lexer::TokenTypes::Delimeter::BraceClose;
+
+        while (!parser.expect(closing, false))
+        {
+            if (expect_field)
+            {
+                Lexer::Token *field = nullptr;
+                std::string field_name;
+
+                if (auto diagnostic =
+                        parser.expect_or_error(Primary::Identifier, false))
+                    result.error(std::move(diagnostic));
+                else
+                {
+                    field = lexer.next();
+                    field_name = std::string(field->value);
+                }
+
+                if (auto diagnostic =
+                        parser.expect_or_error(Delimeter::Colon, false))
+                    result.error(std::move(diagnostic));
+                else
+                    lexer.next();
+
+                ExprParseResult expr_res = expr_rule->parse_expr(parser, 0);
+                if (expr_res.data == nullptr)
+                {
+                    result.error(
+                        Diagnostic::create_syntax_error(&lexer.current()));
+
+                    return nullptr;
+                }
+
+                auto [_, inserted] =
+                    fields.try_emplace(field_name, std::move(expr_res.data));
+
+                // Duplication
+                if (!inserted)
+                {
+                    auto node = AST::LiteralExpr(*field);
+                    result.error(
+                        &node, Diagnostic::ErrorTypes::Syntax::FieldDuplcation,
+                        std::string("Field \"") + Diagnostic::ERR_GEN +
+                            field_name + Utils::Styles::Reset +
+                            "\" has already been defined.",
+                        "Field is being duplicated");
+
+                    break;
+                }
+
+                expect_field = false;
+            }
+
+            if (parser.expect(Lexer::TokenTypes::Delimeter::Comma, false))
+            {
+                lexer.next();
+                expect_field = true;
+
+                continue;
+            }
+
+            break;
+        }
+
+        size_t c_end_pos;
+
+        if (auto diagnostic = parser.expect_or_error(closing, false))
+        {
+            parser.panic();
+            result.adapt(Core::ResultStatus::Fail,
+                         Diagnostic::DiagnosticList{
+                             std::make_move_iterator(&diagnostic),
+                             std::make_move_iterator(&diagnostic + 1)});
+        }
+
+        else
+        {
+            Lexer::Token *close = lexer.next();
+            c_end_pos = close->position.col + close->value.size();
+        }
+
+        // return std::make_unique<AST::BinaryExpr>(
+        //     std::move(left), operation,
+        //     expr_rule->parse_expr(parser, right_bp).data);
+
+        auto node = std::make_unique<AST::InstanceExpr>(pos, std::move(fields));
+
+        node->set_end_pos(c_end_pos);
 
         return node;
     }

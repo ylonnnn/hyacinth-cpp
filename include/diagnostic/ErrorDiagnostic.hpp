@@ -30,6 +30,8 @@ namespace Diagnostic
             MissingType,
             MissingReturnType,
             MissingMutabilityModifier,
+            InvalidFieldSpecifier,
+            FieldDuplcation,
         };
 
         enum class Type
@@ -48,6 +50,7 @@ namespace Diagnostic
             UnrecognizedSymbol,
             InvalidArgumentCount,
             Duplication,
+            InvalidReturnUsage,
         };
 
         enum class Modification

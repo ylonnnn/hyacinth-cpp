@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ast/expr/Expr.hpp"
-#include "ast/expr/Expr.hpp"
 #include "lexer/Token.hpp"
 
 namespace AST
@@ -22,6 +21,9 @@ namespace AST
         Expr &left();
         Lexer::Token &operation();
         Expr &right();
+
+        std::unique_ptr<Expr> &left_ptr();
+        std::unique_ptr<Expr> &right_ptr();
 
         void print(std::ostream &os, uint8_t tab) const override;
     };

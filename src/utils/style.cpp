@@ -1,5 +1,4 @@
 #include <cstdint>
-#include <re2/re2.h>
 #include <string>
 
 #include "utils/style.hpp"
@@ -11,12 +10,25 @@ namespace Utils
         return std::string(tab_count * size, ' ');
     }
 
-    static re2::RE2 style_regex("\033\\[[0-9;]*m");
-
     size_t visible_size(const std::string &str)
     {
-        std::string stripped = str;
-        re2::RE2::GlobalReplace(&stripped, style_regex, "");
+        std::string stripped;
+        stripped.reserve(str.size());
+
+        for (size_t i = 0; i < str.size(); ++i)
+        {
+            if (str[i] == '\033' && i + 1 < str.size() && str[i + 1] == '[')
+            {
+                i += 2;
+                while (i < str.size() &&
+                       (std::isdigit(str[i]) || str[i] == ';'))
+                    ++i;
+                if (i < str.size() && str[i] == 'm')
+                    continue;
+            }
+
+            stripped += str[i];
+        }
 
         return stripped.size();
     }

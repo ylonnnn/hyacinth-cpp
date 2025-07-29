@@ -1,5 +1,6 @@
 #include "ast/stmt/variable/VariableDeclStmt.hpp"
 #include "ast/expr/LiteralExpr.hpp"
+#include "ast/stmt/variable/VariableDefStmt.hpp"
 #include "core/symbol/VariableSymbol.hpp"
 #include "core/type/primitive/Void.hpp"
 #include "core/value/Value.hpp"
@@ -8,9 +9,9 @@
 
 namespace Semantic
 {
-    void validate_duplication(Analyzer &analyzer,
-                              std::unique_ptr<Core::VariableSymbol> &var,
-                              AnalysisResult &result)
+    static void validate_duplication(Analyzer &analyzer,
+                                     std::unique_ptr<Core::VariableSymbol> &var,
+                                     AnalysisResult &result)
     {
         Core::Environment *current = analyzer.current_env();
         AST::VariableDeclarationStmt *node = var->node;
@@ -53,9 +54,9 @@ namespace Semantic
         }
     }
 
-    bool analyze_type([[maybe_unused]] Analyzer &analyzer,
-                      std::unique_ptr<Core::VariableSymbol> &var,
-                      AnalysisResult &result)
+    static bool analyze_type([[maybe_unused]] Analyzer &analyzer,
+                             std::unique_ptr<Core::VariableSymbol> &var,
+                             AnalysisResult &result)
     {
         Core::Environment *current = analyzer.current_env();
 
@@ -92,9 +93,9 @@ namespace Semantic
         return true;
     }
 
-    void analyze_value([[maybe_unused]] Analyzer &analyzer,
-                       std::unique_ptr<Core::VariableSymbol> &var,
-                       AnalysisResult &result)
+    static void analyze_value([[maybe_unused]] Analyzer &analyzer,
+                              std::unique_ptr<Core::VariableSymbol> &var,
+                              AnalysisResult &result)
     {
         if (var->node == nullptr)
             return;

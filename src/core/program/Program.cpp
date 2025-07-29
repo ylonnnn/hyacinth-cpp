@@ -17,8 +17,6 @@ namespace Core
     ProgramFile::ProgramFile(const char *path)
         : path_(std::filesystem::absolute(path))
     {
-        std::cout << path_.c_str() << "\n";
-
         read();
     }
 
@@ -71,6 +69,7 @@ namespace Core
         auto succeed = true;
 
         auto result = Result<void *>{ResultStatus::Success, nullptr, {}};
+        result.diagnostics.reserve(32);
 
         // Lexical Analysis
         Lexer::Lexer lexer(*this);
@@ -94,8 +93,6 @@ namespace Core
 
         auto parser_end = std::chrono::high_resolution_clock::now();
 
-        // std::cout << *parse_result.data << "\n";
-
         // Semantic Analysis
         if (succeed)
         {
@@ -115,6 +112,9 @@ namespace Core
 
         // Time Elapsed
         auto end = std::chrono::high_resolution_clock::now();
+
+        std::cout << *parse_result.data << "\n";
+
         auto microseconds =
             std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 

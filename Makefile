@@ -1,6 +1,5 @@
 CXX = g++
 CXXFLAGS = -g -O0 -Wall -Wextra -std=c++17 -Iinclude -MMD -MP
-LDFLAGS = -lre2
 
 BUILD_DIR = $(CURDIR)/build
 SRC_DIR = ./src
@@ -18,7 +17,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 $(TARGET): $(OBJECTS)
 	@mkdir -p $(BUILD_DIR)
-	$(CXX) $(OBJECTS) $(LDFLAGS) -o $(TARGET)
+	$(CXX) $(OBJECTS) -o $(TARGET)
 
 run: 
 	$(MAKE) all

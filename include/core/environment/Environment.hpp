@@ -12,8 +12,8 @@ namespace Core
 {
     class Environment
     {
-      private:
-        Environment *parent_;
+      protected:
+        Environment *parent_ = nullptr;
         std::vector<std::unique_ptr<Environment>> children_;
 
         TypeTable types_;
@@ -22,6 +22,7 @@ namespace Core
 
       public:
         Environment(Environment *parent);
+        virtual ~Environment() = default;
 
         Environment *parent();
 

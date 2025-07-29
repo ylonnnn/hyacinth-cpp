@@ -33,9 +33,14 @@ namespace Lexer
         reserved_.insert_or_assign("priv"sv, Reserved::Private);
         reserved_.insert_or_assign("prot"sv, Reserved::Protected);
 
+        // Types
+        reserved_.insert_or_assign("struct"sv, Reserved::Struct);
+
+        // Function-Related
         reserved_.insert_or_assign("fn"sv, Reserved::Function);
         reserved_.insert_or_assign("return"sv, Reserved::Return);
 
+        // Variable-Related
         reserved_.insert_or_assign("let"sv, Reserved::Declaration);
     }
 

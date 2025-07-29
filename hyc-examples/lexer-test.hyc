@@ -1,29 +1,33 @@
-fn add -> int[32] (a: int[32], b: int[32]);
+fn add -> int[32] (a: int[32], b: int[32]) {
+    return 1;
+}
 
-// fn is_positive -> bool (n: int[32]);
+struct Person {
+    name: str;
+    age: int[32];
+}
 
-fn concat -> str (a: str, b: str);
+struct Vector3;
 
-fn some_other_fn -> void ();
+struct Player {
+    position: Vector3; // Valid use of forward declaration
+}
 
-fn printfn -> void (content: str);
+// struct Vector3; // Error: Re-declaration
 
-fn some_function_with_impl -> void () {
-    let some_int: int[32] = 123123;
-    let some_str: str = "This is just some internal string";
-
-    let some_var: int[16] = 123;
-
-    let internal_str: str = concat(some_str, "-internal_str_data");
-    let another_internal_str: str = concat(internal_str, some_str);
+// Valid: Definition of forward declaration
+struct Vector3 {
+    x: int[32];
+    y: int[32];
+    z: int[32];
 }
 
 fn main -> void () {
-    let some_char: char = 'a';
-    let sum: int[32] = add(12, 13);
-    let some_bool: bool = true;
+    let x: int[8] = 123; 
+    let y: int[10] = 456;
 
-    let first_str: str = "Hello, ";
-    let second_str: str = "World";
-    let concatenated: str = concat(first_str, second_str);
+    let xy_sum: int[32] = add(x, y); 
+
+    let person: Person = { name: "John Doe", age: 21, };
+    let my_vec: Vector3 = { x: 123, y: add(1, 2), z: 456 };
 }
