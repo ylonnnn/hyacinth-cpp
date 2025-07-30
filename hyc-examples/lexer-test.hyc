@@ -1,28 +1,29 @@
-struct Person {
+struct Vector3;
+
+fn get_x -> int[32] (vec3: Vector3);
+
+struct Player {
     name: str;
-    age: int[32];
+    position: Vector3;
 }
 
-fn create_person -> Person (name: str, age: int[7]) {
+struct Vector3 {
+    x: int[32];
+    y: int[32];
+    z: int[32];
+}
+
+fn create_player -> Player (name: str, position: Vector3) {
     return {
         name: name,
-        age: age
+        position: position,
     };
-}
-
-fn use_person_instance -> void (person: Person) {
-    let person_age: int[7] = 63;
 }
 
 fn main -> void () {
-    let person: Person = {
-        name: "Person", 
-        age: 21, 
-    };
+    // let pl: Player = create_player("Player 1", {x: 12, y: 5, z: 45});
+    let p: Player = { name: "Player 1", position: { x: 1, y: 2, z: 3 } };
+    let p2: Player = create_player("Player 2", { x: 2, y: 3, z: 4 });
 
-    use_person_instance(person);
-    use_person_instance({
-        name: "Inline Person Instance",
-        age: false
-    });
+    get_x({ x: 1, y: 2, z: 3 });
 }

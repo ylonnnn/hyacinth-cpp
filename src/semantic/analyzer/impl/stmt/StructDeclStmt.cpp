@@ -7,26 +7,26 @@
 
 namespace Semantic
 {
-    static bool
-    validate_duplication(Analyzer &analyzer,
-                         std::unique_ptr<Core::StructSymbol> &struct_,
+    static std::pair<Core::StructSymbol *, bool>
+    validate_duplication(Analyzer &analyzer, AST::StructDeclarationStmt &node,
                          AnalysisResult &result)
     {
         Core::Environment *current = analyzer.current_env();
-        AST::StructDeclarationStmt *node = struct_->node;
 
-        std::string identifier(node->name().value);
+        Lexer::Token &st_name = node.name();
+        std::string identifier(st_name.value);
+
         Core::Symbol *declared = current->resolve_symbol(identifier);
 
         auto error = [&](const std::string &message) -> void
         {
-            auto err_node = AST::LiteralExpr(node->name());
+            auto err_node = AST::LiteralExpr(st_name);
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
                 &err_node, Diagnostic::ErrorTypes::Semantic::Duplication,
                 std::move(message),
                 "Identifier \"" + identifier + "\" is already used");
 
-            auto defined = struct_->defined_at != nullptr;
+            auto defined = declared->defined_at != nullptr;
 
             diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
                 declared->node,
@@ -43,26 +43,12 @@ namespace Semantic
         if (declared == nullptr)
         {
             auto valid = current->resolve_type(identifier) == nullptr;
-            if (current->resolve_type(identifier) != nullptr)
+            if (!valid)
                 error(std::string("Cannot re-declare symbol \"") +
                       Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
                       "\".");
 
-            return valid;
-        }
-
-        auto defined = declared->defined_at != nullptr,
-             is_def = node->is_definition();
-
-        // Declared and defined; or
-        // Declared and attempting to re-declare
-        if (defined || !is_def)
-        {
-            error(std::string("Cannot re-declare symbol \"") +
-                  Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
-                  "\".");
-
-            return false;
+            return {nullptr, valid};
         }
 
         auto declptr = dynamic_cast<Core::StructSymbol *>(declared);
@@ -73,18 +59,31 @@ namespace Semantic
                   Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
                   "\".");
 
-            return false;
+            return {nullptr, false};
         }
 
-        return true;
+        auto defined = declared->defined_at != nullptr,
+             is_def = node.is_definition();
+
+        // Declared and defined; or
+        // Declared and attempting to re-declare
+        if (defined || !is_def)
+        {
+            error(std::string("Cannot re-declare symbol \"") +
+                  Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
+                  "\".");
+
+            return {declptr, false};
+        }
+
+        return {declptr, true};
     }
 
-    static void analyze_fields(Analyzer &analyzer,
-                               std::unique_ptr<Core::StructSymbol> &struct_,
+    static void analyze_fields(Analyzer &analyzer, Core::StructSymbol *struct_,
                                AnalysisResult &result)
     {
         Core::Environment *current = analyzer.current_env();
-        auto def = static_cast<AST::StructDefinitionStmt *>(struct_->node);
+        auto def = struct_->definition;
 
         for (auto &[name, field] : def->fields())
         {
@@ -101,7 +100,7 @@ namespace Semantic
             Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-            struct_->fields.try_emplace(name, std::move(t_res.data));
+            struct_->type->fields().try_emplace(name, std::move(t_res.data));
         }
     }
 
@@ -114,22 +113,33 @@ namespace Semantic
 
         result.diagnostics.reserve(8);
 
-        auto _struct = std::make_unique<Core::StructSymbol>(
-            node.name().value, node.position(),
-            std::vector<Core::StructField>{}, &node);
-
-        if (!validate_duplication(analyzer, _struct, result))
+        auto [declared, valid] = validate_duplication(analyzer, node, result);
+        if (!valid)
             return result;
+
+        auto is_decl = declared != nullptr;
+        if (!is_decl)
+        {
+            declared = new Core::StructSymbol(node.name().value,
+                                              node.position(), &node);
+            declared->type = new Core::StructType(
+                current, declared->name,
+                std::unordered_map<std::string_view,
+                                   std::unique_ptr<Core::Type>>{});
+        }
 
         if (node.is_definition())
         {
-            _struct->define(const_cast<Core::Position *>(&node.position()));
-            analyze_fields(analyzer, _struct, result);
+            declared->define(static_cast<AST::StructDefinitionStmt *>(&node));
+            analyze_fields(analyzer, declared, result);
         }
 
-        current->declare_type(std::make_unique<Core::StructType>(
-            current, node.name().value, std::move(_struct->fields)));
-        current->declare_symbol(std::move(_struct));
+        current->declare_type(
+            std::unique_ptr<Core::StructType>(declared->type));
+
+        if (!is_decl)
+            current->declare_symbol(
+                std::unique_ptr<Core::StructSymbol>(declared));
 
         return result;
     }

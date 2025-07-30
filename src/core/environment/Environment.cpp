@@ -27,12 +27,20 @@ namespace Core
 
     void Environment::declare_type(std::unique_ptr<BaseType> type)
     {
-        types_.insert_or_assign(type->name(), std::move(type));
+        auto it = types_.find(type->name());
+        if (it == types_.end())
+            types_.emplace(type->name(), std::move(type));
+        else
+        {
+            auto _ = type.release();
+            (void)_;
+        }
     }
 
     void Environment::declare_symbol(std::unique_ptr<Symbol> symbol)
     {
-        symbols_.try_emplace(symbol->name, std::move(symbol));
+        std::cout << "declare: " << symbol->name << "\n";
+        symbols_.insert_or_assign(symbol->name, std::move(symbol));
     }
 
     void Environment::declare_variable(std::unique_ptr<VariableSymbol> variable)

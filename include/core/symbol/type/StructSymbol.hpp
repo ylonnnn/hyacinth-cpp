@@ -1,8 +1,10 @@
 #pragma once
 
 #include "ast/stmt/types/struct/StructDeclStmt.hpp"
+#include "ast/stmt/types/struct/StructDefStmt.hpp"
 #include "core/symbol/Symbol.hpp"
 #include "core/type/Type.hpp"
+#include "core/type/compound/Struct.hpp"
 
 namespace Core
 {
@@ -15,12 +17,15 @@ namespace Core
     struct StructSymbol : public Symbol
     {
         AST::StructDeclarationStmt *node = nullptr;
+        AST::StructDefinitionStmt *definition = nullptr;
 
-        std::unordered_map<std::string_view, std::unique_ptr<Type>> fields;
+        StructType *type = nullptr;
 
         StructSymbol(std::string_view name, Core::Position declared_at,
-                     std::vector<StructField> &&fields,
                      AST::StructDeclarationStmt *node = nullptr);
+
+        void define(Core::Position *position) override;
+        void define(AST::StructDefinitionStmt *definition);
     };
 
 } // namespace Core

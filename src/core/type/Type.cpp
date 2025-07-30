@@ -123,6 +123,11 @@ namespace Core
         parameters_.reserve(8);
     }
 
+    BaseType::~BaseType()
+    {
+        std::cout << "destroyed: " << name_ << " | " << this << "\n";
+    }
+
     std::string_view BaseType::name() const { return name_; }
 
     std::vector<TypeParameter> &BaseType::parameters() { return parameters_; }

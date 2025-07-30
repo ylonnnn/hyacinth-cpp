@@ -1,5 +1,6 @@
 #include "core/type/compound/Struct.hpp"
 #include "core/environment/Environment.hpp"
+#include "core/symbol/type/StructSymbol.hpp"
 #include "core/type/Type.hpp"
 #include "diagnostic/NoteDiagnostic.hpp"
 
@@ -67,14 +68,27 @@ namespace Core
 
         Core::Symbol *symbol = environment_->resolve_symbol(name);
         if (symbol != nullptr)
+        {
+            Core::StructSymbol *_struct =
+                static_cast<Core::StructSymbol *>(symbol);
+
             diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
-                symbol->node, Diagnostic::NoteType::Definition,
+                _struct->defined_at != nullptr ? _struct->definition
+                                               : _struct->node,
+                Diagnostic::NoteType::Definition,
                 "Struct \"" + (Diagnostic::NOTE_GEN + name) +
                     Utils::Styles::Reset +
                     "\" is defined with the structure below.",
                 "Use this definition as a guide"));
+        }
 
         return diagnostic;
+    }
+
+    std::unordered_map<std::string_view, std::unique_ptr<Type>> &
+    StructType::fields()
+    {
+        return fields_;
     }
 
 } // namespace Core

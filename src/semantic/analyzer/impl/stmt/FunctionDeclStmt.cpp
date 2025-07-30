@@ -59,7 +59,7 @@ namespace Semantic
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
             Core::FunctionParameter parameter{
-                param.name().value, param.is_mutable(), t_res.data.get()};
+                param.name().value, param.is_mutable(), std::move(t_res.data)};
 
             // Register/Declare the parameters as variables to the environment
             // for analysis
@@ -67,7 +67,7 @@ namespace Semantic
             {
                 auto p_symbol = std::make_unique<Core::FunctionParameterSymbol>(
                     param.name().value, param.position(), param.is_mutable(),
-                    std::move(t_res.data), std::nullopt, &param);
+                    parameter.type.get(), std::nullopt, &param);
 
                 // TODO: .define() if defined
 
@@ -78,16 +78,17 @@ namespace Semantic
         }
     }
 
-    static void validate_duplication(Analyzer &analyzer,
-                                     std::unique_ptr<Core::FunctionSymbol> &fn,
-                                     AnalysisResult &result)
+    static std::pair<Core::FunctionSymbol *, bool>
+    validate_duplication(Analyzer &analyzer,
+                         std::unique_ptr<Core::FunctionSymbol> &fn,
+                         AnalysisResult &result)
     {
         Core::Environment *current = analyzer.current_env();
         AST::FunctionDeclarationStmt *node = fn->node;
 
         auto declared = current->resolve_symbol(std::string(fn->name));
         if (declared == nullptr)
-            return;
+            return {nullptr, true};
 
         std::string name(declared->name);
         auto defined = declared->defined_at != nullptr,
@@ -113,16 +114,6 @@ namespace Semantic
             result.error(std::move(diagnostic));
         };
 
-        // Declared and defined; or
-        // Declared and attempting to re-declare
-        if (defined || !is_def)
-        {
-            error(std::string("Cannot re-declare symbol \"") +
-                  Diagnostic::ERR_GEN + name + Utils::Styles::Reset + "\".");
-
-            return;
-        }
-
         auto declptr = dynamic_cast<Core::FunctionSymbol *>(declared);
         if (declptr == nullptr)
         {
@@ -130,7 +121,17 @@ namespace Semantic
                               "declaration of \"") +
                   Diagnostic::ERR_GEN + name + Utils::Styles::Reset + "\".");
 
-            return;
+            return {nullptr, false};
+        }
+
+        // Declared and defined; or
+        // Declared and attempting to re-declare
+        if (defined || !is_def)
+        {
+            error(std::string("Cannot re-declare symbol \"") +
+                  Diagnostic::ERR_GEN + name + Utils::Styles::Reset + "\".");
+
+            return {declptr, false};
         }
 
         // Check for parameter list difference
@@ -142,8 +143,10 @@ namespace Semantic
         if (fn->signature != declptr->signature)
         {
             error(std::move(err_message));
-            return;
+            return {declptr, false};
         }
+
+        return {declptr, true};
     }
 
     static void analyze_body(Analyzer &analyzer,
@@ -157,8 +160,6 @@ namespace Semantic
 
         auto defptr = static_cast<AST::FunctionDefinitionStmt *>(node);
         AST::BlockStmt &body = defptr->body();
-
-        fn->define(const_cast<Core::Position *>(&body.position()));
 
         std::vector<std::unique_ptr<AST::Stmt>> &statements = body.statements();
         size_t r_size = statements.size() * 2;
@@ -206,19 +207,30 @@ namespace Semantic
 
         function->construct_signature();
 
-        validate_duplication(analyzer, function, result);
+        auto [declared, valid] =
+            validate_duplication(analyzer, function, result);
+        if (!valid)
+            return result;
+
+        auto is_decl = declared != nullptr;
+        declared = is_decl ? declared : function.get();
 
         // Analyze the body if the statement is a definition
         if (is_def)
         {
-            current = body_env;
+            declared->define(static_cast<AST::FunctionDefinitionStmt *>(&node));
+
+            // Enter function body environment
             analyzer.set_current_env(*body_env);
 
             analyze_body(analyzer, function, result);
+
+            // Exit function body environment
+            analyzer.set_current_env(*body_env->parent());
         }
 
-        analyzer.set_current_env(*body_env->parent());
-        closure->declare_symbol(std::move(function));
+        if (!is_decl)
+            closure->declare_symbol(std::move(function));
 
         return result;
     }

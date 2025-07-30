@@ -14,6 +14,8 @@ namespace Core
         IdentifierSymbol(std::string_view name, Core::Position declared_at,
                          bool is_mutable, std::unique_ptr<Type> type,
                          std::optional<Value> value, AST::Node *node = nullptr);
+
+        virtual Type *type_();
     };
 
 } // namespace Core

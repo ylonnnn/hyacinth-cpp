@@ -69,7 +69,7 @@ namespace Core
 
       public:
         BaseType(Environment *environment, std::string_view name);
-        virtual ~BaseType() = default;
+        virtual ~BaseType();
 
       protected:
         virtual bool

@@ -5,13 +5,15 @@ namespace Core
 {
     FunctionParameterSymbol::FunctionParameterSymbol(
         std::string_view name, Core::Position declared_at, bool is_mutable,
-        std::unique_ptr<Type> type, std::optional<Value> value,
-        AST::FunctionParameter *node)
-        : IdentifierSymbol(name, declared_at, is_mutable, std::move(type),
+        Type *type, std::optional<Value> value, AST::FunctionParameter *node)
+        : IdentifierSymbol(name, declared_at, is_mutable, nullptr,
                            std::move(value), node)
     {
+        this->type = type;
         this->node = dynamic_cast<AST::FunctionParameter *>(Symbol::node);
     }
+
+    Type *FunctionParameterSymbol::type_() { return type; }
 
     FunctionSymbol::FunctionSymbol(std::string_view name,
                                    Core::Position declared_at,
@@ -39,6 +41,17 @@ namespace Core
         }
 
         signature += ")";
+    }
+
+    void FunctionSymbol::define(Core::Position *position)
+    {
+        defined_at = position;
+    }
+
+    void FunctionSymbol::define(AST::FunctionDefinitionStmt *definition)
+    {
+        define(&definition->position());
+        this->definition = definition;
     }
 
 } // namespace Core

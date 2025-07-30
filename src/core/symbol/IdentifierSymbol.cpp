@@ -13,4 +13,6 @@ namespace Core
             this->value = std::move(*value);
     }
 
+    Type *IdentifierSymbol::type_() { return type.get(); }
+
 } // namespace Core

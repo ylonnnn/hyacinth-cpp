@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast/stmt/function/FunctionDeclStmt.hpp"
+#include "ast/stmt/function/FunctionDefStmt.hpp"
 #include "core/symbol/IdentifierSymbol.hpp"
 #include "core/symbol/Symbol.hpp"
 #include "core/type/Type.hpp"
@@ -11,23 +12,26 @@ namespace Core
     {
         std::string_view name;
         bool is_mutable;
-        Type *type;
+        std::unique_ptr<Type> type;
     };
 
     struct FunctionParameterSymbol : public IdentifierSymbol
     {
+        Type *type = nullptr;
         AST::FunctionParameter *node = nullptr;
 
         FunctionParameterSymbol(std::string_view name,
                                 Core::Position declared_at, bool is_mutable,
-                                std::unique_ptr<Type> type,
-                                std::optional<Value> value,
+                                Type *type, std::optional<Value> value,
                                 AST::FunctionParameter *node = nullptr);
+
+        Type *type_() override;
     };
 
     struct FunctionSymbol : public Symbol
     {
         AST::FunctionDeclarationStmt *node = nullptr;
+        AST::FunctionDefinitionStmt *definition = nullptr;
 
         std::unique_ptr<Type> return_type;
         std::vector<FunctionParameter> parameters;
@@ -40,6 +44,9 @@ namespace Core
                        AST::FunctionDeclarationStmt *node = nullptr);
 
         void construct_signature();
+
+        void define(Core::Position *position) override;
+        void define(AST::FunctionDefinitionStmt *definition);
     };
 
 } // namespace Core

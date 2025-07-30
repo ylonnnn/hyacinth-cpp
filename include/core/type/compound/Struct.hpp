@@ -24,6 +24,8 @@ namespace Core
 
       public:
         bool assignable_with(const BaseType &type) const override;
+
+        std::unordered_map<std::string_view, std::unique_ptr<Type>> &fields();
     };
 
 } // namespace Core

@@ -5,15 +5,21 @@ namespace Core
 {
     StructSymbol::StructSymbol(std::string_view name,
                                Core::Position declared_at,
-                               std::vector<StructField> &&fields,
                                AST::StructDeclarationStmt *node)
         : Symbol(name, std::move(declared_at), node)
     {
         this->node = dynamic_cast<AST::StructDeclarationStmt *>(Symbol::node);
+    }
 
-        this->fields.reserve(fields.size());
-        for (auto &[name, field] : fields)
-            this->fields.try_emplace(name, std::move(field));
+    void StructSymbol::define(Core::Position *position)
+    {
+        defined_at = position;
+    }
+
+    void StructSymbol::define(AST::StructDefinitionStmt *definition)
+    {
+        define(&definition->position());
+        this->definition = definition;
     }
 
 } // namespace Core

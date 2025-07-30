@@ -17,7 +17,7 @@ namespace Core
 
         virtual ~Symbol() = default;
 
-        void define(Core::Position *position);
+        virtual void define(Core::Position *position);
     };
 
 } // namespace Core
