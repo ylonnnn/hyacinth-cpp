@@ -13,10 +13,8 @@ namespace AST
 
       public:
         InstanceExpr(
-            Core::Position position,
+            Core::Position &position,
             std::unordered_map<std::string, std::unique_ptr<Expr>> fields);
-
-        void set_end_pos(size_t end_pos);
 
         std::unordered_map<std::string, std::unique_ptr<Expr>> &fields();
 

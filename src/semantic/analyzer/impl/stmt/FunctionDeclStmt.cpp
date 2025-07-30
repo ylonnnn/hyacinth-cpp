@@ -217,6 +217,7 @@ namespace Semantic
             analyze_body(analyzer, function, result);
         }
 
+        analyzer.set_current_env(*body_env->parent());
         closure->declare_symbol(std::move(function));
 
         return result;

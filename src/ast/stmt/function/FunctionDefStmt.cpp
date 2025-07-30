@@ -13,7 +13,7 @@ namespace AST
     {
         body_ = std::move(body);
 
-        end_pos_ = body_->end_pos();
+        set_end_position(body_->end_position());
     }
 
     bool FunctionDefinitionStmt::is_definition() const { return true; }
@@ -34,7 +34,10 @@ namespace AST
            << inner_indentation << "name: " << name_ << "\n"
            << inner_indentation << "return_type: ";
 
-        return_type_->print(os, tab + 1);
+        if (return_type_ != nullptr)
+            return_type_->print(os, tab + 1);
+        else
+            os << "nullptr";
 
         os << "\n" << inner_indentation << "parameters: {";
         for (auto &param : parameters_)

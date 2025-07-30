@@ -5,9 +5,9 @@
 
 namespace AST
 {
-    ArrayExpr::ArrayExpr(Core::Position position,
+    ArrayExpr::ArrayExpr(Core::Position &position,
                          std::vector<std::unique_ptr<Expr>> collection)
-        : NodeCollection<Expr>(std::move(position), std::move(collection))
+        : NodeCollection<Expr>(position, std::move(collection))
     {
     }
 

@@ -10,7 +10,7 @@ namespace AST
           type_(std::move(type))
     {
         if (type_ != nullptr)
-            end_pos_ = type_->end_pos();
+            set_end_position(type_->end_position());
     }
 
     Lexer::Token &Identifier::name() { return name_; }

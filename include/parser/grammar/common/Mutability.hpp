@@ -12,7 +12,7 @@ namespace Parser
         bool mutable_;
 
       public:
-        MutabilityNode(Core::Position position, bool mut);
+        MutabilityNode(Core::Position &position, bool mut);
 
         void set_mutability(bool mut);
         bool is_mutable() const;

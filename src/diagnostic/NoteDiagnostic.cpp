@@ -39,16 +39,14 @@ namespace Diagnostic
 
     void NoteDiagnostic::construct()
     {
-        const Core::Position &position = node_->position();
-
         constructed_ += std::string("\n\n") + NOTE_GEN + "Note <" +
                         note_type_to_string(note_type_) + "> " +
                         Utils::Styles::Reset + message_ + "\n\n";
 
         construct_emphasis((DiagnosticEmphasis){
             .message = submessage_,
-            .position = const_cast<Core::Position &>(position),
-            .length = node_->end_pos(),
+            .position = node_->position(),
+            .end_position = node_->end_position(),
             .emphasis = NOTE_EMPH,
             .trace = NOTE_GEN,
             .pointer = NOTE_GEN,

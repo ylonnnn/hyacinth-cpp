@@ -5,13 +5,26 @@
 
 namespace AST
 {
-    Node::Node(Core::Position position) : position_(std::move(position)) {}
+    Node::Node(Core::Position &position)
+        : position_(&position), end_position_(position_)
+    {
+    }
 
-    Core::ProgramFile &Node::program() { return position_.program; }
+    Core::ProgramFile &Node::program() { return position_->program; }
 
-    const Core::Position &Node::position() const { return position_; }
+    Core::Position &Node::position() { return *position_; }
 
-    size_t Node::end_pos() const { return end_pos_; }
+    Core::Position &Node::end_position() { return *end_position_; }
+
+    void Node::set_position(const Core::Position &position)
+    {
+        position_ = const_cast<Core::Position *>(&position);
+    }
+
+    void Node::set_end_position(const Core::Position &position)
+    {
+        end_position_ = const_cast<Core::Position *>(&position);
+    }
 
     std::ostream &operator<<(std::ostream &os, const Node &node)
     {

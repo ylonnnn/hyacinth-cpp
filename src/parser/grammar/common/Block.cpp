@@ -32,8 +32,10 @@ namespace Parser
 
         if (parser.expect(pair_.first, false))
         {
-            Lexer::Token *open = lexer.next();
-            block->set_end_pos(open->position.col + open->value.size());
+            lexer.next();
+
+            if (!lexer.eof())
+                block->set_end_position(lexer.peek()->end_position);
         }
         else
         {
@@ -68,10 +70,7 @@ namespace Parser
         }
 
         else
-        {
-            Lexer::Token *close = lexer.next();
-            block->set_end_pos(close->position.col + close->value.size());
-        }
+            block->set_end_position(lexer.next()->end_position);
 
         return result;
     }

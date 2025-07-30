@@ -6,7 +6,6 @@ namespace AST
     ConstantType::ConstantType(Lexer::Token &constant)
         : Type(constant), constant_(constant)
     {
-        end_pos_ = constant_.position.col + constant_.value.size();
     }
 
     Lexer::Token &ConstantType::constant() { return constant_; }

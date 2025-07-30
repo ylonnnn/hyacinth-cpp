@@ -92,16 +92,14 @@ namespace Diagnostic
 
     void ErrorDiagnostic::construct()
     {
-        const Core::Position &position = node_->position();
-
         constructed_ += std::string("\n\n") + ERR_GEN + "Error <" +
                         error_type_to_string(error_type_) + "> " +
                         Utils::Styles::Reset + message_ + "\n\n";
 
         construct_emphasis((DiagnosticEmphasis){
             .message = submessage_,
-            .position = const_cast<Core::Position &>(position),
-            .length = node_->end_pos(),
+            .position = node_->position(),
+            .end_position = node_->end_position(),
             .emphasis = ERR_EMPH,
             .trace = ERR_GEN,
             .pointer = ERR_GEN,

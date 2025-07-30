@@ -14,7 +14,7 @@ namespace Diagnostic
         const std::string &message;
 
         Core::Position &position;
-        size_t length;
+        Core::Position &end_position;
 
         Utils::TextStyle emphasis;
         Utils::TextStyle trace;

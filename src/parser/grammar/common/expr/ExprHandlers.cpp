@@ -150,8 +150,7 @@ namespace Parser
             break;
         }
 
-        size_t fnc_end_pos;
-
+        Core::Position *fnc_ep = nullptr;
         if (auto diagnostic = parser.expect_or_error(closing_token_type, false))
         {
             parser.panic();
@@ -161,10 +160,7 @@ namespace Parser
         }
 
         else
-        {
-            Lexer::Token *close = lexer.next();
-            fnc_end_pos = close->position.col + close->value.size();
-        }
+            fnc_ep = &lexer.next()->end_position;
 
         // return std::make_unique<AST::BinaryExpr>(
         //     std::move(left), operation,
@@ -173,7 +169,7 @@ namespace Parser
         auto node = std::make_unique<AST::FunctionCalLExpr>(
             std::move(left), std::move(arguments));
 
-        node->set_end_pos(fnc_end_pos);
+        node->set_end_position(*fnc_ep);
 
         return node;
     }
@@ -185,7 +181,7 @@ namespace Parser
         auto &lexer = parser.lexer();
 
         Lexer::Token &open = lexer.current();
-        Core::Position pos = open.position;
+        Core::Position &pos = open.position;
 
         Expr *expr_rule;
         if (auto ptr = dynamic_cast<Expr *>(parser.grammar().fallback()))
@@ -259,8 +255,7 @@ namespace Parser
             break;
         }
 
-        size_t c_end_pos;
-
+        Core::Position *c_ep = nullptr;
         if (auto diagnostic = parser.expect_or_error(closing, false))
         {
             parser.panic();
@@ -271,10 +266,7 @@ namespace Parser
         }
 
         else
-        {
-            Lexer::Token *close = lexer.next();
-            c_end_pos = close->position.col + close->value.size();
-        }
+            c_ep = &lexer.next()->end_position;
 
         // return std::make_unique<AST::BinaryExpr>(
         //     std::move(left), operation,
@@ -282,7 +274,7 @@ namespace Parser
 
         auto node = std::make_unique<AST::InstanceExpr>(pos, std::move(fields));
 
-        node->set_end_pos(c_end_pos);
+        node->set_end_position(*c_ep);
 
         return node;
     }

@@ -12,9 +12,8 @@ namespace AST
         : Node(left->position()), left_(std::move(left)), operation_(operation),
           right_(std::move(right))
     {
-        end_pos_ = right_ != nullptr
-                       ? right_->end_pos()
-                       : (operation_.position.col + operation_.value.size());
+        set_end_position(right_ != nullptr ? right_->end_position()
+                                           : operation_.end_position);
     }
 
     Expr &BinaryExpr::left() { return *left_; }

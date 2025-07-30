@@ -1,33 +1,28 @@
-fn add -> int[32] (a: int[32], b: int[32]) {
-    return b;
-}
-
 struct Person {
     name: str;
     age: int[32];
 }
 
-struct Vector3;
-
-struct Player {
-    position: Vector3; // Valid use of forward declaration
+fn create_person -> Person (name: str, age: int[7]) {
+    return {
+        name: name,
+        age: age
+    };
 }
 
-// struct Vector3; // Error: Re-declaration
-
-// Valid: Definition of forward declaration
-struct Vector3 {
-    x: int[32];
-    y: int[32];
-    z: int[32];
+fn use_person_instance -> void (person: Person) {
+    let person_age: int[7] = 63;
 }
 
 fn main -> void () {
-    let x: int[8] = 123; 
-    let y: int[10] = 456;
+    let person: Person = {
+        name: "Person", 
+        age: 21, 
+    };
 
-    let xy_sum: int[32] = add(x, y); 
-
-    let person: Person = { name: "John Doe", age: 21, };
-    let my_vec: Vector3 = { x: 123, y: add(1, 2), z: 456 };
+    use_person_instance(person);
+    use_person_instance({
+        name: "Inline Person Instance",
+        age: false
+    });
 }

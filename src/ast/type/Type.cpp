@@ -2,7 +2,10 @@
 
 namespace AST
 {
-    Type::Type(Lexer::Token &value) : Node(value.position), value_(value) {}
+    Type::Type(Lexer::Token &value) : Node(value.position), value_(value)
+    {
+        set_end_position(value.end_position);
+    }
 
     Lexer::Token &Type::value() { return value_; }
 

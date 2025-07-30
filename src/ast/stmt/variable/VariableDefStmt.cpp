@@ -7,12 +7,12 @@ namespace AST
     VariableDefinitionStmt::VariableDefinitionStmt(
         Lexer::Token &name, IdentifierMutabilityState mut_state,
         std::unique_ptr<Type> type, std::unique_ptr<Expr> value)
-        : Node(Core::Position(name.position)),
+        : Node(name.position),
           VariableDeclarationStmt(name, mut_state, std::move(type)),
           value_(std::move(value))
     {
         if (value_ != nullptr)
-            end_pos_ = value_->end_pos();
+            set_end_position(value_->end_position());
     }
 
     bool VariableDefinitionStmt::is_definition() const { return true; }

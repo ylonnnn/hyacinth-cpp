@@ -11,10 +11,8 @@ namespace AST
         std::unique_ptr<Expr> value_;
 
       public:
-        FunctionReturnStmt(Core::Position position,
+        FunctionReturnStmt(Core::Position &position,
                            std::unique_ptr<Expr> value);
-
-        void set_end_pos(size_t end_pos);
 
         Expr *value();
 

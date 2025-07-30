@@ -15,8 +15,11 @@ namespace Core
 {
 
     ProgramFile::ProgramFile(const char *path)
-        : path_(std::filesystem::absolute(path))
+        : path_(std::filesystem::absolute(path)),
+          position_(this->position_at(1, 1))
     {
+        lines_.reserve(64);
+
         read();
     }
 
@@ -39,24 +42,42 @@ namespace Core
                              EXIT_FAILURE);
         }
 
-        // source_ = std::string(std::istreambuf_iterator<char>(file),
-        //                       std::istreambuf_iterator<char>());
-
         size_t size = file_size(file);
 
         source_.resize(size);
         file.read(&source_[0], size);
+
+        size_t cursor = 0, line_start = cursor;
+        while (cursor < size)
+        {
+            char &ch = source_[cursor];
+            if (ch == '\n')
+            {
+                lines_.emplace_back(source_.data() + line_start,
+                                    (cursor - line_start));
+
+                line_start = cursor + 1;
+            }
+
+            cursor++;
+        }
+
+        file.close();
     }
 
     const std::filesystem::path &ProgramFile::path() const { return path_; }
 
     const std::string &ProgramFile::source() const { return source_; }
 
+    std::vector<std::string_view> &ProgramFile::lines() { return lines_; }
+
+    Core::Position &ProgramFile::position() { return position_; }
+
     // Semantic::ScopeStack &ProgramFile::scope_stack() { return scope_stack_; }
 
     Position ProgramFile::position_at(size_t row, size_t col)
     {
-        return (Position){
+        return Position{
             .row = row,
             .col = col,
             .program = *this,

@@ -1,4 +1,3 @@
-#include <sstream>
 #include <string>
 
 #include "diagnostic/Diagnostic.hpp"
@@ -7,23 +6,24 @@
 
 namespace Diagnostic
 {
-    std::string line_at(Core::ProgramFile &program, size_t line)
+    static std::vector<std::string_view>
+    get_lines(Core::ProgramFile &program, std::pair<size_t, size_t> line_range)
     {
-        std::stringstream stream(program.source());
-        std::string curr_line;
+        const auto &[start, end] = line_range;
 
-        size_t line_count = 0;
-        while (std::getline(stream, curr_line, '\n'))
+        std::vector<std::string_view> lines_, &lines = program.lines();
+        size_t line_count = lines.size();
+
+        if (start >= line_count || end >= line_count)
         {
-            line_count++;
-
-            if (line_count == line)
-                return curr_line;
+            Utils::terminate("Invalid line range provided!", EXIT_FAILURE);
+            return lines_;
         }
 
-        Utils::terminate("Invalid line number provided. Line does not exist!",
-                         EXIT_FAILURE);
-        return nullptr;
+        lines_.insert(lines_.end(), lines.begin() + (start - 1),
+                      lines.end() + (end - 1));
+
+        return lines_;
     }
 
     Diagnostic::Diagnostic(AST::Node *node, const std::string &message,
@@ -41,36 +41,56 @@ namespace Diagnostic
 
     void Diagnostic::construct_emphasis(DiagnosticEmphasis options)
     {
-        auto &[message, position, length, emphasis, trace, pointer] = options;
+        auto &[message, position, end_position, emphasis, trace, pointer] =
+            options;
         auto &[row, col, program] = position;
 
-        size_t end_pos = node_->end_pos();
+        std::vector<std::string_view> lines =
+            get_lines(program, {position.row, end_position.row});
 
         constexpr size_t tab_size = 3;
-        std::string tab = Utils::tab(tab_size, 1),
-                    row_string = std::to_string(row);
+        size_t start = row - 1, end = end_position.row;
 
-        std::string prefix = tab + row_string + "  | " + tab;
-        size_t prefix_len = prefix.size();
+        std::string offset;
 
-        std::string display_line = prefix + line_at(program, row) + " \n";
+        for (size_t i = start; i < end; i++)
+        {
+            size_t idx = i - start;
+            std::string_view line = lines[idx];
 
-        display_line.insert(prefix_len + end_pos - 1, Utils::Styles::Reset);
-        display_line.insert(prefix_len + col - 1, emphasis);
+            auto _start = i == start, _end = i == end - 1,
+                 edge = _start || _end;
 
-        display_line.insert(tab_size + row_string.size(), Utils::Styles::Reset);
-        display_line.insert(tab_size, Utils::Colors::Yellow);
+            size_t line_start =
+                       _start ? position.col : line.find_first_not_of(' ') + 1,
+                   line_end = _end ? end_position.col : line.size();
 
-        constructed_ += display_line;
+            std::string tab = Utils::tab(tab_size, 1),
+                        row = std::to_string(i + 1),
+                        prefix = tab + row + "  | " + tab;
 
-        std::string offset = Utils::tab((prefix.size() + col) - 1, 1);
-        constructed_ +=
-            (offset + pointer + "^" + std::string(end_pos - (col + 1), '~') +
-             Utils::Styles::Reset + "\n");
+            size_t prefix_len = prefix.size();
+            auto display = (prefix + std::string(line) + "\n");
+
+            display.insert(prefix_len + line_end, Utils::Styles::Reset);
+            display.insert(prefix_len + line_start - 1, emphasis);
+
+            display.insert(tab_size + row.size(), Utils::Styles::Reset);
+            display.insert(tab_size, Utils::Colors::Yellow);
+
+            constructed_ += display;
+
+            // Pointer
+            offset = Utils::tab((prefix.size() + line_start) - 1, 1);
+            constructed_ += (offset + pointer + (edge ? "^" : "~") +
+                             std::string(line_end - line_start, '~') +
+                             Utils::Styles::Reset + "\n");
+        }
 
         if (!message.empty())
             constructed_ += (offset + pointer + "| " + std::string(message) +
                              Utils::Styles::Reset + "\n");
+
         constructed_ +=
             (std::string("\n\t\t") + trace + "at " + program.path().string() +
              ":" + std::to_string(row) + ":" + std::to_string(col) +

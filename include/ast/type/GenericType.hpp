@@ -19,8 +19,6 @@ namespace AST
         Type &constructor();
         std::vector<std::unique_ptr<Type>> &arguments();
 
-        void set_end_pos(size_t end_pos);
-
         std::string to_string() const override;
         void print(std::ostream &os, uint8_t tab) const override;
 

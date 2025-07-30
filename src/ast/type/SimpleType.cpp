@@ -2,10 +2,7 @@
 
 namespace AST
 {
-    SimpleType::SimpleType(Lexer::Token &identifier) : Type(identifier)
-    {
-        end_pos_ = value_.position.col + value_.value.size();
-    }
+    SimpleType::SimpleType(Lexer::Token &identifier) : Type(identifier) {}
 
     Lexer::Token &SimpleType::identifier() { return value_; }
 

@@ -36,16 +36,14 @@ namespace Diagnostic
 
     void WarningDiagnostic::construct()
     {
-        const Core::Position &position = node_->position();
-
         constructed_ += std::string("\n\n") + WARN_GEN + "Warning <" +
                         warn_type_to_string(warn_type_) + "> " +
                         Utils::Styles::Reset + message_ + "\n\n";
 
         construct_emphasis((DiagnosticEmphasis){
             .message = submessage_,
-            .position = const_cast<Core::Position &>(position),
-            .length = node_->end_pos(),
+            .position = node_->position(),
+            .end_position = node_->end_position(),
             .emphasis = WARN_EMPH,
             .trace = WARN_GEN,
             .pointer = WARN_GEN,

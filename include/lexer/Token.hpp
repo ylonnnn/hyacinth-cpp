@@ -10,7 +10,7 @@ namespace Lexer
     struct Token
     {
         std::string_view value;
-        Core::Position position;
+        Core::Position position, end_position;
         TokenType type;
 
         friend std::ostream &operator<<(std::ostream &os, const Token &token);

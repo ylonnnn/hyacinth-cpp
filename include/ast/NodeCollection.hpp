@@ -14,25 +14,18 @@ namespace AST
     class NodeCollection : public Node
     {
       protected:
-        /**
-         * NOTE: Use `end_pos()` for a live/updated value
-         */
-        size_t end_pos_;
-
         std::vector<std::unique_ptr<T>> collection_;
 
       public:
-        NodeCollection(Core::Position position,
+        NodeCollection(Core::Position &position,
                        std::vector<std::unique_ptr<T>> collection)
-            : Node(std::move(position)), collection_(std::move(collection))
+            : Node(position), collection_(std::move(collection))
         {
         }
 
         virtual ~NodeCollection() override = default;
 
       public:
-        virtual void set_end_pos(size_t end_pos) { end_pos_ = end_pos; }
-
         virtual void print(std::ostream &os, uint8_t tab) const override
         {
             std::string indentation = Utils::tab(tab - 1),

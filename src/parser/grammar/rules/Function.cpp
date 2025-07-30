@@ -10,6 +10,7 @@
 #include "parser/grammar/common/IdentifierInit.hpp"
 #include "parser/grammar/rules/Function.hpp"
 #include "parser/grammar/rules/Hyacinth.hpp"
+#include "utils/control.hpp"
 #include "utils/style.hpp"
 
 namespace Parser
@@ -68,8 +69,8 @@ namespace Parser
         return parameters;
     }
 
-    static size_t parse_closing(Parser &parser, ParseResult &result,
-                                Lexer::TokenType expected)
+    static Core::Position *parse_closing(Parser &parser, ParseResult &result,
+                                         Lexer::TokenType expected)
     {
         auto &lexer = parser.lexer();
 
@@ -81,12 +82,10 @@ namespace Parser
                              std::make_move_iterator(&diagnostic),
                              std::make_move_iterator(&diagnostic + 1)});
 
-            return SIZE_MAX;
+            return nullptr;
         }
 
-        Lexer::Token *close = lexer.next();
-
-        return close->position.col + close->value.size();
+        return &lexer.next()->end_position;
     }
 
     ParseResult FunctionDefinition::parse(Parser &parser)
@@ -163,7 +162,7 @@ namespace Parser
         // PARAM_LIST
         std::vector<AST::FunctionParameter> parameters =
             parse_parameters(parser, result);
-        size_t fn_end_pos =
+        Core::Position *f_ep =
             parse_closing(parser, result, Delimeter::ParenthesisClose);
 
         // { (BraceOpen)
@@ -202,8 +201,7 @@ namespace Parser
                 auto fn_node = std::make_unique<AST::FunctionDeclarationStmt>(
                     *name, std::move(rt_result.data), std::move(parameters));
 
-                fn_node->set_end_pos(fn_end_pos);
-
+                fn_node->set_end_position(*f_ep);
                 result.data = std::move(fn_node);
             }
 
@@ -247,7 +245,7 @@ namespace Parser
         result.adapt(t_res.status, std::move(t_res.diagnostics));
 
         if (t_res.data != nullptr)
-            node->set_end_pos(t_res.data->end_pos());
+            node->set_end_position(t_res.data->end_position());
 
         result.data = std::move(node);
 

@@ -18,7 +18,7 @@ namespace AST
         : Node(name.position), DeclarationStmt(name),
           VariableIdentifier(name, mut_state, std::move(type)), name_(name)
     {
-        end_pos_ = VariableIdentifier::end_pos_;
+        set_end_position(*VariableIdentifier::end_position_);
     }
 
     bool VariableDeclarationStmt::is_definition() const { return false; }

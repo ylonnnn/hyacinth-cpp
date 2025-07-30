@@ -4,15 +4,13 @@
 
 namespace AST
 {
-    FunctionReturnStmt::FunctionReturnStmt(Core::Position position,
+    FunctionReturnStmt::FunctionReturnStmt(Core::Position &position,
                                            std::unique_ptr<Expr> value)
-        : Node(std::move(position)), value_(std::move(value))
+        : Node(position), value_(std::move(value))
     {
         if (value_ != nullptr)
-            end_pos_ = value_->end_pos();
+            set_end_position(value_->end_position());
     }
-
-    void FunctionReturnStmt::set_end_pos(size_t end_pos) { end_pos_ = end_pos; }
 
     Expr *FunctionReturnStmt::value() { return value_.get(); }
 

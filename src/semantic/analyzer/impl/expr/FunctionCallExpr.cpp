@@ -93,7 +93,8 @@ namespace Semantic
             result.adapt(a_res.status, std::move(a_res.diagnostics));
 
             if ((a_res.value && parameter.type->assignable(*a_res.value)) ||
-                parameter.type->assignable_with(*a_res.data))
+                (a_res.data != nullptr &&
+                 parameter.type->assignable_with(*a_res.data)))
                 continue;
 
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(

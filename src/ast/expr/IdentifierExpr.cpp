@@ -5,7 +5,7 @@ namespace AST
     IdentifierExpr::IdentifierExpr(Lexer::Token &identifier)
         : Node(identifier.position), identifier_(identifier)
     {
-        end_pos_ = identifier_.position.col + identifier_.value.size();
+        set_end_position(identifier_.end_position);
     }
 
     Lexer::Token &IdentifierExpr::identifier() { return identifier_; }

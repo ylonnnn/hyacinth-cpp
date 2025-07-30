@@ -111,8 +111,8 @@ namespace Parser
         return fields;
     }
 
-    static size_t parse_closing(Parser &parser, ParseResult &result,
-                                Lexer::TokenType expected)
+    static Core::Position *parse_closing(Parser &parser, ParseResult &result,
+                                         Lexer::TokenType expected)
     {
         auto &lexer = parser.lexer();
 
@@ -124,12 +124,10 @@ namespace Parser
                              std::make_move_iterator(&diagnostic),
                              std::make_move_iterator(&diagnostic + 1)});
 
-            return SIZE_MAX;
+            return nullptr;
         }
 
-        Lexer::Token *close = lexer.next();
-
-        return close->position.col + close->value.size();
+        return &lexer.next()->end_position;
     }
 
     ParseResult StructDefinition::parse(Parser &parser)
@@ -161,15 +159,15 @@ namespace Parser
                 parse_fields(parser, result);
 
             // } (BraceClose)
-            size_t st_end_pos =
+            Core::Position *s_ep =
                 parse_closing(parser, result, Delimeter::BraceClose);
-            if (st_end_pos)
-                st_end_pos = name->position.col + name->value.size();
+            if (s_ep == nullptr)
+                s_ep = &name->end_position;
 
             auto node = std::make_unique<AST::StructDefinitionStmt>(
                 *name, std::move(fields));
 
-            node->set_end_pos(st_end_pos);
+            node->set_end_position(*s_ep);
             result.data = std::move(node);
 
             return result;

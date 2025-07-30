@@ -73,10 +73,7 @@ namespace Parser
         }
 
         else
-        {
-            Lexer::Token *n_token = lexer.next();
-            type->set_end_pos(n_token->position.col + n_token->value.size());
-        }
+            type->set_end_position(lexer.next()->end_position);
 
         if (type->arguments().empty())
             result.error(Diagnostic::create_syntax_error(&start_token));

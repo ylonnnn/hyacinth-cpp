@@ -28,11 +28,6 @@ namespace AST
 
     bool StructDefinitionStmt::is_definition() const { return true; }
 
-    void StructDefinitionStmt::set_end_pos(size_t end_pos)
-    {
-        end_pos_ = end_pos;
-    }
-
     std::unordered_map<std::string_view, StructField> &
     StructDefinitionStmt::fields()
     {

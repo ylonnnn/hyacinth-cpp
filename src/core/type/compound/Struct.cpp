@@ -1,5 +1,7 @@
 #include "core/type/compound/Struct.hpp"
+#include "core/environment/Environment.hpp"
 #include "core/type/Type.hpp"
+#include "diagnostic/NoteDiagnostic.hpp"
 
 namespace Core
 {
@@ -54,7 +56,25 @@ namespace Core
         AST::Node *node,
         [[maybe_unused]] const std::vector<TypeArgument> &arguments) const
     {
-        return nullptr;
+        std::string name(name_);
+
+        auto diagnostic = std::make_unique<Diagnostic::NoteDiagnostic>(
+            node, Diagnostic::NoteType::Suggestion,
+            std::string("Only instances of \"") + Diagnostic::NOTE_GEN + name +
+                Utils::Styles::Reset + "\" are accepted.",
+            "Use an instance of struct \"" + name +
+                "\" or an object with the same structure.");
+
+        Core::Symbol *symbol = environment_->resolve_symbol(name);
+        if (symbol != nullptr)
+            diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
+                symbol->node, Diagnostic::NoteType::Definition,
+                "Struct \"" + (Diagnostic::NOTE_GEN + name) +
+                    Utils::Styles::Reset +
+                    "\" is defined with the structure below.",
+                "Use this definition as a guide"));
+
+        return diagnostic;
     }
 
 } // namespace Core

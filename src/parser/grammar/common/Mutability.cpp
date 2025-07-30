@@ -9,8 +9,8 @@
 
 namespace Parser
 {
-    MutabilityNode::MutabilityNode(Core::Position position, bool mut)
-        : Node(std::move(position)), mutable_(mut)
+    MutabilityNode::MutabilityNode(Core::Position &position, bool mut)
+        : Node(position), mutable_(mut)
     {
     }
 

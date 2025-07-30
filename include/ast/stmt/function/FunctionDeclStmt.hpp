@@ -36,8 +36,6 @@ namespace AST
 
         virtual bool is_definition() const override;
 
-        void set_end_pos(size_t end_pos);
-
         Type &return_type();
         std::vector<FunctionParameter> &parameters();
 

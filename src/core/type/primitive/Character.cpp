@@ -25,7 +25,7 @@ namespace Core
     {
         return std::make_unique<Diagnostic::NoteDiagnostic>(
             node, Diagnostic::NoteType::Suggestion,
-            std::string("Only values of type \"") + Diagnostic::ERR_GEN +
+            std::string("Only values of type \"") + Diagnostic::NOTE_GEN +
                 "character" + Utils::Styles::Reset + "\" are accepted.",
             "Use a single character surrounded by single quotation "
             "marks.\n\t\t- Or a Locator Value (L-value) that holds a "

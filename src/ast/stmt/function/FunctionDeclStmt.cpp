@@ -36,16 +36,13 @@ namespace AST
           return_type_(std::move(return_type)),
           parameters_(std::move(parameters))
     {
-        end_pos_ = parameters_.empty() ? return_type_->end_pos()
-                                       : parameters_.back().end_pos();
+        if (return_type_ != nullptr)
+            set_end_position(parameters_.empty()
+                                 ? return_type_->end_position()
+                                 : parameters_.back().end_position());
     }
 
     bool FunctionDeclarationStmt::is_definition() const { return false; }
-
-    void FunctionDeclarationStmt::set_end_pos(size_t end_pos)
-    {
-        end_pos_ = end_pos;
-    }
 
     Type &FunctionDeclarationStmt::return_type() { return *return_type_; }
 
@@ -68,7 +65,10 @@ namespace AST
            << inner_indentation << "name: " << name_ << "\n"
            << inner_indentation << "return_type: ";
 
-        return_type_->print(os, tab + 1);
+        if (return_type_ != nullptr)
+            return_type_->print(os, tab + 1);
+        else
+            os << "nullptr";
 
         os << "\n" << inner_indentation << "parameters: {";
 

@@ -14,7 +14,7 @@ namespace AST
         std::vector<std::unique_ptr<Expr>> elements_;
 
       public:
-        ArrayExpr(Core::Position position,
+        ArrayExpr(Core::Position &position,
                   std::vector<std::unique_ptr<Expr>> collection);
 
         void print(std::ostream &os, uint8_t tab) const override;

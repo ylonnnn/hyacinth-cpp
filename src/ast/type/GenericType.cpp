@@ -9,7 +9,7 @@ namespace AST
           arguments_(std::move(arguments))
     {
         if (!arguments_.empty())
-            end_pos_ = arguments_.back()->end_pos();
+            set_end_position(arguments_.back()->end_position());
     }
 
     Type &GenericType::constructor() { return *constructor_; }
@@ -18,8 +18,6 @@ namespace AST
     {
         return arguments_;
     }
-
-    void GenericType::set_end_pos(size_t end_pos) { end_pos_ = end_pos; }
 
     std::string GenericType::to_string() const
     {

@@ -6,7 +6,7 @@ namespace AST
     LiteralExpr::LiteralExpr(Lexer::Token &value)
         : Node(value.position), value_(value)
     {
-        end_pos_ = value_.position.col + value_.value.size();
+        set_end_position(value_.end_position);
     }
 
     Lexer::Token &LiteralExpr::value() { return value_; }

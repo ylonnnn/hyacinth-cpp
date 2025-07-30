@@ -1,25 +1,35 @@
 #include "ast/stmt/BlockStmt.hpp"
+#include "utils/style.hpp"
 
 namespace AST
 {
-    BlockStmt::BlockStmt(Core::Position position,
+    BlockStmt::BlockStmt(Core::Position &position,
                          std::vector<std::unique_ptr<Stmt>> statements)
-        : Node(std::move(position)), statements_(std::move(statements))
+        : Node(position), statements_(std::move(statements))
     {
     }
-
-    size_t BlockStmt::end_pos() const { return end_pos_; }
-
-    void BlockStmt::set_end_pos(size_t end_pos) { end_pos_ = end_pos; }
 
     std::vector<std::unique_ptr<Stmt>> &BlockStmt::statements()
     {
         return statements_;
     }
 
-    void BlockStmt::print([[maybe_unused]] std::ostream &os,
-                          [[maybe_unused]] uint8_t tab) const
+    void BlockStmt::print(std::ostream &os, uint8_t tab) const
     {
+        std::string indentation = Utils::tab(tab - 1, 4),
+                    inner_indentation = Utils::tab(tab, 4);
+
+        os << "BlockStmt {\n" << inner_indentation << "statements: {\n";
+
+        for (const auto &statement : statements_)
+        {
+            std::string inner_indentation = Utils::tab(tab + 1, 4);
+
+            os << "\n" << inner_indentation;
+            statement->print(os, tab + 1);
+        }
+
+        os << inner_indentation << "}" << indentation << "}";
     }
 
 } // namespace AST

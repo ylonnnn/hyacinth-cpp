@@ -5,13 +5,11 @@
 namespace AST
 {
     InstanceExpr::InstanceExpr(
-        Core::Position position,
+        Core::Position &position,
         std::unordered_map<std::string, std::unique_ptr<Expr>> fields)
-        : Node(std::move(position)), fields_(std::move(fields))
+        : Node(position), fields_(std::move(fields))
     {
     }
-
-    void InstanceExpr::set_end_pos(size_t end_pos) { end_pos_ = end_pos; }
 
     std::unordered_map<std::string, std::unique_ptr<Expr>> &
     InstanceExpr::fields()

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <vector>
 
 namespace Core
 {
@@ -19,6 +20,9 @@ namespace Core
         bool initialized_ = false;
 
         std::string source_;
+        std::vector<std::string_view> lines_;
+
+        Position position_;
 
       public:
         ProgramFile(const char *path);
@@ -30,6 +34,10 @@ namespace Core
       public:
         const std::filesystem::path &path() const;
         const std::string &source() const;
+
+        std::vector<std::string_view> &lines();
+
+        Position &position();
 
         Position position_at(size_t row, size_t col);
         void execute();

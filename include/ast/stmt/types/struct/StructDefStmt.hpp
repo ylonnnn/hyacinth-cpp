@@ -28,8 +28,6 @@ namespace AST
 
         bool is_definition() const override;
 
-        void set_end_pos(size_t end_pos);
-
         std::unordered_map<std::string_view, StructField> &fields();
 
         void print(std::ostream &os, uint8_t tab) const override;

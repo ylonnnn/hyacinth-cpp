@@ -9,7 +9,7 @@ namespace AST
     ExprStmt::ExprStmt(std::unique_ptr<AST::Expr> expr)
         : Node(expr->position()), expr_(std::move(expr))
     {
-        end_pos_ = expr_->end_pos();
+        set_end_position(expr_->end_position());
     }
 
     Expr &ExprStmt::expr() { return *expr_; }

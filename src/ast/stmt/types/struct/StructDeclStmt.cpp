@@ -6,7 +6,7 @@ namespace AST
     StructDeclarationStmt::StructDeclarationStmt(Lexer::Token &name)
         : Node(name.position), DeclarationStmt(name)
     {
-        end_pos_ = name.position.col + name.value.size();
+        set_end_position(name_.end_position);
     }
 
     bool StructDeclarationStmt::is_definition() const { return false; }

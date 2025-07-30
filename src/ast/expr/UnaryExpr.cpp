@@ -13,9 +13,9 @@ namespace AST
                                             : expr->position()),
           unary_type_(unary_type), operation_(operation), expr_(std::move(expr))
     {
-        end_pos_ = unary_type_ == UnaryType::Pre
-                       ? operation_.position.col + operation_.value.size()
-                       : expr->end_pos();
+        set_end_position(unary_type_ == UnaryType::Pre
+                             ? expr->end_position()
+                             : operation_.end_position);
     }
 
     UnaryType UnaryExpr::unary_type() { return unary_type_; }
