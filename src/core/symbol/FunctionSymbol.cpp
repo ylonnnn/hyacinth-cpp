@@ -3,13 +3,18 @@
 
 namespace Core
 {
-    // bool FunctionParameter::operator==(const FunctionParameter &other) const
-    // {
-    //     return name == other.name && is_mutable == other.is_mutable &&
-    //            (*type == *other.type);
-    // }
+    FunctionParameterSymbol::FunctionParameterSymbol(
+        std::string_view name, Core::Position declared_at, bool is_mutable,
+        std::unique_ptr<Type> type, std::optional<Value> value,
+        AST::FunctionParameter *node)
+        : IdentifierSymbol(name, declared_at, is_mutable, std::move(type),
+                           std::move(value), node)
+    {
+        this->node = dynamic_cast<AST::FunctionParameter *>(Symbol::node);
+    }
 
-    FunctionSymbol::FunctionSymbol(std::string name, Core::Position declared_at,
+    FunctionSymbol::FunctionSymbol(std::string_view name,
+                                   Core::Position declared_at,
                                    std::unique_ptr<Type> return_type,
                                    std::vector<FunctionParameter> &&parameters,
                                    AST::FunctionDeclarationStmt *node)
@@ -21,7 +26,7 @@ namespace Core
 
     void FunctionSymbol::construct_signature()
     {
-        signature += name + "->" + return_type->to_string() + "(";
+        signature += std::string(name) + "->" + return_type->to_string() + "(";
 
         for (auto &param : parameters)
         {

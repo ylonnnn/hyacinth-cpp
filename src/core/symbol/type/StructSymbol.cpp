@@ -3,7 +3,8 @@
 
 namespace Core
 {
-    StructSymbol::StructSymbol(std::string name, Core::Position declared_at,
+    StructSymbol::StructSymbol(std::string_view name,
+                               Core::Position declared_at,
                                std::vector<StructField> &&fields,
                                AST::StructDeclarationStmt *node)
         : Symbol(name, std::move(declared_at), node)

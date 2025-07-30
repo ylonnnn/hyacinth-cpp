@@ -21,6 +21,7 @@ namespace Semantic
         if (declared == nullptr)
             return;
 
+        std::string name(declared->name);
         auto defined = declared->defined_at != nullptr,
              is_def = node->is_definition();
 
@@ -30,15 +31,15 @@ namespace Semantic
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
                 &err_node, Diagnostic::ErrorTypes::Semantic::Duplication,
                 std::move(message),
-                "Identifier \"" + declared->name + "\" is already used");
+                "Identifier \"" + name + "\" is already used");
 
             diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
                 declared->node,
                 defined ? Diagnostic::NoteType::Definition
                         : Diagnostic::NoteType::Declaration,
                 std::string("A symbol identified as \"") +
-                    Diagnostic::NOTE_GEN + declared->name +
-                    Utils::Styles::Reset + "\" is already declared.",
+                    Diagnostic::NOTE_GEN + name + Utils::Styles::Reset +
+                    "\" is already declared.",
                 "Declared here"));
 
             result.error(std::move(diagnostic));
@@ -47,8 +48,7 @@ namespace Semantic
         if (defined || is_def)
         {
             error(std::string("Cannot re-declare symbol \"") +
-                  Diagnostic::ERR_GEN + declared->name + Utils::Styles::Reset +
-                  "\".");
+                  Diagnostic::ERR_GEN + name + Utils::Styles::Reset + "\".");
 
             return;
         }
@@ -158,8 +158,8 @@ namespace Semantic
             std::nullopt, Core::ResultStatus::Success, nullptr, {}};
 
         auto variable = std::make_unique<Core::VariableSymbol>(
-            std::string(node.name().value), node.position(), node.is_mutable(),
-            nullptr, Core::null{}, &node);
+            node.name().value, node.position(), node.is_mutable(), nullptr,
+            Core::null{}, &node);
 
         validate_duplication(analyzer, variable, result);
 

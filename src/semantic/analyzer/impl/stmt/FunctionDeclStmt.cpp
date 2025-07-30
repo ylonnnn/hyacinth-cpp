@@ -59,20 +59,19 @@ namespace Semantic
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
             Core::FunctionParameter parameter{
-                param.name().value, param.is_mutable(), std::move(t_res.data)};
+                param.name().value, param.is_mutable(), t_res.data.get()};
 
             // Register/Declare the parameters as variables to the environment
             // for analysis
             if (is_def)
             {
-                // auto p_variable = std::make_unique<Core::VariableSymbol>(
-                //     std::string(param->name().value), param->position(),
-                //     param->is_mutable(), nullptr, Core::Value(Core::null{}),
-                //     nullptr);
+                auto p_symbol = std::make_unique<Core::FunctionParameterSymbol>(
+                    param.name().value, param.position(), param.is_mutable(),
+                    std::move(t_res.data), std::nullopt, &param);
 
-                // // TODO: .define() if defined
+                // TODO: .define() if defined
 
-                // body_env->declare_variable(std::move(p_variable));
+                body_env->declare_symbol(std::move(p_symbol));
             }
 
             fn->parameters.push_back(std::move(parameter));
@@ -86,10 +85,11 @@ namespace Semantic
         Core::Environment *current = analyzer.current_env();
         AST::FunctionDeclarationStmt *node = fn->node;
 
-        auto declared = current->resolve_symbol(fn->name);
+        auto declared = current->resolve_symbol(std::string(fn->name));
         if (declared == nullptr)
             return;
 
+        std::string name(declared->name);
         auto defined = declared->defined_at != nullptr,
              is_def = node->is_definition();
 
@@ -99,15 +99,15 @@ namespace Semantic
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
                 &err_node, Diagnostic::ErrorTypes::Semantic::Duplication,
                 std::move(message),
-                "Identifier \"" + declared->name + "\" is already used");
+                "Identifier \"" + name + "\" is already used");
 
             diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
                 declared->node,
                 defined ? Diagnostic::NoteType::Definition
                         : Diagnostic::NoteType::Declaration,
                 std::string("A symbol identified as \"") +
-                    Diagnostic::NOTE_GEN + declared->name +
-                    Utils::Styles::Reset + "\" is already declared.",
+                    Diagnostic::NOTE_GEN + name + Utils::Styles::Reset +
+                    "\" is already declared.",
                 "Declared here"));
 
             result.error(std::move(diagnostic));
@@ -118,8 +118,7 @@ namespace Semantic
         if (defined || !is_def)
         {
             error(std::string("Cannot re-declare symbol \"") +
-                  Diagnostic::ERR_GEN + declared->name + Utils::Styles::Reset +
-                  "\".");
+                  Diagnostic::ERR_GEN + name + Utils::Styles::Reset + "\".");
 
             return;
         }
@@ -129,16 +128,14 @@ namespace Semantic
         {
             error(std::string("Cannot provide definition for non-function "
                               "declaration of \"") +
-                  Diagnostic::ERR_GEN + declared->name + Utils::Styles::Reset +
-                  "\".");
+                  Diagnostic::ERR_GEN + name + Utils::Styles::Reset + "\".");
 
             return;
         }
 
         // Check for parameter list difference
         auto err_message = std::string("Cannot define function \"") +
-                           Diagnostic::ERR_GEN + declared->name +
-                           Utils::Styles::Reset +
+                           Diagnostic::ERR_GEN + name + Utils::Styles::Reset +
                            "\". Function signature mismatch.";
 
         // Function Signatures
@@ -188,7 +185,7 @@ namespace Semantic
         result.diagnostics.reserve(8);
 
         auto function = std::make_unique<Core::FunctionSymbol>(
-            std::string(node.name().value), node.position(), nullptr,
+            node.name().value, node.position(), nullptr,
             std::vector<Core::FunctionParameter>{}, &node);
 
         auto is_def = node.is_definition();

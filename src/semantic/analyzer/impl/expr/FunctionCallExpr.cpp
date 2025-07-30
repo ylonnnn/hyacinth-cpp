@@ -14,7 +14,6 @@ namespace Semantic
             AnalyzerImpl<AST::Expr>::analyze(analyzer, callee);
 
         Core::Type *callee_type = c_res.data;
-
         result.adapt(c_res.status, std::move(c_res.diagnostics));
 
         if (c_res.symbol == nullptr)
@@ -33,7 +32,7 @@ namespace Semantic
                 &callee,
                 Diagnostic::ErrorTypes::Semantic::NonCallableInvocation,
                 std::string("Cannot invoke non-callable symbol \"") +
-                    Diagnostic::ERR_GEN + c_res.symbol->name +
+                    Diagnostic::ERR_GEN + std::string(c_res.symbol->name) +
                     Utils::Styles::Reset + "\".",
                 "Invoked here");
 
@@ -48,18 +47,10 @@ namespace Semantic
         return true;
     }
 
-    AnalysisResult
-    AnalyzerImpl<AST::FunctionCalLExpr>::analyze(Analyzer &analyzer,
-                                                 AST::FunctionCalLExpr &node)
+    static void analyze_arguments(Analyzer &analyzer,
+                                  AST::FunctionCalLExpr &node,
+                                  AnalysisResult &result)
     {
-        AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
-
-        if (!analyze_callee(analyzer, node, result))
-            return result;
-
-        // TODO: Analyze Arguments
-
         auto symbol = static_cast<Core::FunctionSymbol *>(result.symbol);
 
         auto &parameters = symbol->parameters;
@@ -88,7 +79,7 @@ namespace Semantic
 
             result.error(std::move(diagnostic));
 
-            return result;
+            return;
         }
 
         for (size_t i = 0; i < param_count; i++)
@@ -121,6 +112,19 @@ namespace Semantic
 
             continue;
         }
+    }
+
+    AnalysisResult
+    AnalyzerImpl<AST::FunctionCalLExpr>::analyze(Analyzer &analyzer,
+                                                 AST::FunctionCalLExpr &node)
+    {
+        AnalysisResult result = {
+            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+
+        if (!analyze_callee(analyzer, node, result))
+            return result;
+
+        analyze_arguments(analyzer, node, result);
 
         return result;
     }

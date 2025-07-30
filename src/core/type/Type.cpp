@@ -113,6 +113,8 @@ namespace Core
                 return this->type->assignable(parsed) ? parsed : Core::null{};
             }
         }
+
+        return nullptr;
     }
 
     BaseType::BaseType(Environment *environment, std::string_view name)

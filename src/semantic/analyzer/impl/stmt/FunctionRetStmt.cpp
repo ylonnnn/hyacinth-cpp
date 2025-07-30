@@ -22,8 +22,8 @@ namespace Semantic
     }
 
     static void analyze_value(Analyzer &analyzer, AST::FunctionReturnStmt &node,
-                       AnalysisResult &result,
-                       Core::FunctionEnvironment *fn_env)
+                              AnalysisResult &result,
+                              Core::FunctionEnvironment *fn_env)
     {
         AST::Expr *ret_val = node.value();
         auto combination =

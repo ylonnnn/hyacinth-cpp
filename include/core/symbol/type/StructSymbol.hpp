@@ -18,7 +18,7 @@ namespace Core
 
         std::unordered_map<std::string_view, std::unique_ptr<Type>> fields;
 
-        StructSymbol(std::string name, Core::Position declared_at,
+        StructSymbol(std::string_view name, Core::Position declared_at,
                      std::vector<StructField> &&fields,
                      AST::StructDeclarationStmt *node = nullptr);
     };

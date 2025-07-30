@@ -17,8 +17,8 @@ namespace Core
         std::vector<std::unique_ptr<Environment>> children_;
 
         TypeTable types_;
-        std::unordered_map<std::string, std::unique_ptr<Symbol>> symbols_;
-        std::unordered_map<std::string, Value> variables_;
+        std::unordered_map<std::string_view, std::unique_ptr<Symbol>> symbols_;
+        std::unordered_map<std::string_view, Value> variables_;
 
       public:
         Environment(Environment *parent);

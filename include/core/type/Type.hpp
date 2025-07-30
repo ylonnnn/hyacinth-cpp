@@ -101,6 +101,6 @@ namespace Core
     };
 
     using TypeTable =
-        std::unordered_map<std::string, std::unique_ptr<BaseType>>;
+        std::unordered_map<std::string_view, std::unique_ptr<BaseType>>;
 
 } // namespace Core

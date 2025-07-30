@@ -15,7 +15,7 @@ namespace Semantic
         Core::Environment *current = analyzer.current_env();
         AST::StructDeclarationStmt *node = struct_->node;
 
-        std::string identifier = std::string(node->name().value);
+        std::string identifier(node->name().value);
         Core::Symbol *declared = current->resolve_symbol(identifier);
 
         auto error = [&](const std::string &message) -> void
@@ -24,7 +24,7 @@ namespace Semantic
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
                 &err_node, Diagnostic::ErrorTypes::Semantic::Duplication,
                 std::move(message),
-                "Identifier \"" + declared->name + "\" is already used");
+                "Identifier \"" + identifier + "\" is already used");
 
             auto defined = struct_->defined_at != nullptr;
 
@@ -33,22 +33,20 @@ namespace Semantic
                 defined ? Diagnostic::NoteType::Definition
                         : Diagnostic::NoteType::Declaration,
                 std::string("A symbol identified as \"") +
-                    Diagnostic::NOTE_GEN + declared->name +
-                    Utils::Styles::Reset + "\" is already declared.",
+                    Diagnostic::NOTE_GEN + identifier + Utils::Styles::Reset +
+                    "\" is already declared.",
                 "Declared here"));
 
             result.error(std::move(diagnostic));
         };
 
-        std::cout << "declared: " << identifier << ": " << (declared == nullptr)
-                  << "\n";
         if (declared == nullptr)
         {
             auto valid = current->resolve_type(identifier) == nullptr;
             if (current->resolve_type(identifier) != nullptr)
                 error(std::string("Cannot re-declare symbol \"") +
-                      Diagnostic::ERR_GEN + declared->name +
-                      Utils::Styles::Reset + "\".");
+                      Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
+                      "\".");
 
             return valid;
         }
@@ -61,7 +59,7 @@ namespace Semantic
         if (defined || !is_def)
         {
             error(std::string("Cannot re-declare symbol \"") +
-                  Diagnostic::ERR_GEN + declared->name + Utils::Styles::Reset +
+                  Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
                   "\".");
 
             return false;
@@ -72,7 +70,7 @@ namespace Semantic
         {
             error(std::string("Cannot provide definition for non-struct"
                               "declaration of \"") +
-                  Diagnostic::ERR_GEN + declared->name + Utils::Styles::Reset +
+                  Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
                   "\".");
 
             return false;
@@ -117,7 +115,7 @@ namespace Semantic
         result.diagnostics.reserve(8);
 
         auto _struct = std::make_unique<Core::StructSymbol>(
-            std::string(node.name().value), node.position(),
+            node.name().value, node.position(),
             std::vector<Core::StructField>{}, &node);
 
         if (!validate_duplication(analyzer, _struct, result))

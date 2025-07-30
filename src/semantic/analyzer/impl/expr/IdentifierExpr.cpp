@@ -14,7 +14,7 @@ namespace Semantic
         // Core::Symbol *symbol =
         //     current.resolve_symbol(std::string(node.identifier().value));
 
-        auto identifier = std::string(node.identifier().value);
+        std::string identifier(node.identifier().value);
         Core::Symbol *symbol = current->resolve_symbol(identifier);
 
         if (symbol != nullptr)
@@ -22,7 +22,7 @@ namespace Semantic
             result.symbol = symbol;
             result.status = Core::ResultStatus::Success;
 
-            if (auto ptr = dynamic_cast<Core::VariableSymbol *>(symbol))
+            if (auto ptr = dynamic_cast<Core::IdentifierSymbol *>(symbol))
             {
                 result.value = ptr->value;
                 result.data = ptr->type.get();
