@@ -17,7 +17,6 @@ fn main -> void () {
     let a: int[8] = some_uint8_fn();
 
     let some_str: str = "Hello, World";
-    let void_var: void = 123;
 
-    let n: float[64] = 123.456f;
+    let n: float[64] = 123.456;
 }

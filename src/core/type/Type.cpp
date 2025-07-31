@@ -125,7 +125,7 @@ namespace Core
 
     BaseType::~BaseType()
     {
-        std::cout << "destroyed: " << name_ << " | " << this << "\n";
+        // std::cout << "destroyed: " << name_ << " | " << this << "\n";
     }
 
     std::string_view BaseType::name() const { return name_; }

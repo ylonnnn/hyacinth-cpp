@@ -39,7 +39,6 @@ namespace Core
 
     void Environment::declare_symbol(std::unique_ptr<Symbol> symbol)
     {
-        std::cout << "declare: " << symbol->name << "\n";
         symbols_.insert_or_assign(symbol->name, std::move(symbol));
     }
 

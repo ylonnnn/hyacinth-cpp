@@ -1,0 +1,51 @@
+// Forward Declaration
+struct Vector2;
+struct Vector3; 
+
+fn get_xy -> Vector2 (vec3: Vector3);
+
+struct Player {
+    name: str;
+    rotation: Vector2;
+    position: Vector3;
+}
+
+struct Vector2 {
+    x: int[32];
+    y: int[32];
+}
+
+struct Vector3 {
+    x: int[32];
+    y: int[32];
+    z: int[32];
+}
+
+fn create_rotation -> Vector2 (x: int[32], y: int[32]) {
+    return {
+        x: x, y: y
+    };
+}
+
+fn create_position -> Vector3 (x: int[32], y: int[32], z: int[32]) {
+    return {
+        x: x,
+        y: y,
+        z: z,
+    };
+}
+
+fn main -> void () {
+    let player1: Player = { name: "Player 1", rotation: { x: 90, y: 120 }, position: { x: 1, y: 2, z: 3 } };
+    let player2: Player = { name: "Player 2", rotation: create_rotation(120, 65), position: create_position(5, 4, 3) };
+
+    // let p1_xy: Vector2 = get_xy(player1.position);
+    // let p2_xy: Vector2 = get_xy(player2.position);
+}
+
+fn get_xy -> Vector2 (vec3: Vector3) {
+    return {
+        x: 0, // x: vec3.x,
+        y: 0, // y: vec3.y,
+    };
+}

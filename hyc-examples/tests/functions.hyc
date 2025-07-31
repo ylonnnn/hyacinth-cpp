@@ -1,0 +1,21 @@
+fn println -> void (content: str);
+
+// fn println -> void (content: int[32]); // Error: Re-declaration
+
+// fn println -> void (content: int[32]) {} // Error: Invalid Definition (Signature Mismatch)
+
+fn println -> void (content: str) {} // Valid: Declaration Definition
+
+fn add -> int[32] (a: int[32], b: int[32]) {
+    return a; // TODO: Binary Expression Analyzer
+}
+
+fn main -> void () {
+    println("Hello, World");
+
+    let x: int[8] = 123;
+    let y: int[10] = 456;
+
+    let xy_sum: int[32] = add(x, y);
+    // let xy_sum: int[31] = add(x, y); // Error: Type Mismatch (int[31] < int[32]). Potential Overflow
+}
