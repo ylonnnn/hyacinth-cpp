@@ -32,9 +32,8 @@ namespace Core
 
         for (auto &param : parameters)
         {
-            auto &[name, is_mutable, type] = param;
-            signature += std::string(name) + (is_mutable ? "!:" : ":") +
-                         type->to_string();
+            auto &[_, is_mutable, type] = param;
+            signature += (is_mutable ? "!:" : ":") + type->to_string();
 
             if (&param != &parameters.back())
                 signature += ",";
