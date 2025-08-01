@@ -186,8 +186,12 @@ namespace Semantic
         result.diagnostics.reserve(8);
 
         auto function = std::make_unique<Core::FunctionSymbol>(
-            node.name().value, node.position(), nullptr,
-            std::vector<Core::FunctionParameter>{}, &node);
+            node.name().value,
+            node.accessibility() == AST::DeclarationAccessibility::Public
+                ? Core::SymbolAccessibility::Public
+                : Core::SymbolAccessibility::Private,
+            node.position(), nullptr, std::vector<Core::FunctionParameter>{},
+            &node);
 
         auto is_def = node.is_definition();
         Core::Environment *body_env = nullptr;

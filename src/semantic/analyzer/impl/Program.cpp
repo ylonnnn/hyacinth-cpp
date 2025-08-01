@@ -10,11 +10,11 @@ namespace Semantic
             std::nullopt, Core::ResultStatus::Success, nullptr, {}};
         result.diagnostics.reserve(32);
 
-        for (auto &declaration : node.declarations())
+        for (auto &statement : node.statements())
         {
             AnalysisResult decl_result =
                 AnalyzerImpl<std::remove_cv_t<std::remove_reference_t<
-                    decltype(*declaration)>>>::analyze(analyzer, *declaration);
+                    decltype(*statement)>>>::analyze(analyzer, *statement);
 
             result.adapt(decl_result.status,
                          std::move(decl_result.diagnostics));

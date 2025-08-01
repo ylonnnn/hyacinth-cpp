@@ -1,8 +1,8 @@
 // import "@std/io" : std;
 // import "@std/io";
-// import "@std/io" as { { writeln } : io } : std;
+// import "@std/io" as { { writeln } <- io } <- std;
 
-import "@std/io" -> { io -> { writeln } }; 
+import "@std/io";
 
 fn main -> void (args: array[str]) {
     let some_var: int[32] = 123;

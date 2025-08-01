@@ -4,9 +4,10 @@
 namespace Core
 {
     StructSymbol::StructSymbol(std::string_view name,
+                               SymbolAccessibility accessibility,
                                Core::Position declared_at,
                                AST::StructDeclarationStmt *node)
-        : Symbol(name, std::move(declared_at), node)
+        : Symbol(name, accessibility, std::move(declared_at), node)
     {
         this->node = dynamic_cast<AST::StructDeclarationStmt *>(Symbol::node);
     }

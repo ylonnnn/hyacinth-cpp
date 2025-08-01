@@ -120,8 +120,13 @@ namespace Semantic
         auto is_decl = declared != nullptr;
         if (!is_decl)
         {
-            declared = new Core::StructSymbol(node.name().value,
-                                              node.position(), &node);
+            declared = new Core::StructSymbol(
+                node.name().value,
+                node.accessibility() == AST::DeclarationAccessibility::Public
+                    ? Core::SymbolAccessibility::Public
+                    : Core::SymbolAccessibility::Private,
+                node.position(), &node);
+
             declared->type = new Core::StructType(
                 current, declared->name,
                 std::unordered_map<std::string_view,

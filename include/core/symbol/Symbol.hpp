@@ -5,15 +5,22 @@
 
 namespace Core
 {
+    enum class SymbolAccessibility
+    {
+        Public = 0,
+        Private,
+    };
+
     struct Symbol
     {
         std::string_view name;
+        SymbolAccessibility accessibility;
         Core::Position declared_at;
         Core::Position *defined_at = nullptr;
         AST::Node *node = nullptr;
 
-        Symbol(std::string_view name, Core::Position declared_at,
-               AST::Node *node = nullptr);
+        Symbol(std::string_view name, SymbolAccessibility accesibility,
+               Core::Position declared_at, AST::Node *node = nullptr);
 
         virtual ~Symbol() = default;
 

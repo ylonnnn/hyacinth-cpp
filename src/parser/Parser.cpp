@@ -2,6 +2,7 @@
 #include "core/program/Program.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "lexer/Lexer.hpp"
+#include "parser/ParseResult.hpp"
 #include "parser/grammar/Grammar.hpp"
 #include "parser/grammar/rules/Hyacinth.hpp"
 
@@ -48,7 +49,7 @@ namespace Parser
         Lexer::Token *token =
             lexer_.eof() ? nullptr : (consume ? lexer_.next() : lexer_.peek());
         auto expected = token == nullptr ? false : token->type == type;
-        
+
         if (expected)
             synchronize();
 

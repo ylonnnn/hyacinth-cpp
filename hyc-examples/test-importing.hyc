@@ -1,0 +1,7 @@
+pub fn add -> int[32] (a: int[32], b: int[32]) {
+    return 1;
+}
+
+priv fn subtract -> int[32] (a: int[32], b: int[32]) {
+    return 2;
+}

@@ -9,6 +9,16 @@ namespace Parser::Hyacinth
     constexpr auto IDENTIFIER = Primary::Identifier;
     constexpr auto TERMINATOR = Delimeter::Semicolon;
 
+    constexpr auto IMPORT = Reserved::Import;
+
+    constexpr auto
+        // pub
+        PUBLIC = Reserved::Public,
+        // priv
+        PRIVATE = Reserved::Private,
+        // prot
+        PROTECTED = Reserved::Protected;
+
     constexpr auto STRUCT = Reserved::Struct;
 
     constexpr auto FUNCTION = Reserved::Function;

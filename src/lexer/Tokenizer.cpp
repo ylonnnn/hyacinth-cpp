@@ -107,16 +107,18 @@ namespace Lexer
     LexerResult Tokenizer::scan()
     {
         LexerResult result = {Core::ResultStatus::Success, {}, {}};
+        result.lexer = &lexer_;
+
         result.data.reserve(
             std::max(static_cast<size_t>(128), source_.size() / 8));
 
         while (!eof())
         {
             Token token = scan(next());
-            if (auto ptr = std::get_if<TokenTypes::Miscellaneous>(&token.type))
+            if (std::holds_alternative<TokenTypes::Miscellaneous>(token.type))
                 continue;
 
-            if (auto ptr = std::get_if<TokenTypes::Invalid>(&token.type))
+            if (std::holds_alternative<TokenTypes::Invalid>(token.type))
             {
                 result.error(Diagnostic::create_syntax_error(&token));
                 continue;

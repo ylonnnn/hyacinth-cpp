@@ -1,7 +1,8 @@
 #pragma once
 
-#include "parser/grammar/GrammarRule.hpp"
+#include "ast/stmt/DeclarationStmt.hpp"
 #include "parser/Parser.hpp"
+#include "parser/grammar/GrammarRule.hpp"
 
 namespace Parser
 {
@@ -10,6 +11,8 @@ namespace Parser
       public:
         VariableDefinition();
 
+        ParseResult parse(Parser &parser,
+                          AST::DeclarationAccessibility accessibility);
         ParseResult parse(Parser &parser) override;
     };
 

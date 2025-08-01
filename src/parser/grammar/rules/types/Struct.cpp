@@ -130,6 +130,22 @@ namespace Parser
         return &lexer.next()->end_position;
     }
 
+    ParseResult
+    StructDefinition::parse(Parser &parser,
+                            AST::DeclarationAccessibility accessibility)
+    {
+        ParseResult result = parse(parser);
+
+        auto decl =
+            dynamic_cast<AST::StructDeclarationStmt *>(result.data.get());
+        if (decl == nullptr)
+            return result;
+
+        decl->set_accessibility(accessibility);
+
+        return result;
+    }
+
     ParseResult StructDefinition::parse(Parser &parser)
     {
         // struct NAME;

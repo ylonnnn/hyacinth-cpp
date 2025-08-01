@@ -38,7 +38,8 @@ namespace Core
 
         std::string signature;
 
-        FunctionSymbol(std::string_view name, Core::Position declared_at,
+        FunctionSymbol(std::string_view name, SymbolAccessibility accessibility,
+                       Core::Position declared_at,
                        std::unique_ptr<Type> return_type,
                        std::vector<FunctionParameter> &&parameters,
                        AST::FunctionDeclarationStmt *node = nullptr);

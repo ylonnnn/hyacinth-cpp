@@ -35,9 +35,9 @@ namespace Core
 
         void update_variable(const std::string &name, Value value);
 
-        BaseType *resolve_type(const std::string &name);
-        Symbol *resolve_symbol(const std::string &name);
-        VariableSymbol *resolve_variable(const std::string &name);
+        virtual BaseType *resolve_type(const std::string &name);
+        virtual Symbol *resolve_symbol(const std::string &name);
+        virtual VariableSymbol *resolve_variable(const std::string &name);
     };
 
 } // namespace Core

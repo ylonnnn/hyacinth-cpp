@@ -158,8 +158,11 @@ namespace Semantic
             std::nullopt, Core::ResultStatus::Success, nullptr, {}};
 
         auto variable = std::make_unique<Core::VariableSymbol>(
-            node.name().value, node.position(), node.is_mutable(), nullptr,
-            Core::null{}, &node);
+            node.name().value,
+            node.accessibility() == AST::DeclarationAccessibility::Public
+                ? Core::SymbolAccessibility::Public
+                : Core::SymbolAccessibility::Private,
+            node.position(), node.is_mutable(), nullptr, Core::null{}, &node);
 
         validate_duplication(analyzer, variable, result);
 

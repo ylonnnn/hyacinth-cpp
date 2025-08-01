@@ -9,8 +9,12 @@
 
 namespace Lexer
 {
+    class Lexer;
+
     struct LexerResult : public Core::Result<std::vector<Token>>
     {
+        Lexer *lexer = nullptr;
+
         LexerResult(Core::ResultStatus status, std::vector<Token> &&data,
                     Diagnostic::DiagnosticList diagnostics);
     };

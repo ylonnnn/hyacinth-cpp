@@ -2,9 +2,10 @@
 
 namespace Core
 {
-    Symbol::Symbol(std::string_view name, Core::Position declared_at,
-                   AST::Node *node)
-        : name(std::move(name)), declared_at(std::move(declared_at)), node(node)
+    Symbol::Symbol(std::string_view name, SymbolAccessibility accessibility,
+                   Core::Position declared_at, AST::Node *node)
+        : name(std::move(name)), accessibility(accessibility),
+          declared_at(std::move(declared_at)), node(node)
     {
     }
 

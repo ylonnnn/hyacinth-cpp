@@ -23,6 +23,7 @@ namespace Diagnostic
         enum class Syntax
         {
             UnexpectedToken = 1,
+            MissingImportTarget,
             MissingIdentifier,
             MissingValue,
             MissingKeyword,

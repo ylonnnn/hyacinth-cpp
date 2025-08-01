@@ -1,8 +1,25 @@
 #include "core/program/Program.hpp"
+#include "core/program/ProgramRegistry.hpp"
+#include <iostream>
+
+void test(Core::ProgramFile &program)
+{
+    namespace fs = std::filesystem;
+
+    auto &src_path = program.path();
+    fs::path rel_path = "../tests/functions.hyc",
+             target_path = src_path.parent_path() / rel_path;
+
+    fs::path absolute_path = fs::absolute(target_path);
+    std::cout << absolute_path.c_str() << "\n";
+
+    std::cout << fs::weakly_canonical(target_path) << "\n";
+}
 
 void execute_file(const char *file)
 {
     Core::ProgramFile program(file);
+    Core::ProgramRegistry registry(program);
 
     program.execute();
 }

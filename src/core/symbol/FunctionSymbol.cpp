@@ -16,11 +16,12 @@ namespace Core
     Type *FunctionParameterSymbol::type_() { return type; }
 
     FunctionSymbol::FunctionSymbol(std::string_view name,
+                                   SymbolAccessibility accessibility,
                                    Core::Position declared_at,
                                    std::unique_ptr<Type> return_type,
                                    std::vector<FunctionParameter> &&parameters,
                                    AST::FunctionDeclarationStmt *node)
-        : Symbol(std::move(name), std::move(declared_at), node),
+        : Symbol(std::move(name), accessibility, std::move(declared_at), node),
           return_type(std::move(return_type)), parameters(std::move(parameters))
     {
         this->node = dynamic_cast<AST::FunctionDeclarationStmt *>(Symbol::node);

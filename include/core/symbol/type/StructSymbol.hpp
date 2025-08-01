@@ -21,7 +21,8 @@ namespace Core
 
         StructType *type = nullptr;
 
-        StructSymbol(std::string_view name, Core::Position declared_at,
+        StructSymbol(std::string_view name, SymbolAccessibility accessibility,
+                     Core::Position declared_at,
                      AST::StructDeclarationStmt *node = nullptr);
 
         void define(Core::Position *position) override;

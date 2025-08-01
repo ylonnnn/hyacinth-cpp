@@ -16,6 +16,8 @@ namespace Diagnostic
 
         ERROR_CODES[ErrorTypes::Syntax::UnexpectedToken] =
             "HYC::SYNTAX::UNEXPECTED_TOKEN";
+        ERROR_CODES[ErrorTypes::Syntax::MissingImportTarget] =
+            "HYC::SYNTAX::MISSING_IMPORT_TARGET";
         ERROR_CODES[ErrorTypes::Syntax::MissingIdentifier] =
             "HYC::SYNTAX:MISSING_IDENTIFIER";
         ERROR_CODES[ErrorTypes::Syntax::MissingValue] =

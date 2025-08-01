@@ -1,7 +1,6 @@
 #include "parser/grammar/rules/Variable.hpp"
 #include "ast/expr/IdentifierExpr.hpp"
 #include "ast/expr/LiteralExpr.hpp"
-#include "ast/stmt/ExprStmt.hpp"
 #include "ast/stmt/variable/VariableDeclStmt.hpp"
 #include "ast/stmt/variable/VariableDefStmt.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
@@ -16,6 +15,21 @@ namespace Parser
 {
     VariableDefinition::VariableDefinition() : GrammarRule(Hyacinth::VARIABLE)
     {
+    }
+
+    ParseResult
+    VariableDefinition::parse(Parser &parser,
+                              AST::DeclarationAccessibility accessibility)
+    {
+        ParseResult result = parse(parser);
+
+        auto decl =
+            dynamic_cast<AST::VariableDeclarationStmt *>(result.data.get());
+        if (decl == nullptr)
+            return result;
+
+        decl->set_accessibility(accessibility);
+        return result;
     }
 
     ParseResult VariableDefinition::parse(Parser &parser)
@@ -96,7 +110,7 @@ namespace Parser
                         value.get(),
                         Diagnostic::ErrorTypes::Syntax::MissingOperator,
                         std::string("Missing ") + Diagnostic::ERR_GEN + "=" +
-                            Utils::Styles::Reset + " operator before the value",
+                            Utils::Styles::Reset + " operator.",
                         "Missing operator before this value");
 
                 else
@@ -106,8 +120,7 @@ namespace Parser
                     result.force_error(
                         &node, Diagnostic::ErrorTypes::Syntax::MissingValue,
                         std::string("Missing ") + Diagnostic::ERR_GEN +
-                            "VALUE" + Utils::Styles::Reset +
-                            " after the assignment operator",
+                            "VALUE" + Utils::Styles::Reset + ".",
                         "Missing value after this operator");
                 }
 

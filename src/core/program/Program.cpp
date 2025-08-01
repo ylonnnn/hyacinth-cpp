@@ -1,8 +1,11 @@
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
 
+#include "core/environment/Environment.hpp"
+#include "core/program/DependencyEnvironment.hpp"
 #include "core/program/Program.hpp"
 #include "core/result/Result.hpp"
 #include "lexer/Lexer.hpp"
@@ -13,15 +16,43 @@
 
 namespace Core
 {
+    namespace fs = std::filesystem;
 
-    ProgramFile::ProgramFile(const char *path)
-        : path_(std::filesystem::absolute(path)),
-          position_(this->position_at(1, 1))
+    constexpr auto FILE_EXTENSION = ".hyc";
+
+    struct ProgramResult : Result<std::unique_ptr<AST::Program>>
     {
+        Lexer::Lexer *lexer = nullptr;
+
+        using Result<std::unique_ptr<AST::Program>>::Result;
+    };
+
+    ProgramFile::ProgramFile(const char *path, bool is_main)
+        : is_main_(is_main),
+          dependencies_(std::make_unique<DependencyEnvironment>()),
+          environment_(std::make_unique<Environment>(dependencies_.get()))
+    {
+        try
+        {
+            path_ = fs::canonical(path);
+            is_valid_ = true;
+        }
+        catch (const fs::filesystem_error &err)
+        {
+            // For explicitness
+            is_valid_ = false;
+
+            Utils::terminate(
+                (std::string("Unknown file path provided: ") + path).c_str(),
+                EXIT_SUCCESS);
+        }
+
         lines_.reserve(64);
 
         read();
     }
+
+    ProgramFile::~ProgramFile() = default;
 
     size_t ProgramFile::file_size(std::ifstream &file)
     {
@@ -34,12 +65,24 @@ namespace Core
 
     void ProgramFile::read()
     {
+        if (!fs::is_regular_file(path_))
+        {
+            Utils::terminate(
+                (std::string("Target be a file: ") + path_.c_str()).c_str(),
+                EXIT_SUCCESS);
+        }
+        else if (path_.extension() != FILE_EXTENSION)
+            Utils::terminate(
+                (std::string("Target be a Hyacinth file: ") + path_.c_str())
+                    .c_str(),
+                EXIT_SUCCESS);
+
         std::ifstream file(path_);
 
         if (!file)
         {
             Utils::terminate(("Failed to open file: " + path_.string()).c_str(),
-                             EXIT_FAILURE);
+                             EXIT_SUCCESS);
         }
 
         size_t size = file_size(file);
@@ -65,15 +108,26 @@ namespace Core
         file.close();
     }
 
-    const std::filesystem::path &ProgramFile::path() const { return path_; }
+    ProgramRegistry *ProgramFile::registry() { return registry_; }
+
+    const fs::path &ProgramFile::path() const { return path_; }
 
     const std::string &ProgramFile::source() const { return source_; }
 
     std::vector<std::string_view> &ProgramFile::lines() { return lines_; }
 
-    Core::Position &ProgramFile::position() { return position_; }
+    DependencyEnvironment &ProgramFile::dependencies()
+    {
+        return *dependencies_;
+    }
 
-    // Semantic::ScopeStack &ProgramFile::scope_stack() { return scope_stack_; }
+    Environment &ProgramFile::environment() { return *environment_; }
+
+    bool ProgramFile::valid() const { return is_valid_; }
+
+    bool ProgramFile::analyzed() const { return analyzed_; }
+
+    bool ProgramFile::interpreted() const { return interpreted_; }
 
     Position ProgramFile::position_at(size_t row, size_t col)
     {
@@ -84,88 +138,174 @@ namespace Core
         };
     }
 
-    void ProgramFile::execute()
+    void ProgramFile::depend(Environment &dependency)
     {
-        auto start = std::chrono::high_resolution_clock::now();
-        auto succeed = true;
+        dependencies_->dependencies().push_back(&dependency);
+    }
 
-        auto result = Result<void *>{ResultStatus::Success, nullptr, {}};
-        result.diagnostics.reserve(32);
+    Lexer::LexerResult ProgramFile::lex()
+    {
+        auto lexer_start = std::chrono::high_resolution_clock::now();
 
-        // Lexical Analysis
-        Lexer::Lexer lexer(*this);
-        Lexer::LexerResult lexer_result = lexer.tokenize();
-
-        if (lexer_result.status != ResultStatus::Success)
-            succeed = false;
-
-        result.adapt(lexer_result.status, std::move(lexer_result.diagnostics));
-
-        auto lexer_end = std::chrono::high_resolution_clock::now();
-
-        // Parsing
-        Parser::Parser parser(*this, lexer);
-        Parser::ProgramParseResult parse_result = parser.parse();
-
-        if (parse_result.status != ResultStatus::Success)
-            succeed = false;
-
-        result.adapt(std::move(parse_result.diagnostics));
-
-        auto parser_end = std::chrono::high_resolution_clock::now();
-
-        // Semantic Analysis
-        if (succeed)
-        {
-            Semantic::Analyzer analyzer(*this);
-            Semantic::AnalysisResult semantic_result =
-                analyzer.analyze(*parse_result.data);
-
-            if (semantic_result.status != Core::ResultStatus::Success)
-                succeed = false;
-
-            result.adapt(std::move(semantic_result.diagnostics));
-        }
-
-        auto semantic_analysis_end = std::chrono::high_resolution_clock::now();
-
-        // After Execution
-
-        // Time Elapsed
-        auto end = std::chrono::high_resolution_clock::now();
-
-        std::cout << *parse_result.data << "\n";
-
-        auto microseconds =
-            std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        auto lexer = new Lexer::Lexer(*this);
+        Lexer::LexerResult lex_result = lexer->tokenize();
 
         std::cout << "[Lexer] "
                   << std::chrono::duration_cast<std::chrono::microseconds>(
-                         lexer_end - start)
+                         std::chrono::high_resolution_clock::now() -
+                         lexer_start)
                          .count()
                   << "\n";
+
+        return lex_result;
+    }
+
+    Lexer::LexerResult ProgramFile::lex(ProgramResult &result)
+    {
+        Lexer::LexerResult lex_result = lex();
+
+        result.lexer = lex_result.lexer;
+        result.adapt(lex_result.status, std::move(lex_result.diagnostics));
+
+        return lex_result;
+    }
+
+    Parser::ProgramParseResult ProgramFile::parse(Lexer::Lexer *lexer)
+    {
+        auto parser_start = std::chrono::high_resolution_clock::now();
+
+        Parser::Parser parser(*this, *lexer);
+        Parser::ProgramParseResult parse_result = parser.parse();
 
         std::cout << "[Parser] "
                   << std::chrono::duration_cast<std::chrono::microseconds>(
-                         parser_end - lexer_end)
+                         std::chrono::high_resolution_clock::now() -
+                         parser_start)
                          .count()
                   << "\n";
 
-        std::cout << "[Semantic] "
+        return parse_result;
+    }
+
+    Parser::ProgramParseResult ProgramFile::parse(ProgramResult &result)
+    {
+        Parser::ProgramParseResult parse_result = parse(result.lexer);
+        result.adapt(parse_result.status, std::move(parse_result.diagnostics),
+                     std::move(parse_result.data));
+
+        return parse_result;
+    }
+
+    Semantic::AnalysisResult
+    ProgramFile::analyze(std::unique_ptr<AST::Program> &program)
+    {
+        if (analyzed_)
+            return {std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+        Semantic::Analyzer analyzer(*this);
+        Semantic::AnalysisResult analysis_result = analyzer.analyze(*program);
+
+        analyzed_ = true;
+
+        std::cout << "[SemanticAnalysis] "
                   << std::chrono::duration_cast<std::chrono::microseconds>(
-                         semantic_analysis_end - parser_end)
+                         std::chrono::high_resolution_clock::now() - start)
                          .count()
                   << "\n";
+
+        return analysis_result;
+    }
+
+    Semantic::AnalysisResult ProgramFile::analyze(ProgramResult &result)
+    {
+        auto is_analyzed = analyzed_;
+        Semantic::AnalysisResult analysis_result = analyze(result.data);
+
+        if (is_analyzed)
+            return analysis_result;
+
+        result.adapt(analysis_result.status,
+                     std::move(analysis_result.diagnostics));
+
+        return analysis_result;
+    }
+
+    Semantic::AnalysisResult ProgramFile::lex_parse_analyze()
+    {
+        Semantic::AnalysisResult result = {
+            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+
+        Lexer::LexerResult lex_result = lex();
+        result.adapt(lex_result.status, std::move(lex_result.diagnostics));
+
+        if (result.status == Core::ResultStatus::Fail)
+        {
+            delete lex_result.lexer;
+            return result;
+        }
+
+        Parser::ProgramParseResult parse_result = parse(lex_result.lexer);
+        result.adapt(parse_result.status, std::move(parse_result.diagnostics));
+
+        if (result.status == Core::ResultStatus::Fail)
+        {
+            delete lex_result.lexer;
+            return result;
+        }
+
+        Semantic::AnalysisResult analysis_result = analyze(parse_result.data);
+        result.adapt(analysis_result.status,
+                     std::move(analysis_result.diagnostics));
+
+        delete lex_result.lexer;
+
+        return result;
+    }
+
+    void ProgramFile::execute()
+    {
+        if (!is_valid_)
+            return;
+
+        auto start = std::chrono::high_resolution_clock::now();
+        auto succeeded = true;
+
+        ProgramResult result = {ResultStatus::Success, nullptr, {}};
+        result.diagnostics.reserve(32);
+
+        // Lexical Analysis
+        succeeded = lex(result).status == Core::ResultStatus::Success;
+
+        // Parsing
+        if (succeeded)
+            succeeded = parse(result).status == Core::ResultStatus::Success;
+
+        // Semantic Analysis
+        if (succeeded)
+            succeeded = analyze(result).status == Core::ResultStatus::Success;
+
+        delete result.lexer;
+
+        // After Execution
+        // Time Elapsed
+        auto microseconds =
+            std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::high_resolution_clock::now() - start);
 
         // Diagnostics
         for (auto &diagnostic : result.diagnostics)
             diagnostic->report();
 
+        if (!is_main_)
+            return;
+
         Utils::TextStyle color =
-            succeed ? Utils::Colors::Green : Utils::Colors::Red;
+            succeeded ? Utils::Colors::Green : Utils::Colors::Red;
 
         std::cout << "\n\n"
-                  << Utils::tab(3) << color << "[" << (succeed ? "/" : "X")
+                  << Utils::tab(3) << color << "[" << (succeeded ? "/" : "X")
                   << "]" << Utils::Styles::Reset << " Program Executed ("
                   << color << static_cast<double>(microseconds.count()) / 1'000
                   << "ms" << Utils::Styles::Reset << ")\n\n";

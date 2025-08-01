@@ -11,8 +11,9 @@ namespace Core
     {
         AST::VariableDeclarationStmt *node = nullptr;
 
-        VariableSymbol(std::string_view name, Core::Position declared_at,
-                       bool is_mutable, std::unique_ptr<Type> type,
+        VariableSymbol(std::string_view name, SymbolAccessibility accessibility,
+                       Core::Position declared_at, bool is_mutable,
+                       std::unique_ptr<Type> type,
                        std::optional<Value> value = std::nullopt,
                        AST::VariableDeclarationStmt *node = nullptr);
     };

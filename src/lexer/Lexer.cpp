@@ -19,7 +19,7 @@ namespace Lexer
         : program_(program), tokenizer_(*this)
     {
         tokens_.reserve(
-            std::max(static_cast<size_t>(256), program.source().size() / 4));
+            std::max(static_cast<size_t>(64), program.source().size() / 4));
     }
 
     Core::ProgramFile &Lexer::program() { return program_; }

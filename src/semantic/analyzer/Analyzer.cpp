@@ -1,4 +1,5 @@
 #include "semantic/analyzer/Analyzer.hpp"
+#include "core/environment/Environment.hpp"
 #include "core/type/primitive/Boolean.hpp"
 #include "core/type/primitive/Character.hpp"
 #include "core/type/primitive/Float.hpp"
@@ -17,7 +18,8 @@ namespace Semantic
     }
 
     Analyzer::Analyzer(Core::ProgramFile &program)
-        : program_(program), environment_(nullptr), current_env_(&environment_)
+        : program_(program), environment_(program_.environment()),
+          current_env_(&environment_)
     {
         initialize_types();
     }

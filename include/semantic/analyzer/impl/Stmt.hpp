@@ -2,6 +2,8 @@
 
 #include "ast/stmt/DeclarationStmt.hpp"
 #include "ast/stmt/ExprStmt.hpp"
+#include "ast/stmt/GlobalStmt.hpp"
+#include "ast/stmt/ImportStmt.hpp"
 #include "ast/stmt/function/FunctionDeclStmt.hpp"
 #include "ast/stmt/function/FunctionRetStmt.hpp"
 #include "ast/stmt/types/struct/StructDeclStmt.hpp"
@@ -18,6 +20,18 @@ namespace Semantic
     template <> struct AnalyzerImpl<AST::ExprStmt>
     {
         static AnalysisResult analyze(Analyzer &analyzer, AST::ExprStmt &node);
+    };
+
+    template <> struct AnalyzerImpl<AST::GlobalStmt>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer,
+                                      AST::GlobalStmt &node);
+    };
+
+    template <> struct AnalyzerImpl<AST::ImportStmt>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer,
+                                      AST::ImportStmt &node);
     };
 
     template <> struct AnalyzerImpl<AST::DeclarationStmt>

@@ -17,13 +17,14 @@ namespace Parser
         void
         error(std::unique_ptr<Diagnostic::ErrorDiagnostic> diagnostic) override;
         void error(AST::Node *node, Diagnostic::ErrorType error_type,
-                   const std::string & message,
-                   const std::string & submessage) override;
+                   const std::string &message,
+                   const std::string &submessage) override;
 
         void
         force_error(std::unique_ptr<Diagnostic::ErrorDiagnostic> diagnostic);
         void force_error(AST::Node *node, Diagnostic::ErrorType error_type,
-                         const std::string & message, const std::string & submessage);
+                         const std::string &message,
+                         const std::string &submessage);
     };
 
 } // namespace Parser

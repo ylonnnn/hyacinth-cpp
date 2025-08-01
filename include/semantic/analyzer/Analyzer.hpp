@@ -32,9 +32,7 @@ namespace Semantic
     {
       protected:
         Core::ProgramFile &program_;
-        Core::Environment environment_;
-
-        Core::Environment *current_env_ = nullptr;
+        Core::Environment &environment_, *current_env_ = nullptr;
 
       public:
         Analyzer(Core::ProgramFile &program);

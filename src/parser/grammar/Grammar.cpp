@@ -52,8 +52,8 @@ namespace Parser
         Lexer::Lexer &lexer = parser.lexer();
         ParseResult result(parser, Core::ResultStatus::Success, nullptr, {});
 
-        result.diagnostics.reserve(
-            std::max(static_cast<size_t>(32), lexer.size() / 8));
+        result.diagnostics.reserve(32);
+        // std::max(static_cast<size_t>(32), lexer.size() / 8));
 
         if (lexer.eof(false))
             return result;
@@ -91,25 +91,19 @@ namespace Parser
             parser, Core::ResultStatus::Success,
             std::make_unique<AST::Program>(parser.program()), {});
 
-        result.diagnostics.reserve(lexer.size());
+        result.diagnostics.reserve(64);
 
         while (!lexer.eof(false))
         {
-            ParseResult p_res = partial_parse(parser);
+            ParseResult p_res = partial_parse(parser, true);
 
             if (p_res.data)
-                if (auto ptr = dynamic_cast<AST::DeclarationStmt *>(
-                        p_res.data.release()))
-                    result.data->declarations().push_back(
-                        std::unique_ptr<AST::DeclarationStmt>(ptr));
+                if (auto ptr =
+                        dynamic_cast<AST::GlobalStmt *>(p_res.data.release()))
+                    result.data->statements().push_back(
+                        std::unique_ptr<AST::GlobalStmt>(ptr));
 
-            result.diagnostics.insert(
-                result.diagnostics.end(),
-                std::make_move_iterator(p_res.diagnostics.begin()),
-                std::make_move_iterator(p_res.diagnostics.end()));
-
-            if (p_res.status == Core::ResultStatus::Fail)
-                result.status = p_res.status;
+            result.adapt(p_res.status, std::move(p_res.diagnostics));
         }
 
         return result;

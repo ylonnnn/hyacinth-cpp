@@ -5,6 +5,7 @@
 namespace Core
 {
     VariableSymbol::VariableSymbol(std::string_view name,
+                                   SymbolAccessibility accessibility,
                                    Core::Position declared_at, bool is_mutable,
                                    std::unique_ptr<Type> type,
                                    std::optional<Value> value,
@@ -12,6 +13,7 @@ namespace Core
         : IdentifierSymbol(name, declared_at, is_mutable, std::move(type),
                            std::move(value), node)
     {
+        this->accessibility = accessibility;
         this->node = dynamic_cast<AST::VariableDeclarationStmt *>(Symbol::node);
     }
 

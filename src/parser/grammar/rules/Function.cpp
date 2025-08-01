@@ -88,6 +88,22 @@ namespace Parser
         return &lexer.next()->end_position;
     }
 
+    ParseResult
+    FunctionDefinition::parse(Parser &parser,
+                              AST::DeclarationAccessibility accessibility)
+    {
+        ParseResult result = parse(parser);
+
+        auto decl =
+            dynamic_cast<AST::FunctionDeclarationStmt *>(result.data.get());
+        if (decl == nullptr)
+            return result;
+
+        decl->set_accessibility(accessibility);
+
+        return result;
+    }
+
     ParseResult FunctionDefinition::parse(Parser &parser)
     {
         // fn NAME -> RET_TYPE ([PARAM_LIST]) {}
@@ -97,7 +113,7 @@ namespace Parser
 
         // fn (Keyword)
         if (auto diagnostic = parser.expect_or_error(token_type_, false))
-            result.diagnostics.push_back(std::move(diagnostic));
+            result.force_error(std::move(diagnostic));
         else
             lexer.next();
 
@@ -111,8 +127,7 @@ namespace Parser
             result.force_error(
                 &node, Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
                 std::string("Missing function ") + Diagnostic::ERR_GEN +
-                    "IDENTIFIER" + Utils::Styles::Reset +
-                    " after function keyword.",
+                    "IDENTIFIER" + Utils::Styles::Reset + ".",
                 "Missing identifier here");
         }
 
@@ -122,11 +137,11 @@ namespace Parser
         else
         {
             auto node = AST::LiteralExpr(*lexer.peek());
-            result.force_error(
-                &node, Diagnostic::ErrorTypes::Syntax::MissingOperator,
-                std::string("Missing ") + Diagnostic::ERR_GEN + "->" +
-                    Utils::Styles::Reset + " after function identifier.",
-                "Missing arrow operator here");
+            result.force_error(&node,
+                               Diagnostic::ErrorTypes::Syntax::MissingOperator,
+                               std::string("Missing ") + Diagnostic::ERR_GEN +
+                                   "->" + Utils::Styles::Reset + ".",
+                               "Missing arrow operator here");
         }
 
         // RET_TYPE (ReturnType/Type)
@@ -146,8 +161,7 @@ namespace Parser
                 result.force_error(
                     &node, Diagnostic::ErrorTypes::Syntax::MissingReturnType,
                     std::string("Missing function ") + Diagnostic::ERR_GEN +
-                        "RETURN TYPE" + Utils::Styles::Reset +
-                        " after function arrow operator.",
+                        "RETURN TYPE" + Utils::Styles::Reset + ".",
                     "Missing return type here");
             }
         }

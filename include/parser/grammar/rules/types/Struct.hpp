@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ast/stmt/DeclarationStmt.hpp"
 #include "parser/Parser.hpp"
 #include "parser/grammar/GrammarRule.hpp"
 
@@ -22,7 +23,8 @@ namespace Parser
       public:
         StructDefinition();
 
-        // FunctionParameterListParseResult parse_param_list(Parser &parser);
+        ParseResult parse(Parser &parser,
+                          AST::DeclarationAccessibility accessibility);
         ParseResult parse(Parser &parser) override;
     };
 
