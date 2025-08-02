@@ -72,23 +72,6 @@ namespace Core
             Core::StructSymbol *_struct =
                 static_cast<Core::StructSymbol *>(symbol);
 
-            if (_struct->defined_at != nullptr)
-            {
-                std::cout << _struct->defined_at->program.path() << "\n";
-                std::cout << _struct->defined_at->row << "\n";
-                std::cout << _struct->defined_at->col << "\n";
-
-                std::cout << "before def and decl nodes\n";
-                std::cout << _struct->definition << "\n";
-                std::cout << _struct->definition->position_ << "\n";
-                std::cout << _struct->node << "\n";
-                std::cout << _struct->node->position_ << "\n";
-            }
-            else
-            {
-                std::cout << "struct is not defined: " << _struct->name << "\n";
-            }
-
             diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
                 _struct->defined_at != nullptr ? _struct->definition
                                                : _struct->node,
