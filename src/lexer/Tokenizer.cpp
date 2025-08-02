@@ -94,10 +94,9 @@ namespace Lexer
         auto &[start, end] = range;
         size_t len = (end - start) + 1;
 
-        auto token = Token{source_.substr(start, len),
-                           {row_, col_, program_},
-                           {row_, col_ + (len - 1), program_},
-                           type};
+        auto token =
+            Token{source_.substr(start, len), program_.position_at(row_, col_),
+                  program_.position_at(row_, col_ + (len - 1)), type};
 
         col_ += len;
 
@@ -128,9 +127,8 @@ namespace Lexer
         }
 
         // EOF
-        result.data.push_back(Token{"",
-                                    {row_ + 1, 0, program_},
-                                    {row_ + 1, 0, program_},
+        result.data.push_back(Token{"", program_.position_at(row_ + 1, 0),
+                                    program_.position_at(row_ + 1, 0),
                                     TokenTypes::Miscellaneous::EndOfFile});
 
         return result;

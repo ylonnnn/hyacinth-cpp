@@ -1,3 +1,4 @@
+#include <iostream>
 #include <ostream>
 
 #include "ast/Node.hpp"
@@ -9,6 +10,9 @@ namespace AST
         : position_(&position), end_position_(position_)
     {
     }
+
+    Node::~Node() = default;
+    // Node::~Node() { std::cout << "destroyed\n"; }
 
     Core::ProgramFile &Node::program() { return position_->program; }
 

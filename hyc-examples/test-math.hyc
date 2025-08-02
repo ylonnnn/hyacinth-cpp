@@ -1,0 +1,10 @@
+pub fn add -> int[32] (a: int[32], b: int[32]) {
+    return 1;
+}
+
+pub fn subtract -> int[32] (a: int[32], b: int[32]) {
+    return 2;
+}
+
+fn internal_math_fn -> void ();
+priv fn internal_math_fn1 -> void ();

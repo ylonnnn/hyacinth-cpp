@@ -10,11 +10,10 @@ namespace AST
     class Node
     {
       protected:
-        Core::Position *position_ = nullptr, *end_position_ = nullptr;
-
       public:
+        Core::Position *position_ = nullptr, *end_position_ = nullptr;
         Node(Core::Position &position);
-        virtual ~Node() = default;
+        virtual ~Node();
 
       public:
         Core::ProgramFile &program();

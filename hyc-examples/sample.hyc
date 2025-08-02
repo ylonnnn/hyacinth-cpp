@@ -1,6 +1,11 @@
-import "./test-importing.hyc";
+import "./test-math.hyc";
+import "./Player.hyc";
 
 fn main -> void () {
     let x: int[32] = add(1, 2);
     // let y: int[32] = subtract(2, 1);
+    
+    let local_player: Player = create_player("PlayerUsername", { x: 0.0, y: 0.0, z: 0.0, });
+    
+    internal_math_fn(); // Error: private function of test-math.hyc
 }

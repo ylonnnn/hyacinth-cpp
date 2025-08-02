@@ -56,6 +56,9 @@ namespace Core
         std::string source_;
         std::vector<std::string_view> lines_;
 
+        Lexer::Lexer *lexer_ = nullptr;
+        std::unique_ptr<AST::Program> node_;
+
         std::unique_ptr<DependencyEnvironment> dependencies_;
         std::unique_ptr<Environment> environment_;
 

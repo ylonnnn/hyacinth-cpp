@@ -30,12 +30,15 @@ namespace Lexer
 
       public:
         Lexer(Core::ProgramFile &program);
+        ~Lexer();
 
       protected:
       public:
         Core::ProgramFile &program();
         size_t position();
         size_t size();
+
+        std::vector<Token> &tokens();
 
         LexerResult tokenize();
         bool eof(bool absolute = true);

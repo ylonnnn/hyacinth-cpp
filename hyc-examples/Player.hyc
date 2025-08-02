@@ -1,0 +1,21 @@
+pub struct Vector3 {
+    x: float[64];
+    y: float[64];
+    z: float[64];
+}
+
+struct Player {
+    name: str;
+    position: Vector3;
+}
+
+pub fn create_player -> Player (name: str, position: Vector3) {
+    return {
+        name: name,
+        position: position,
+    };
+}
+
+pub fn set_player_position -> void (player: Player, position: Vector3) {
+    // Do stuff...
+}

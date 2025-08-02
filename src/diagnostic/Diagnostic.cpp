@@ -45,8 +45,15 @@ namespace Diagnostic
             options;
         auto &[row, col, program] = position;
 
-        std::vector<std::string_view> lines =
-            get_lines(program, {position.row, end_position.row});
+        std::cout << "(start) construct emphasis\n";
+        std::cout << &position << "\n";
+        std::cout << &program << "\n";
+        std::cout << &row << "\n";
+        std::cout << &col << "\n";
+        std::cout << "(end) construct emphasis\n";
+
+        std::vector<std::string_view> lines = get_lines(
+            program, std::pair<size_t, size_t>{position.row, end_position.row});
 
         constexpr size_t tab_size = 3;
         size_t start = row - 1, end = end_position.row;

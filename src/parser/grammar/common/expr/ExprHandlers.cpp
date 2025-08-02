@@ -181,7 +181,6 @@ namespace Parser
         auto &lexer = parser.lexer();
 
         Lexer::Token &open = lexer.current();
-        Core::Position &pos = open.position;
 
         Expr *expr_rule;
         if (auto ptr = dynamic_cast<Expr *>(parser.grammar().fallback()))
@@ -272,7 +271,8 @@ namespace Parser
         //     std::move(left), operation,
         //     expr_rule->parse_expr(parser, right_bp).data);
 
-        auto node = std::make_unique<AST::InstanceExpr>(pos, std::move(fields));
+        auto node = std::make_unique<AST::InstanceExpr>(open.position,
+                                                        std::move(fields));
 
         node->set_end_position(*c_ep);
 

@@ -1,5 +1,6 @@
 #include "ast/expr/compound/InstanceExpr.hpp"
 #include "utils/style.hpp"
+#include <iostream>
 #include <unordered_map>
 
 namespace AST

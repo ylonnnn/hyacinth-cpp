@@ -22,11 +22,16 @@ namespace Lexer
             std::max(static_cast<size_t>(64), program.source().size() / 4));
     }
 
+    Lexer::~Lexer() = default;
+    // Lexer::~Lexer() { std::cout << "destroyed\n"; }
+
     Core::ProgramFile &Lexer::program() { return program_; }
 
     size_t Lexer::position() { return position_; }
 
     size_t Lexer::size() { return tokens_.size(); }
+
+    std::vector<Token> &Lexer::tokens() { return tokens_; }
 
     LexerResult Lexer::tokenize()
     {

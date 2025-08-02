@@ -50,9 +50,11 @@ namespace Core
         lines_.reserve(64);
 
         read();
+
+        lexer_ = new Lexer::Lexer(*this);
     }
 
-    ProgramFile::~ProgramFile() = default;
+    ProgramFile::~ProgramFile() { delete lexer_; }
 
     size_t ProgramFile::file_size(std::ifstream &file)
     {
@@ -131,7 +133,7 @@ namespace Core
 
     Position ProgramFile::position_at(size_t row, size_t col)
     {
-        return Position{
+        return (Position){
             .row = row,
             .col = col,
             .program = *this,
@@ -147,8 +149,7 @@ namespace Core
     {
         auto lexer_start = std::chrono::high_resolution_clock::now();
 
-        auto lexer = new Lexer::Lexer(*this);
-        Lexer::LexerResult lex_result = lexer->tokenize();
+        Lexer::LexerResult lex_result = lexer_->tokenize();
 
         std::cout << "[Lexer] "
                   << std::chrono::duration_cast<std::chrono::microseconds>(
@@ -241,25 +242,19 @@ namespace Core
         result.adapt(lex_result.status, std::move(lex_result.diagnostics));
 
         if (result.status == Core::ResultStatus::Fail)
-        {
-            delete lex_result.lexer;
             return result;
-        }
 
         Parser::ProgramParseResult parse_result = parse(lex_result.lexer);
+
+        node_ = std::move(parse_result.data);
         result.adapt(parse_result.status, std::move(parse_result.diagnostics));
 
         if (result.status == Core::ResultStatus::Fail)
-        {
-            delete lex_result.lexer;
             return result;
-        }
 
-        Semantic::AnalysisResult analysis_result = analyze(parse_result.data);
+        Semantic::AnalysisResult analysis_result = analyze(node_);
         result.adapt(analysis_result.status,
                      std::move(analysis_result.diagnostics));
-
-        delete lex_result.lexer;
 
         return result;
     }
@@ -282,17 +277,26 @@ namespace Core
         if (succeeded)
             succeeded = parse(result).status == Core::ResultStatus::Success;
 
+        node_ = std::move(result.data);
+
         // Semantic Analysis
         if (succeeded)
-            succeeded = analyze(result).status == Core::ResultStatus::Success;
+        {
+            Semantic::AnalysisResult analysis_result = analyze(node_);
+            result.adapt(analysis_result.status,
+                         std::move(analysis_result.diagnostics));
 
-        delete result.lexer;
+            succeeded = result.status == Core::ResultStatus::Success;
+        }
 
         // After Execution
         // Time Elapsed
         auto microseconds =
             std::chrono::duration_cast<std::chrono::microseconds>(
                 std::chrono::high_resolution_clock::now() - start);
+
+        // TEMP
+        std::cout << *node_ << "\n";
 
         // Diagnostics
         for (auto &diagnostic : result.diagnostics)
