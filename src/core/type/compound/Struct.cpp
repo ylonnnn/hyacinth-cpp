@@ -8,13 +8,14 @@ namespace Core
 {
     StructType::StructType(
         Environment *environment, std::string_view name,
-        std::unordered_map<std::string_view, std::unique_ptr<Type>> &&fields)
-        : BaseType(environment, name)
+        std::unordered_map<std::string_view, std::unique_ptr<Type>> &&fields,
+        TypeSymbol *symbol)
+        : BaseType(environment, name, symbol), fields_(std::move(fields))
     {
-        fields_.reserve(fields.size());
+        // fields_.reserve(fields.size());
 
-        for (auto &[name, field] : fields)
-            fields_.try_emplace(name, std::move(field));
+        // for (auto &[name, field] : fields)
+        //     fields_.try_emplace(name, std::move(field));
     }
 
     bool StructType::assignable(
@@ -50,7 +51,24 @@ namespace Core
     {
         // TODO: Allow types that inherit this type
 
-        return BaseType::assignable_with(type);
+        if (!BaseType::assignable_with(type))
+            return false;
+
+        auto &casted = static_cast<const StructType &>(type);
+        if (fields_.size() != casted.fields_.size())
+            return false;
+
+        for (const auto &[name, field] : fields_)
+        {
+            auto f_it = casted.fields_.find(name);
+            if (f_it == casted.fields_.end())
+                return false;
+
+            if (!f_it->second->assignable_with(*field))
+                return false;
+        }
+
+        return true;
     }
 
     std::unique_ptr<Diagnostic::NoteDiagnostic> StructType::make_suggestion(

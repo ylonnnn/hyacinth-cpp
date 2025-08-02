@@ -1,11 +1,27 @@
 import "./test-math.hyc";
 import "./Player.hyc";
 
+let x: int[32] = 123;
+
+struct Vec2 {
+    int_field: int[32] 
+}
+
 fn main -> void () {
+    struct Vec2 {
+        str_field: str
+    }
+    
+    let player: Player = {name: "Custom Username", position: {x: 5, y:5,z:5}};
+
+    // struct Player { failed: bool }
+
     let x: int[32] = add(1, 2);
-    // let y: int[32] = subtract(2, 1);
+
+    let shadowed_player_instance: Player = { failed: true };
     
-    let local_player: Player = create_player("PlayerUsername", { x: 0.0, y: 0.0, z: 0.0, });
-    
-    internal_math_fn(); // Error: private function of test-math.hyc
+    let local_player: Player = create_player(
+        "PlayerUsername", 
+        { x: 0, y: 0, z: 0, }
+    );
 }

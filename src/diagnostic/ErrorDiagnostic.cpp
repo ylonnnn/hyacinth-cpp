@@ -59,6 +59,8 @@ namespace Diagnostic
             "HYC::SEMANTIC::DUPLICATION";
         ERROR_CODES[ErrorTypes::Semantic::InvalidReturnUsage] =
             "HYC::SEMANTIC::INVALID_RETURN_USAGE";
+        ERROR_CODES[ErrorTypes::Semantic::IllegalShadowing] =
+            "HYC::SEMANTIC::ILLEGAL_SHADOWING";
 
         ERROR_CODES[ErrorTypes::Modification::ReadValueModification] =
             "HYC::MODIFICATION:RVALUE_MODIFICATION";

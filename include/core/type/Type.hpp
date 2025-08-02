@@ -7,6 +7,7 @@
 
 #include "ast/type/Type.hpp"
 #include "core/result/Result.hpp"
+#include "core/symbol/type/TypeSymbol.hpp"
 #include "core/value/Value.hpp"
 #include "diagnostic/Diagnostic.hpp"
 #include "diagnostic/NoteDiagnostic.hpp"
@@ -67,8 +68,14 @@ namespace Core
         std::string_view name_;
         std::vector<TypeParameter> parameters_;
 
+        TypeSymbol *symbol_ = nullptr;
+
+        bool builtin_ = false;
+
       public:
-        BaseType(Environment *environment, std::string_view name);
+        BaseType(Environment *environment, std::string_view name,
+                 TypeSymbol *symbol = nullptr);
+
         virtual ~BaseType();
 
       protected:
@@ -84,6 +91,10 @@ namespace Core
         Environment *environment();
         std::string_view name() const;
         std::vector<TypeParameter> &parameters();
+
+        TypeSymbol *symbol();
+
+        constexpr inline bool builtin() const { return builtin_; }
 
         void create_parameter(std::string_view name,
                               TypeParameterType param_type,

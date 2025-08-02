@@ -5,6 +5,7 @@ namespace Core
     CharacterType::CharacterType(Environment *environment)
         : BaseType(environment, "char")
     {
+        builtin_ = true;
     }
 
     bool CharacterType::assignable(

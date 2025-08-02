@@ -5,11 +5,14 @@ namespace Core
 {
     StructSymbol::StructSymbol(std::string_view name,
                                SymbolAccessibility accessibility,
-                               Core::Position declared_at,
+                               Core::Position &declared_at,
                                AST::StructDeclarationStmt *node)
-        : Symbol(name, accessibility, std::move(declared_at), node)
+        : TypeSymbol(name, accessibility, declared_at, node)
     {
-        this->node = dynamic_cast<AST::StructDeclarationStmt *>(Symbol::node);
+        this->node = dynamic_cast<AST::StructDeclarationStmt *>(node);
+
+        if (typeid(*node) == typeid(AST::StructDefinitionStmt))
+            define(static_cast<AST::StructDefinitionStmt *>(node));
     }
 
     void StructSymbol::define(Core::Position *position)

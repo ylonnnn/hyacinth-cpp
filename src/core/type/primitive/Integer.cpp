@@ -95,6 +95,8 @@ namespace Core
         : BaseType(environment, is_signed ? "int" : "uint"),
           is_signed_(is_signed)
     {
+        builtin_ = true;
+
         create_parameter("_bw", TypeParameterType::Constant,
                          Type(&bw_type_, {}));
     }

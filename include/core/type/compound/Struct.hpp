@@ -12,7 +12,8 @@ namespace Core
       public:
         StructType(Environment *environment, std::string_view name,
                    std::unordered_map<std::string_view, std::unique_ptr<Type>>
-                       &&fields);
+                       &&fields,
+                   TypeSymbol *symbol = nullptr);
 
       protected:
         bool

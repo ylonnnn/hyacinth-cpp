@@ -15,9 +15,17 @@ namespace Core
 
         std::vector<Environment *> &dependencies();
 
-        Symbol *resolve_symbol(const std::string &name) override;
-        BaseType *resolve_type(const std::string &name) override;
-        VariableSymbol *resolve_variable(const std::string &name) override;
+        Symbol *resolve_symbol(
+            const std::string &name,
+            size_t depth = static_cast<size_t>(ResolutionType::Root)) override;
+
+        BaseType *resolve_type(
+            const std::string &name,
+            size_t depth = static_cast<size_t>(ResolutionType::Root)) override;
+
+        VariableSymbol *resolve_variable(
+            const std::string &name,
+            size_t depth = static_cast<size_t>(ResolutionType::Root)) override;
     };
 
 } // namespace Core

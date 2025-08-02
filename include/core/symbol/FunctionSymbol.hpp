@@ -21,7 +21,7 @@ namespace Core
         AST::FunctionParameter *node = nullptr;
 
         FunctionParameterSymbol(std::string_view name,
-                                Core::Position declared_at, bool is_mutable,
+                                Core::Position &declared_at, bool is_mutable,
                                 Type *type, std::optional<Value> value,
                                 AST::FunctionParameter *node = nullptr);
 
@@ -39,7 +39,7 @@ namespace Core
         std::string signature;
 
         FunctionSymbol(std::string_view name, SymbolAccessibility accessibility,
-                       Core::Position declared_at,
+                       Core::Position &declared_at,
                        std::unique_ptr<Type> return_type,
                        std::vector<FunctionParameter> &&parameters,
                        AST::FunctionDeclarationStmt *node = nullptr);

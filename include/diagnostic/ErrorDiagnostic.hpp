@@ -52,6 +52,7 @@ namespace Diagnostic
             InvalidArgumentCount,
             Duplication,
             InvalidReturnUsage,
+            IllegalShadowing,
         };
 
         enum class Modification

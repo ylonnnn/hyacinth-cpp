@@ -20,4 +20,5 @@ namespace Core
       public:
         bool assignable_with(const BaseType &type) const override;
     };
+
 } // namespace Core

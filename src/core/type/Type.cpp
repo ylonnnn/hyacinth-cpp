@@ -117,8 +117,9 @@ namespace Core
         return nullptr;
     }
 
-    BaseType::BaseType(Environment *environment, std::string_view name)
-        : environment_(environment), name_(name)
+    BaseType::BaseType(Environment *environment, std::string_view name,
+                       TypeSymbol *symbol)
+        : environment_(environment), name_(name), symbol_(symbol)
     {
         parameters_.reserve(8);
     }
@@ -131,6 +132,8 @@ namespace Core
     std::string_view BaseType::name() const { return name_; }
 
     std::vector<TypeParameter> &BaseType::parameters() { return parameters_; }
+
+    TypeSymbol *BaseType::symbol() { return symbol_; }
 
     void BaseType::create_parameter(std::string_view name,
                                     TypeParameterType param_type,

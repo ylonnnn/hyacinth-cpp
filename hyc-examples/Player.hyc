@@ -1,10 +1,10 @@
-pub struct Vector3 {
+struct Vector3 {
     x: float[64];
     y: float[64];
     z: float[64];
 }
 
-struct Player {
+pub struct Player {
     name: str;
     position: Vector3;
 }

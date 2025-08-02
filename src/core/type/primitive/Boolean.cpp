@@ -4,7 +4,10 @@
 namespace Core
 {
     BooleanType::BooleanType(Environment *environment)
-        : BaseType(environment, "bool") {};
+        : BaseType(environment, "bool")
+    {
+        builtin_ = true;
+    };
 
     bool BooleanType::assignable(
         const Core::Value &value,

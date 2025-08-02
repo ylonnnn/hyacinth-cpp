@@ -16,9 +16,8 @@ namespace Semantic
         Lexer::Token &st_name = node.name();
         std::string identifier(st_name.value);
 
-        Core::Symbol *declared = current->resolve_symbol(identifier);
-
-        auto error = [&](const std::string &message) -> void
+        auto error = [&](Core::Symbol *symbol,
+                         const std::string &message) -> void
         {
             auto err_node = AST::LiteralExpr(st_name);
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
@@ -26,10 +25,10 @@ namespace Semantic
                 std::move(message),
                 "Identifier \"" + identifier + "\" is already used");
 
-            auto defined = declared->defined_at != nullptr;
+            auto defined = symbol->defined_at != nullptr;
 
             diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
-                declared->node,
+                symbol->node,
                 defined ? Diagnostic::NoteType::Definition
                         : Diagnostic::NoteType::Declaration,
                 std::string("A symbol identified as \"") +
@@ -40,24 +39,37 @@ namespace Semantic
             result.error(std::move(diagnostic));
         };
 
-        if (declared == nullptr)
+        // Shadowing Check
+        // Start at parent to lessen iteration
+        Core::BaseType *d_resolved = current->resolve_type(identifier);
+        if (d_resolved != nullptr && d_resolved->builtin())
         {
-            auto valid = current->resolve_type(identifier) == nullptr;
-            if (!valid)
-                error(std::string("Cannot re-declare symbol \"") +
-                      Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
-                      "\".");
-
-            return {nullptr, valid};
+            auto n_node = AST::LiteralExpr(node.name());
+            result.error(&n_node,
+                         Diagnostic::ErrorTypes::Semantic::IllegalShadowing,
+                         std::string("Illegal shadowing of built-in type \"") +
+                             Diagnostic::ERR_GEN + identifier +
+                             Utils::Styles::Reset + "\".",
+                         "Cannot shadow built-in types");
+            return {nullptr, false};
         }
 
+        auto depth = static_cast<size_t>(Core::ResolutionType::Current);
+        Core::BaseType *resolved = current->resolve_type(identifier, depth);
+
+        if (resolved == nullptr)
+            return {nullptr, true};
+
+        Core::TypeSymbol *declared = resolved->symbol();
         auto declptr = dynamic_cast<Core::StructSymbol *>(declared);
+
         if (declptr == nullptr)
         {
-            error(std::string("Cannot provide definition for non-struct"
-                              "declaration of \"") +
-                  Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
-                  "\".");
+            error(declared,
+                  std::string("Cannot provide definition for non-struct"
+                              " declaration of \"") +
+                      Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
+                      "\".");
 
             return {nullptr, false};
         }
@@ -69,9 +81,9 @@ namespace Semantic
         // Declared and attempting to re-declare
         if (defined || !is_def)
         {
-            error(std::string("Cannot re-declare symbol \"") +
-                  Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
-                  "\".");
+            error(declared, std::string("Cannot re-declare symbol \"") +
+                                Diagnostic::ERR_GEN + identifier +
+                                Utils::Styles::Reset + "\".");
 
             return {declptr, false};
         }
@@ -130,7 +142,8 @@ namespace Semantic
             declared->type = new Core::StructType(
                 current, declared->name,
                 std::unordered_map<std::string_view,
-                                   std::unique_ptr<Core::Type>>{});
+                                   std::unique_ptr<Core::Type>>{},
+                declared);
         }
 
         if (node.is_definition())

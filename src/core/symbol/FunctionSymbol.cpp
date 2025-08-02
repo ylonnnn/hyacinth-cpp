@@ -4,7 +4,7 @@
 namespace Core
 {
     FunctionParameterSymbol::FunctionParameterSymbol(
-        std::string_view name, Core::Position declared_at, bool is_mutable,
+        std::string_view name, Core::Position &declared_at, bool is_mutable,
         Type *type, std::optional<Value> value, AST::FunctionParameter *node)
         : IdentifierSymbol(name, declared_at, is_mutable, nullptr,
                            std::move(value), node)
@@ -17,14 +17,16 @@ namespace Core
 
     FunctionSymbol::FunctionSymbol(std::string_view name,
                                    SymbolAccessibility accessibility,
-                                   Core::Position declared_at,
+                                   Core::Position &declared_at,
                                    std::unique_ptr<Type> return_type,
                                    std::vector<FunctionParameter> &&parameters,
                                    AST::FunctionDeclarationStmt *node)
-        : Symbol(std::move(name), accessibility, std::move(declared_at), node),
+        : Symbol(name, accessibility, declared_at, node),
           return_type(std::move(return_type)), parameters(std::move(parameters))
     {
-        this->node = dynamic_cast<AST::FunctionDeclarationStmt *>(Symbol::node);
+        this->node = dynamic_cast<AST::FunctionDeclarationStmt *>(node);
+        if (typeid(*node) == typeid(AST::FunctionDefinitionStmt))
+            define(static_cast<AST::FunctionDefinitionStmt *>(node));
     }
 
     void FunctionSymbol::construct_signature()

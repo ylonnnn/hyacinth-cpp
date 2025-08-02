@@ -2,6 +2,7 @@
 #include "ast/expr/LiteralExpr.hpp"
 #include "ast/stmt/variable/VariableDefStmt.hpp"
 #include "core/symbol/VariableSymbol.hpp"
+#include "core/type/Type.hpp"
 #include "core/type/primitive/Void.hpp"
 #include "core/value/Value.hpp"
 #include "semantic/analyzer/Analyzer.hpp"
@@ -16,10 +17,30 @@ namespace Semantic
         Core::Environment *current = analyzer.current_env();
         AST::VariableDeclarationStmt *node = var->node;
 
-        auto declared =
-            current->resolve_symbol(std::string(node->name().value));
+        std::string identifier(node->name().value);
+        auto declared = current->resolve_symbol(
+            identifier, static_cast<size_t>(Core::ResolutionType::Current));
+
         if (declared == nullptr)
+        {
+            Core::BaseType *d_resolved =
+                current->parent()->resolve_type(identifier);
+            if (d_resolved == nullptr)
+                return;
+
+            if (d_resolved->builtin())
+            {
+                auto n_node = AST::LiteralExpr(node->name());
+                result.error(
+                    &n_node, Diagnostic::ErrorTypes::Semantic::IllegalShadowing,
+                    std::string("Illegal shadowing of built-in type \"") +
+                        Diagnostic::ERR_GEN + identifier +
+                        Utils::Styles::Reset + "\".",
+                    "Cannot shadow built-in types");
+            }
+
             return;
+        }
 
         std::string name(declared->name);
         auto defined = declared->defined_at != nullptr,

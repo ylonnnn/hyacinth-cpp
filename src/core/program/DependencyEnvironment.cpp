@@ -9,16 +9,20 @@ namespace Core
         return dependencies_;
     }
 
-    Symbol *DependencyEnvironment::resolve_symbol(const std::string &name)
+    Symbol *DependencyEnvironment::resolve_symbol(const std::string &name,
+                                                  size_t depth)
     {
+        if (depth == 0)
+            return nullptr;
+
         for (const auto &dependency : dependencies_)
         {
-            Symbol *resolved = dependency->resolve_symbol(name);
+            Symbol *resolved = dependency->resolve_symbol(name, depth - 1);
             if (!resolved)
                 continue;
 
             if (resolved->accessibility == SymbolAccessibility::Private)
-                continue;
+                return nullptr;
 
             return resolved;
         }
@@ -26,13 +30,21 @@ namespace Core
         return nullptr;
     }
 
-    BaseType *DependencyEnvironment::resolve_type(const std::string &name)
+    BaseType *DependencyEnvironment::resolve_type(const std::string &name,
+                                                  size_t depth)
     {
+        if (depth == 0)
+            return nullptr;
+
         for (const auto &dependency : dependencies_)
         {
-            BaseType *resolved = dependency->resolve_type(name);
+            BaseType *resolved = dependency->resolve_type(name, depth - 1);
             if (!resolved)
                 continue;
+
+            if (resolved->symbol()->accessibility ==
+                SymbolAccessibility::Private)
+                return nullptr;
 
             return resolved;
         }
@@ -41,16 +53,21 @@ namespace Core
     }
 
     VariableSymbol *
-    DependencyEnvironment::resolve_variable(const std::string &name)
+    DependencyEnvironment::resolve_variable(const std::string &name,
+                                            size_t depth)
     {
+        if (depth == 0)
+            return nullptr;
+
         for (const auto &dependency : dependencies_)
         {
-            VariableSymbol *resolved = dependency->resolve_variable(name);
+            VariableSymbol *resolved =
+                dependency->resolve_variable(name, depth - 1);
             if (!resolved)
                 continue;
 
             if (resolved->accessibility == SymbolAccessibility::Private)
-                continue;
+                return nullptr;
 
             return resolved;
         }

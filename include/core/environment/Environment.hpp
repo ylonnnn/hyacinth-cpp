@@ -10,6 +10,13 @@
 
 namespace Core
 {
+    enum class ResolutionType
+    {
+        Current = 1,
+        Parent = 2,
+        Root = -1,
+    };
+
     class Environment
     {
       protected:
@@ -35,9 +42,17 @@ namespace Core
 
         void update_variable(const std::string &name, Value value);
 
-        virtual BaseType *resolve_type(const std::string &name);
-        virtual Symbol *resolve_symbol(const std::string &name);
-        virtual VariableSymbol *resolve_variable(const std::string &name);
+        virtual BaseType *
+        resolve_type(const std::string &name,
+                     size_t depth = static_cast<size_t>(ResolutionType::Root));
+
+        virtual Symbol *resolve_symbol(
+            const std::string &name,
+            size_t depth = static_cast<size_t>(ResolutionType::Root));
+
+        virtual VariableSymbol *resolve_variable(
+            const std::string &name,
+            size_t depth = static_cast<size_t>(ResolutionType::Root));
     };
 
 } // namespace Core

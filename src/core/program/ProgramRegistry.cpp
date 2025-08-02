@@ -1,12 +1,8 @@
-#include <iostream>
-
-#include "core/program/Program.hpp"
 #include "core/program/ProgramRegistry.hpp"
+#include "core/program/Program.hpp"
 
 namespace Core
 {
-    namespace fs = std::filesystem;
-
     ProgramRegistry::ProgramRegistry(ProgramFile &main) : main_(main)
     {
         main_.registry_ = this;

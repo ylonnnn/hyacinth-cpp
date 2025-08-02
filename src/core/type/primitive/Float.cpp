@@ -96,6 +96,8 @@ namespace Core
     FloatType::FloatType(Core::Environment *environment)
         : BaseType(environment, "float")
     {
+        builtin_ = true;
+
         create_parameter("_bw", TypeParameterType::Constant,
                          Type(&bw_type_, {}));
     }
@@ -165,7 +167,9 @@ namespace Core
             {
                 using T = std::decay_t<decltype(val)>;
 
-                if constexpr (std::is_same_v<T, double>)
+                if constexpr (std::is_same_v<T, double> ||
+                              std::is_same_v<T, int64_t> ||
+                              std::is_same_v<T, uint64_t>)
                 {
                     std::pair<uint, uint> bit_pairs[] = {
                         {3, 4}, {5, 10}, {8, 23}, {11, 52}};

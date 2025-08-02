@@ -86,7 +86,27 @@ namespace Semantic
         Core::Environment *current = analyzer.current_env();
         AST::FunctionDeclarationStmt *node = fn->node;
 
-        auto declared = current->resolve_symbol(std::string(fn->name));
+        std::string identifier(std::string(fn->name));
+
+        // Shadowing Check
+        // Start at parent to lessen iteration
+        Core::BaseType *d_resolved = current->resolve_type(identifier);
+        if (d_resolved != nullptr && d_resolved->builtin())
+        {
+            auto n_node = AST::LiteralExpr(node->name());
+            result.error(&n_node,
+                         Diagnostic::ErrorTypes::Semantic::IllegalShadowing,
+                         std::string("Illegal shadowing of built-in type \"") +
+                             Diagnostic::ERR_GEN + identifier +
+                             Utils::Styles::Reset + "\".",
+                         "Cannot shadow built-in types");
+
+            return {nullptr, false};
+        }
+
+        auto depth = static_cast<size_t>(Core::ResolutionType::Current);
+        auto declared = current->resolve_symbol(identifier, depth);
+
         if (declared == nullptr)
             return {nullptr, true};
 

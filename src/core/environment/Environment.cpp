@@ -55,30 +55,44 @@ namespace Core
         variables_.insert_or_assign(name, value);
     }
 
-    BaseType *Environment::resolve_type(const std::string &name)
+    BaseType *Environment::resolve_type(const std::string &name, size_t depth)
     {
+        if (depth == 0)
+            return nullptr;
+
         auto it = types_.find(name);
         if (it == types_.end())
-            return parent_ == nullptr ? nullptr : parent_->resolve_type(name);
-
-        return it->second.get();
-    }
-
-    Symbol *Environment::resolve_symbol(const std::string &name)
-    {
-        auto it = symbols_.find(name);
-        if (it == symbols_.end())
-            return parent_ == nullptr ? nullptr : parent_->resolve_symbol(name);
-
-        return it->second.get();
-    }
-
-    VariableSymbol *Environment::resolve_variable(const std::string &name)
-    {
-        auto it = symbols_.find(name);
-        if (it == symbols_.end())
             return parent_ == nullptr ? nullptr
-                                      : parent_->resolve_variable(name);
+                                      : parent_->resolve_type(name, depth - 1);
+
+        return it->second.get();
+    }
+
+    Symbol *Environment::resolve_symbol(const std::string &name, size_t depth)
+    {
+        if (depth == 0)
+            return nullptr;
+
+        auto it = symbols_.find(name);
+        if (it == symbols_.end())
+            return parent_ == nullptr
+                       ? nullptr
+                       : parent_->resolve_symbol(name, depth - 1);
+
+        return it->second.get();
+    }
+
+    VariableSymbol *Environment::resolve_variable(const std::string &name,
+                                                  size_t depth)
+    {
+        if (depth == 0)
+            return nullptr;
+
+        auto it = symbols_.find(name);
+        if (it == symbols_.end())
+            return parent_ == nullptr
+                       ? nullptr
+                       : parent_->resolve_variable(name, depth - 1);
 
         return dynamic_cast<VariableSymbol *>(it->second.get());
     }

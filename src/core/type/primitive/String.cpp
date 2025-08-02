@@ -9,6 +9,7 @@ namespace Core
     StringType::StringType(Environment *environment)
         : BaseType(environment, "str")
     {
+        builtin_ = true;
     }
 
     bool StringType::assignable(

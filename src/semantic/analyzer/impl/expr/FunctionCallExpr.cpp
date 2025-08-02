@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include "core/symbol/FunctionSymbol.hpp"
+#include "core/type/compound/Struct.hpp"
 #include "semantic/analyzer/impl/Expr.hpp"
 
 namespace Semantic
@@ -17,14 +18,7 @@ namespace Semantic
         result.adapt(c_res.status, std::move(c_res.diagnostics));
 
         if (c_res.symbol == nullptr)
-        {
-            result.error(&callee,
-                         Diagnostic::ErrorTypes::Semantic::UnrecognizedSymbol,
-                         std::string("Unrecognized symbol detected."),
-                         "Unrecognized callee symbol detected here");
-
             return false;
-        }
 
         if (typeid(*c_res.symbol) != typeid(Core::FunctionSymbol))
         {

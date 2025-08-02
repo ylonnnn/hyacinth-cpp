@@ -3,7 +3,10 @@
 
 namespace Core
 {
-    Void::Void(Environment *environment) : BaseType(environment, "void") {}
+    Void::Void(Environment *environment) : BaseType(environment, "void")
+    {
+        builtin_ = true;
+    }
 
     bool Void::assignable(
         const Core::Value &value,

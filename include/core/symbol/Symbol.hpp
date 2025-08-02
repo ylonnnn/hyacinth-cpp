@@ -15,12 +15,12 @@ namespace Core
     {
         std::string_view name;
         SymbolAccessibility accessibility;
-        Core::Position declared_at;
+        Core::Position &declared_at;
         Core::Position *defined_at = nullptr;
         AST::Node *node = nullptr;
 
-        Symbol(std::string_view name, SymbolAccessibility accesibility,
-               Core::Position declared_at, AST::Node *node = nullptr);
+        Symbol(std::string_view name, SymbolAccessibility accessibility,
+               Core::Position &declared_at, AST::Node *node = nullptr);
 
         virtual ~Symbol() = default;
 
