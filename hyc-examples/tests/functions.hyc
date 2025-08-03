@@ -11,6 +11,8 @@ fn add -> int[32] (a: int[32], b: int[32]) {
 }
 
 fn main -> void () {
+    // fn add -> str (a: str, b: str); // Will create errors for the lines below due to integral addition
+
     println("Hello, World");
 
     let x: int[8] = 123;

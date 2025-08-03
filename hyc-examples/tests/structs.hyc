@@ -36,8 +36,16 @@ fn create_position -> Vector3 (x: int[32], y: int[32], z: int[32]) {
 }
 
 fn main -> void () {
+    struct Vector3 {
+        // Different fields...
+    }
+
     let player1: Player = { name: "Player 1", rotation: { x: 90, y: 120 }, position: { x: 1, y: 2, z: 3 } };
     let player2: Player = { name: "Player 2", rotation: create_rotation(120, 65), position: create_position(5, 4, 3) };
+
+    let player3: Player = { name: "Player 3", rotation: create_rotation(120, 90), position: create_position(6, 5, 4) };
+    // let player3_pos: Vector3 = create_position(7, 8, 9); // Error: The Vector3 used for type annotation is 
+                                                            // different from the function's return type
 
     // let p1_xy: Vector2 = get_xy(player1.position);
     // let p2_xy: Vector2 = get_xy(player2.position);
