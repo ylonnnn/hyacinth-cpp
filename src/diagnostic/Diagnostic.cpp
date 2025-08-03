@@ -14,7 +14,7 @@ namespace Diagnostic
         std::vector<std::string_view> lines_, &lines = program.lines();
         size_t line_count = lines.size();
 
-        if (start >= line_count || end >= line_count)
+        if (start > line_count || end > line_count)
         {
             Utils::terminate("Invalid line range provided!", EXIT_FAILURE);
             return lines_;

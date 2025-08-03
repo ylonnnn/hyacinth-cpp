@@ -2,6 +2,14 @@
 
 namespace AST
 {
+    std::ostream &operator<<(std::ostream &os,
+                             DeclarationAccessibility accessibility)
+    {
+        return os << (accessibility == DeclarationAccessibility::Public
+                          ? "Public"
+                          : "Private");
+    }
+
     DeclarationStmt::DeclarationStmt(Lexer::Token &name)
         : Node(name.position), name_(name)
     {

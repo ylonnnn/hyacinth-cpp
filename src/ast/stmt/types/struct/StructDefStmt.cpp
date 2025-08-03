@@ -40,6 +40,7 @@ namespace AST
                     inner_indentation = Utils::tab(tab, 4);
 
         os << "StructDefinitionStmt {\n"
+           << inner_indentation << "accessibility: " << accessibility_ << "\n"
            << inner_indentation << "name: " << name_.value << "\n"
            << inner_indentation << "fields: {";
 

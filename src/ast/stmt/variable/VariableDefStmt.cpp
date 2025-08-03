@@ -31,6 +31,7 @@ namespace AST
 
         os << "VariableDefinitionStmt {"
            << "\n"
+           << inner_indentation << "accessibility: " << accessibility_ << "\n"
            << inner_indentation << "name: " << name_ << "\n"
            << inner_indentation << "mut_state: "
            << (mut_state_ == IdentifierMutabilityState::Mutable ? "Mutable"

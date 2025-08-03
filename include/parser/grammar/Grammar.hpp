@@ -15,6 +15,7 @@ namespace Parser
     {
       protected:
         std::unordered_map<Lexer::TokenType, GrammarRule *> global_rules_;
+        std::unordered_map<Lexer::TokenType, GrammarRule *> local_rules_;
         std::unordered_map<Lexer::TokenType, std::unique_ptr<GrammarRule>>
             rules_;
 
@@ -27,8 +28,9 @@ namespace Parser
         GrammarRule *fallback() const;
 
         void add_rule(Lexer::TokenType type, std::unique_ptr<GrammarRule> rule,
-                      bool global = true);
-        GrammarRule *get_rule(Lexer::TokenType type, bool global = true) const;
+                      std::pair<bool, bool> scope);
+        GrammarRule *get_rule(Lexer::TokenType type,
+                              std::pair<bool, bool> scope) const;
 
         ParseResult partial_parse(Parser &parser, bool global = true);
         ProgramParseResult parse(Parser &parser);

@@ -31,6 +31,7 @@ namespace AST
                     inner_indentation = Utils::tab(tab, 4);
 
         os << "FunctionDefinitionStmt {\n"
+           << inner_indentation << "accessibility: " << accessibility_ << "\n"
            << inner_indentation << "name: " << name_ << "\n"
            << inner_indentation << "return_type: ";
 

@@ -14,34 +14,46 @@ namespace Parser
     Grammar::Grammar() : fallback_(std::make_unique<Expr>())
     {
         global_rules_.reserve(8);
+        local_rules_.reserve(8);
         rules_.reserve(16);
     }
 
     GrammarRule *Grammar::fallback() const { return fallback_.get(); }
 
     void Grammar::add_rule(Lexer::TokenType type,
-                           std::unique_ptr<GrammarRule> rule, bool global)
+                           std::unique_ptr<GrammarRule> rule,
+                           std::pair<bool, bool> scope)
     {
+        auto &[global, local] = scope;
+
         if (global)
             global_rules_.insert_or_assign(type, rule.get());
+
+        if (local)
+            local_rules_.insert_or_assign(type, rule.get());
 
         rules_.insert_or_assign(type, std::move(rule));
     }
 
-    GrammarRule *Grammar::get_rule(Lexer::TokenType type, bool global) const
+    GrammarRule *Grammar::get_rule(Lexer::TokenType type,
+                                   std::pair<bool, bool> scope) const
     {
-        GrammarRule *rule;
+        auto &[global, local] = scope;
+        GrammarRule *rule = nullptr;
 
         if (global)
         {
             auto it = global_rules_.find(type);
             rule = it == global_rules_.end() ? nullptr : it->second;
+
+            if (rule)
+                return rule;
         }
 
-        else
+        if (local)
         {
-            auto it = rules_.find(type);
-            rule = it == rules_.end() ? nullptr : it->second.get();
+            auto it = local_rules_.find(type);
+            rule = it == local_rules_.end() ? nullptr : it->second;
         }
 
         return rule;
@@ -62,7 +74,7 @@ namespace Parser
         if (token == nullptr)
             return result;
 
-        GrammarRule *rule = get_rule(token->type, global);
+        GrammarRule *rule = get_rule(token->type, {global, !global});
         if (rule == nullptr)
         {
             if (!global)

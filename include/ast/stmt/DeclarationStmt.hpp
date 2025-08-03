@@ -9,7 +9,11 @@ namespace AST
     {
         Public = 0,
         Private,
+
     };
+
+    std::ostream &operator<<(std::ostream &os,
+                             DeclarationAccessibility accessibility);
 
     class DeclarationStmt : public GlobalStmt
     {

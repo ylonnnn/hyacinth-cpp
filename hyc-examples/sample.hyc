@@ -18,7 +18,7 @@ fn main -> void () {
 
     let x: int[32] = add(1, 2);
 
-    let shadowed_player_instance: Player = { failed: true };
+    // let shadowed_player_instance: Player = { failed: true };
     
     let local_player: Player = create_player(
         "PlayerUsername", 

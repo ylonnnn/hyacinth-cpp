@@ -1,5 +1,6 @@
 #include "ast/stmt/types/struct/StructDeclStmt.hpp"
 #include "ast/stmt/DeclarationStmt.hpp"
+#include "utils/style.hpp"
 
 namespace AST
 {
@@ -13,7 +14,13 @@ namespace AST
 
     void StructDeclarationStmt::print(std::ostream &os, uint8_t tab) const
     {
-        os << "StructDeclarationStmt { name: " << name_.value << " }";
+        std::string indentation = Utils::tab(tab - 1, 4),
+                    inner_indentation = Utils::tab(tab, 4);
+
+        os << "StructDeclarationStmt {\n"
+           << inner_indentation << "accessibility: " << accessibility_ << "\n"
+           << inner_indentation << "name: " << name_.value << "\n"
+           << indentation << "}";
     }
 
 } // namespace AST
