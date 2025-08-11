@@ -1,8 +1,10 @@
 #pragma once
 
+#include "ast/expr/BinaryExpr.hpp"
 #include "ast/expr/FunctionCallExpr.hpp"
 #include "ast/expr/IdentifierExpr.hpp"
 #include "ast/expr/LiteralExpr.hpp"
+#include "ast/expr/UnaryExpr.hpp"
 #include "ast/expr/compound/InstanceExpr.hpp"
 #include "semantic/analyzer/Analyzer.hpp"
 
@@ -23,6 +25,17 @@ namespace Semantic
     {
         static AnalysisResult analyze(Analyzer &analyzer,
                                       AST::IdentifierExpr &node);
+    };
+
+    template <> struct AnalyzerImpl<AST::UnaryExpr>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer, AST::UnaryExpr &node);
+    };
+
+    template <> struct AnalyzerImpl<AST::BinaryExpr>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer,
+                                      AST::BinaryExpr &node);
     };
 
     template <> struct AnalyzerImpl<AST::FunctionCalLExpr>

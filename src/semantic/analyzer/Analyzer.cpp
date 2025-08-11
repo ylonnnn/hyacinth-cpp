@@ -30,18 +30,18 @@ namespace Semantic
         current_env_->declare_type(std::make_unique<Core::Void>(current_env_));
 
         current_env_->declare_type(
+            std::make_unique<Core::BooleanType>(current_env_));
+
+        current_env_->declare_type(
+            std::make_unique<Core::CharacterType>(current_env_));
+
+        current_env_->declare_type(
             std::make_unique<Core::IntegerType>(current_env_, true));
         current_env_->declare_type(
             std::make_unique<Core::IntegerType>(current_env_, false));
 
         current_env_->declare_type(
             std::make_unique<Core::FloatType>(current_env_));
-
-        current_env_->declare_type(
-            std::make_unique<Core::BooleanType>(current_env_));
-
-        current_env_->declare_type(
-            std::make_unique<Core::CharacterType>(current_env_));
 
         current_env_->declare_type(
             std::make_unique<Core::StringType>(current_env_));

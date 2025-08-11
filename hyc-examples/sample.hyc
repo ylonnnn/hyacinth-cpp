@@ -1,27 +1,16 @@
 import "./test-math.hyc";
-import "./Player.hyc";
 
-let x: int[32] = 123;
-
-struct Vec2 {
-    int_field: int[32] 
+struct Person {
+    name: str;
+    age: int[32];
 }
 
 fn main -> void () {
-    struct Vec2 {
-        str_field: str
-    }
-    
-    let player: Player = {name: "Custom Username", position: {x: 5, y:5,z:5}};
+    let x: int[32] = 123;
+    let y: int[32] = 456;
 
-    // struct Player { failed: bool }
+    let z: int[32] = subtract(x, y);
 
-    let x: int[32] = add(1, 2);
-
-    // let shadowed_player_instance: Player = { failed: true };
-    
-    let local_player: Player = create_player(
-        "PlayerUsername", 
-        { x: 0, y: 0, z: 0, }
-    );
+    let ha: str = "Ha";
+    let mult_ha: str = 10 * ha;
 }

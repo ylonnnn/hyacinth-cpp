@@ -112,7 +112,7 @@ namespace Semantic
             Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-            struct_->type->fields().try_emplace(name, std::move(t_res.data));
+            struct_->type->fields().try_emplace(name, t_res.data);
         }
     }
 
@@ -141,9 +141,7 @@ namespace Semantic
 
             declared->type = new Core::StructType(
                 current, declared->name,
-                std::unordered_map<std::string_view,
-                                   std::unique_ptr<Core::Type>>{},
-                declared);
+                std::unordered_map<std::string_view, Core::Type *>{}, declared);
         }
 
         if (node.is_definition())

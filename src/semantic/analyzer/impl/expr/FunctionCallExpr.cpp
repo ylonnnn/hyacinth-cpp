@@ -1,7 +1,6 @@
 #include <algorithm>
 
 #include "core/symbol/FunctionSymbol.hpp"
-#include "core/type/compound/Struct.hpp"
 #include "semantic/analyzer/impl/Expr.hpp"
 
 namespace Semantic
@@ -14,7 +13,7 @@ namespace Semantic
         AnalysisResult c_res =
             AnalyzerImpl<AST::Expr>::analyze(analyzer, callee);
 
-        Core::Type *callee_type = c_res.data;
+        // Core::Type *callee_type = c_res.data;
         result.adapt(c_res.status, std::move(c_res.diagnostics));
 
         if (c_res.symbol == nullptr)
@@ -36,7 +35,7 @@ namespace Semantic
         auto symbol = static_cast<Core::FunctionSymbol *>(c_res.symbol);
 
         result.symbol = symbol;
-        result.data = symbol->return_type.get();
+        result.data = symbol->return_type;
 
         return true;
     }

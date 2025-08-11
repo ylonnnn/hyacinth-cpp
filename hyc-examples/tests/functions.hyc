@@ -7,7 +7,7 @@ fn println -> void (content: str);
 fn println -> void (content: str) {} // Valid: Declaration Definition
 
 fn add -> int[32] (a: int[32], b: int[32]) {
-    return a; // TODO: Binary Expression Analyzer
+    return a + b;
 }
 
 fn main -> void () {

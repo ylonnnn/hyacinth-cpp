@@ -20,7 +20,6 @@ namespace AST
 
     void InstanceExpr::print(std::ostream &os, uint8_t tab) const
     {
-        // TODO: InstanceExpr print()
         std::string indentation = Utils::tab(tab - 1, 4),
                     inner_indentation = Utils::tab(tab, 4);
 

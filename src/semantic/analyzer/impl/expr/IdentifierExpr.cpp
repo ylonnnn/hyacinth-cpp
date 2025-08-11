@@ -10,10 +10,6 @@ namespace Semantic
         AnalysisResult result = {
             std::nullopt, Core::ResultStatus::Fail, nullptr, {}};
 
-        // TODO: Allow General Symbol Values
-        // Core::Symbol *symbol =
-        //     current.resolve_symbol(std::string(node.identifier().value));
-
         std::string identifier(node.identifier().value);
         Core::Symbol *symbol = current->resolve_symbol(identifier);
 
@@ -25,7 +21,7 @@ namespace Semantic
             if (auto ptr = dynamic_cast<Core::IdentifierSymbol *>(symbol))
             {
                 result.value = ptr->value;
-                result.data = ptr->type_();
+                result.data = ptr->type;
             }
 
             return result;

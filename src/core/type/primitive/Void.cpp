@@ -15,7 +15,10 @@ namespace Core
         return std::holds_alternative<Core::null>(value);
     }
 
-    bool Void::assignable_with(const BaseType &type) const { return false; }
+    bool Void::assignable_with([[maybe_unused]] const BaseType &type) const
+    {
+        return false;
+    }
 
     std::unique_ptr<Diagnostic::NoteDiagnostic> Void::make_suggestion(
         AST::Node *node,

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/type/Bases.hpp"
 #include "core/type/Type.hpp"
 #include "core/value/Value.hpp"
 
@@ -23,10 +24,16 @@ namespace Core
             const std::vector<TypeArgument> &arguments) const override;
 
       public:
+        Type *
+        from_value([[maybe_unused]] const Core::Value &value) const override
+        {
+            return nullptr;
+        };
+
         bool assignable_with(const BaseType &type) const override;
     };
 
-    class IntegerType : public BaseType
+    class IntegerType : public NumericBase
     {
       private:
         class Wrapper : public Type
@@ -41,10 +48,16 @@ namespace Core
         bool is_signed_;
         BitWidthType bw_type_;
 
+        Wrapper *int_w_ = nullptr;
+        Type *bool_w_ = nullptr;
+
       public:
         IntegerType(Environment *environment, bool is_signed);
+        ~IntegerType();
 
       protected:
+        void default_operations() override;
+
         bool
         assignable(const Core::Value &value,
                    const std::vector<TypeArgument> &arguments) const override;
@@ -55,7 +68,10 @@ namespace Core
       public:
         bool is_signed() const;
 
-        std::unique_ptr<Type> construct_wrapper() const override;
+        Type *construct_wrapper() const override;
+        Type *construct_wrapper(uint8_t bit_width) const override;
+
+        Type *from_value(const Core::Value &value) const override;
 
         bool assignable_with(const BaseType &type) const override;
     };

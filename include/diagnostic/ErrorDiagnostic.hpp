@@ -53,6 +53,7 @@ namespace Diagnostic
             Duplication,
             InvalidReturnUsage,
             IllegalShadowing,
+            NoViableOperatorOverload,
         };
 
         enum class Modification

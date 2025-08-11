@@ -1,10 +1,13 @@
 #include <cmath>
-#include <iostream>
+#include <cstdint>
 #include <type_traits>
 #include <variant>
 
+#include "core/environment/Environment.hpp"
+#include "core/operation/Operation.hpp"
 #include "core/type/Type.hpp"
 #include "core/type/primitive/Integer.hpp"
+#include "core/value/Value.hpp"
 #include "diagnostic/NoteDiagnostic.hpp"
 
 namespace Core
@@ -18,23 +21,17 @@ namespace Core
         const Core::Value &value,
         [[maybe_unused]] const std::vector<TypeArgument> &arguments) const
     {
-        return std::visit(
-            [&](const auto &val) -> bool
-            {
-                using T = std::decay_t<decltype(val)>;
+        auto ptr = std::get_if<Core::h_int>(&value);
+        if (ptr == nullptr)
+            return false;
 
-                if constexpr (std::is_same_v<T, uint64_t>)
-                {
-                    // constexpr bool val_signed = std::is_signed_v<T>;
-                    uint8_t n_val = static_cast<uint8_t>(val);
+        Core::h_int val = *ptr;
+        if (val.i64() < 1)
+            return false;
 
-                    return n_val > 0 && n_val <= 64;
-                }
+        uint8_t n_val = static_cast<uint8_t>(val.u64());
 
-                else
-                    return false;
-            },
-            value);
+        return n_val > 0 && n_val <= 64;
     }
 
     bool
@@ -58,11 +55,16 @@ namespace Core
 
     bool IntegerType::Wrapper::assignable_with(const Type &type) const
     {
+        if (arguments.empty() || type.arguments.empty())
+            return this->type->assignable_with(*type.type);
+
         const TypeArgument &bw = type.arguments[0], &bw_ = arguments[0];
+        if (bw.valueless_by_exception() || bw_.valueless_by_exception())
+            return false;
 
         return Type::assignable_with(type) &&
                std::visit(
-                   [&](const auto &val, const auto &val_) -> bool
+                   [&](auto &val, auto &val_) -> bool
                    {
                        using Ty = std::decay_t<decltype(val)>;
                        using Ty_ = std::decay_t<decltype(val_)>;
@@ -71,14 +73,16 @@ namespace Core
                                      std::is_same_v<Ty_, Core::Value>)
 
                            return std::visit(
-                               [&](const auto &v, const auto &v_) -> bool
+                               [&](auto &v, auto &v_) -> bool
                                {
                                    using T = std::decay_t<decltype(v)>;
                                    using T_ = std::decay_t<decltype(v_)>;
 
-                                   if constexpr (std::is_same_v<T, uint64_t> &&
-                                                 std::is_same_v<T_, uint64_t>)
-                                       return v <= v_;
+                                   if constexpr (std::is_same_v<T,
+                                                                Core::h_int> &&
+                                                 std::is_same_v<T_,
+                                                                Core::h_int>)
+                                       return v.u64() <= v_.u64();
 
                                    else
                                        return false;
@@ -92,13 +96,124 @@ namespace Core
     }
 
     IntegerType::IntegerType(Environment *environment, bool is_signed)
-        : BaseType(environment, is_signed ? "int" : "uint"),
-          is_signed_(is_signed)
+        : NumericBase(environment, is_signed ? "int" : "uint"),
+          is_signed_(is_signed), int_w_(dynamic_cast<Wrapper *>(
+                                     Type::get_or_create<Wrapper>(this, {}))),
+          bool_w_(Type::get_or_create(environment_->resolve_type("bool"), {}))
     {
         builtin_ = true;
 
-        create_parameter("_bw", TypeParameterType::Constant,
-                         Type(&bw_type_, {}));
+        add_parameter(TypeParameter{"_Bw", TypeParameterType::Constant,
+                                    Type::get_or_create(&bw_type_, {})});
+
+        default_operations();
+    }
+
+    IntegerType::~IntegerType() {}
+
+    void IntegerType::default_operations()
+    {
+        using namespace Lexer::TokenTypes;
+        using namespace Operator;
+
+        // Arithmetic
+        auto __h_bw = [&](Type *left, Type *right) -> Type *
+        { return higher_bit_width(left, right); };
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{ArithmeticUnary::Plus, int_w_, int_w_},
+             true,
+             overload<h_int, h_int>([](const h_int &a, const h_int &b) -> h_int
+                                    { return a.i64() + b.i64(); }, __h_bw)
+
+            });
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{ArithmeticUnary::Minus, int_w_, int_w_},
+             true,
+             overload<h_int, h_int>([](const h_int &a, const h_int &b) -> h_int
+                                    { return a.i64() - b.i64(); }, __h_bw)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Arithmetic::Multiplication, int_w_,
+                                        int_w_},
+             true,
+             overload<h_int, h_int>([](const h_int &a, const h_int &b) -> h_int
+                                    { return a.i64() * b.i64(); }, __h_bw)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Arithmetic::Division, int_w_, int_w_},
+             true,
+             overload<h_int, h_int>([](const h_int &a, const h_int &b) -> h_int
+                                    { return a.i64() / b.i64(); }, __h_bw)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Arithmetic::Modulo, int_w_, int_w_},
+             true,
+             overload<h_int, h_int>([](const h_int &a, const h_int &b) -> h_int
+                                    { return a.i64() % b.i64(); }, __h_bw)});
+
+        // Relational
+        auto __rel = [&](Type *, Type *) -> Type * { return bool_w_; };
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::Equal, int_w_, int_w_},
+             true,
+             overload<h_int, h_int>([](const h_int &a, const h_int &b) -> bool
+                                    { return a.i64() == b.i64(); }, __rel)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::NotEqual, int_w_, int_w_},
+             true,
+             overload<h_int, h_int>([](const h_int &a, const h_int &b) -> bool
+                                    { return a.i64() != b.i64(); }, __rel)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::LessThan, int_w_, int_w_},
+             true,
+             overload<h_int, h_int>(
+                 [](const h_int &a, const h_int &b) -> bool
+                 {
+                     return a.is_signed() ? a.i64() < b.i64()
+                                          : a.u64() < b.u64();
+                 },
+                 __rel)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::LessThanEqual, int_w_,
+                                        int_w_},
+             true,
+             overload<h_int, h_int>(
+                 [](const h_int &a, const h_int &b) -> bool
+                 {
+                     return a.is_signed() ? a.i64() <= b.i64()
+                                          : a.u64() <= b.u64();
+                 },
+                 __rel)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::GreaterThan, int_w_,
+                                        int_w_},
+             true,
+             overload<h_int, h_int>(
+                 [](const h_int &a, const h_int &b) -> bool
+                 {
+                     return a.is_signed() ? a.i64() > b.i64()
+                                          : a.u64() > b.u64();
+                 },
+                 __rel)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::GreaterThanEqual, int_w_,
+                                        int_w_},
+             true,
+             overload<h_int, h_int>(
+                 [](const h_int &a, const h_int &b) -> bool
+                 {
+                     return a.is_signed() ? a.i64() >= b.i64()
+                                          : a.u64() >= b.u64();
+                 },
+                 __rel)});
     }
 
     bool IntegerType::is_signed() const { return is_signed_; }
@@ -112,8 +227,8 @@ namespace Core
         if (!arguments.empty())
         {
             if (auto ptr = std::get_if<Core::Value>(&arguments[0]))
-                if (auto val_ptr = std::get_if<uint64_t>(ptr))
-                    bw = *val_ptr;
+                if (auto val_ptr = std::get_if<Core::h_int>(ptr))
+                    bw = val_ptr->u64();
         }
 
         // if (auto ptr =
@@ -122,24 +237,22 @@ namespace Core
         //     bw = ptr->bit_width;
 
         return std::visit(
-            [&](const auto &val) -> bool
+            [&](auto &val) -> bool
             {
                 using T = std::decay_t<decltype(val)>;
 
-                if constexpr (std::is_same_v<T, int64_t> ||
-                              std::is_same_v<T, uint64_t>)
+                if constexpr (std::is_same_v<T, Core::h_int>)
                 {
-                    int64_t min =
-                        is_signed_ ? -(static_cast<int64_t>(1) << (bw - 1)) : 0;
-                    uint64_t max = bw == 64 ? UINT64_MAX
-                                            : (static_cast<uint64_t>(1)
-                                               << (is_signed_ ? bw - 1 : bw)) -
-                                                  1;
+                    int64_t min = is_signed_ ? -(1ll << (bw - 1)) : 0;
+                    uint64_t max =
+                        bw == 64
+                            ? UINT64_MAX
+                            : (1ull << (is_signed_ ? bw - 1 : bw)) - is_signed_;
 
-                    return static_cast<int64_t>(val) >= min &&
-                           (val >= 0 ? (static_cast<uint64_t>(val) <= max)
-                                     : (static_cast<int64_t>(val) <=
-                                        static_cast<int64_t>(max)));
+                    return val.i64() >= min &&
+                           (val.i64() >= 0
+                                ? (val.u64() <= max)
+                                : (val.i64() <= static_cast<int64_t>(max)));
                 }
 
                 else
@@ -148,10 +261,46 @@ namespace Core
             value);
     }
 
-    std::unique_ptr<Type> IntegerType::construct_wrapper() const
+    Type *IntegerType::construct_wrapper() const
     {
-        return std::make_unique<Wrapper>(const_cast<IntegerType *>(this),
-                                         std::vector<TypeArgument>{});
+        return Type::get_or_create<Wrapper>(const_cast<IntegerType *>(this),
+                                            {});
+    }
+
+    Type *IntegerType::construct_wrapper(uint8_t bit_width) const
+    {
+        return Type::get_or_create<Wrapper>(const_cast<IntegerType *>(this),
+                                            {bit_width});
+    }
+
+    Type *IntegerType::from_value(const Core::Value &value) const
+    {
+        auto ptr = std::get_if<Core::h_int>(&value);
+        if (ptr == nullptr)
+            return nullptr;
+
+        Core::h_int val = *ptr;
+
+        uint8_t bw = 0;
+        auto in_range = [&](uint8_t bw) -> bool
+        {
+            auto is_signed = val.is_signed();
+
+            auto min = is_signed ? -(1ll << (bw - 1)) : 0;
+            auto max = bw == 64
+                           ? UINT64_MAX
+                           : (1ull << (is_signed ? bw - 1 : bw)) - is_signed;
+
+            return val.i64() >= min &&
+                   (is_signed ? (val.i64() <= static_cast<int64_t>(max))
+                              : (val.u64() <= max));
+        };
+
+        while (!in_range(++bw))
+        {
+        }
+
+        return construct_wrapper(bw);
     }
 
     bool IntegerType::assignable_with(const BaseType &type) const
@@ -167,12 +316,14 @@ namespace Core
         if (!arguments.empty())
         {
             if (auto ptr = std::get_if<Core::Value>(&arguments[0]))
-                if (auto val_ptr = std::get_if<uint64_t>(ptr))
-                    bw = *val_ptr;
+                if (auto val_ptr = std::get_if<Core::h_int>(ptr))
+                    if (!val_ptr->is_signed())
+                        bw = val_ptr->u64();
         }
 
-        auto min = is_signed_ ? -(static_cast<int64_t>(1) << (bw - 1)) : 0;
-        auto max = (static_cast<uint64_t>(1) << (is_signed_ ? bw - 1 : bw)) - 1;
+        auto min = is_signed_ ? -(1ll << (bw - 1)) : 0;
+        auto max = bw == 64 ? UINT64_MAX
+                            : (1ull << (is_signed_ ? bw - 1 : bw)) - is_signed_;
 
         return std::make_unique<Diagnostic::NoteDiagnostic>(
             node, Diagnostic::NoteType::Suggestion,
@@ -182,5 +333,4 @@ namespace Core
                 Utils::Styles::Reset + " are accepted.",
             "Implement suggestion here");
     }
-
 } // namespace Core

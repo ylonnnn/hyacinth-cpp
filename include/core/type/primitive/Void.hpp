@@ -18,6 +18,12 @@ namespace Core
             const std::vector<TypeArgument> &arguments) const override;
 
       public:
+        Type *
+        from_value([[maybe_unused]] const Core::Value &value) const override
+        {
+            return nullptr;
+        }
+
         bool assignable_with(const BaseType &type) const override;
     };
 

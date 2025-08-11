@@ -1,7 +1,11 @@
+#include <array>
 #include <cstdint>
 #include <cstring>
+#include <functional>
 #include <variant>
 
+#include "core/environment/Environment.hpp"
+#include "core/operation/Operation.hpp"
 #include "core/type/Type.hpp"
 #include "core/type/primitive/Float.hpp"
 
@@ -13,18 +17,13 @@ namespace Core
         const Core::Value &value,
         [[maybe_unused]] const std::vector<TypeArgument> &arguments) const
     {
-        return std::visit(
-            [&](const auto &val) -> bool
-            {
-                using T = std::decay_t<decltype(val)>;
+        auto ptr = std::get_if<Core::h_int>(&value);
+        if (ptr == nullptr || (ptr->is_signed() && ptr->i64() < 0))
+            return false;
 
-                if constexpr (std::is_same_v<T, uint64_t>)
-                    return val == 8 || val == 16 || val == 32 || val == 64;
+        uint64_t &val = const_cast<Core::h_int *>(ptr)->u64();
 
-                else
-                    return false;
-            },
-            value);
+        return val == 8 || val == 16 || val == 32 || val == 64;
     }
 
     bool FloatBitWidthType::assignable_with(
@@ -60,6 +59,9 @@ namespace Core
 
     bool FloatType::Wrapper::assignable_with(const Type &type) const
     {
+        if (arguments.empty() || type.arguments.empty())
+            return this->type->assignable_with(*type.type);
+
         const TypeArgument &bw = type.arguments[0], &bw_ = arguments[0];
 
         return Type::assignable_with(type) &&
@@ -78,9 +80,11 @@ namespace Core
                                    using T = std::decay_t<decltype(v)>;
                                    using T_ = std::decay_t<decltype(v_)>;
 
-                                   if constexpr (std::is_same_v<T, uint64_t> &&
-                                                 std::is_same_v<T_, uint64_t>)
-                                       return v <= v_;
+                                   if constexpr (std::is_same_v<T,
+                                                                Core::h_int> &&
+                                                 std::is_same_v<T_,
+                                                                Core::h_int>)
+                                       return v.u64() <= v_.u64();
 
                                    else
                                        return false;
@@ -94,12 +98,113 @@ namespace Core
     }
 
     FloatType::FloatType(Core::Environment *environment)
-        : BaseType(environment, "float")
+        : NumericBase(environment, "float"),
+          float_w_(
+              dynamic_cast<Wrapper *>(Type::get_or_create<Wrapper>(this, {}))),
+          bool_w_(Type::get_or_create(environment_->resolve_type("bool"), {}))
     {
         builtin_ = true;
 
-        create_parameter("_bw", TypeParameterType::Constant,
-                         Type(&bw_type_, {}));
+        add_parameter(TypeParameter{"_Bw", TypeParameterType::Constant,
+                                    Type::get_or_create(&bw_type_, {})});
+
+        default_operations();
+    }
+
+    void FloatType::default_operations()
+    {
+        using namespace Lexer::TokenTypes;
+        using namespace Operator;
+
+        // Arithmetic
+        auto __h_bw = [&](Type *left, Type *right) -> Type *
+        { return higher_bit_width(left, right); };
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{ArithmeticUnary::Plus, float_w_,
+                                        float_w_},
+             true,
+             overload<double, double>(
+                 [](const double &a, const double &b) -> double
+                 { return a + b; }, __h_bw)
+
+            });
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{ArithmeticUnary::Minus, float_w_,
+                                        float_w_},
+             true,
+             overload<double, double>(
+                 [](const double &a, const double &b) -> double
+                 { return a - b; }, __h_bw)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Arithmetic::Multiplication, float_w_,
+                                        float_w_},
+             true,
+             overload<double, double>(
+                 [](const double &a, const double &b) -> double
+                 { return a * b; }, __h_bw)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Arithmetic::Division, float_w_,
+                                        float_w_},
+             true,
+             overload<double, double>(
+                 [](const double &a, const double &b) -> double
+                 { return a / b; }, __h_bw)});
+
+        // Relational
+        auto __rel = [&]([[maybe_unused]] Type *left,
+                         [[maybe_unused]] Type *right) -> Type *
+        { return bool_w_; };
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::Equal, float_w_, float_w_},
+             true,
+             overload<double, double>(
+                 [](const double &a, const double &b) -> bool
+                 { return a == b; }, __rel)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::NotEqual, float_w_,
+                                        float_w_},
+             true,
+             overload<double, double>(
+                 [](const double &a, const double &b) -> bool
+                 { return a != b; }, __rel)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::LessThan, float_w_,
+                                        float_w_},
+             true,
+             overload<double, double>(
+                 [](const double &a, const double &b) -> bool { return a < b; },
+                 __rel)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::LessThanEqual, float_w_,
+                                        float_w_},
+             true,
+             overload<double, double>(
+                 [](const double &a, const double &b) -> bool
+                 { return a <= b; }, __rel)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::GreaterThan, float_w_,
+                                        float_w_},
+             true,
+             overload<double, double>(
+                 [](const double &a, const double &b) -> bool { return a > b; },
+                 __rel)});
+
+        Operation::overload_binary(
+            {Operation::BinarySignature{Relational::GreaterThanEqual, float_w_,
+                                        float_w_},
+             true,
+             overload<double, double>(
+                 [](const double &a, const double &b) -> bool
+                 { return a >= b; }, __rel)});
     }
 
     bool FloatType::can_fit(double value, uint t_exponent,
@@ -108,7 +213,7 @@ namespace Core
         uint64_t bits;
         std::memcpy(&bits, &value, sizeof(bits));
 
-        uint64_t sign = (bits >> 63) & 1;
+        // uint64_t sign = (bits >> 63) & 1;
         uint64_t exponent =
             (bits >> 52) & 0x7FF; // Intersect with 2047 for 64-bit (double) and
                                   // 255 for 32-bit (float)
@@ -142,12 +247,12 @@ namespace Core
             return false;
 
         // Rounding
-        // int32_t e_bits = man_64b - t_mantissa;
-        // uint64_t ro_mantissa = (mantissa + (1ull << (e_bits - 1))) >> e_bits;
+        int32_t e_bits = man_64b - t_mantissa;
+        uint64_t ro_mantissa = (mantissa + (1ull << (e_bits - 1))) >> e_bits;
 
-        // return (ro_mantissa >> t_mantissa) == 0;
+        return (ro_mantissa >> t_mantissa) == 0;
 
-        return (mantissa >> t_mantissa) == 0;
+        // return (mantissa >> t_mantissa) == 0;
     }
 
     bool FloatType::assignable(const Core::Value &value,
@@ -158,18 +263,18 @@ namespace Core
         if (!arguments.empty())
         {
             if (auto ptr = std::get_if<Core::Value>(&arguments[0]))
-                if (auto val_ptr = std::get_if<uint64_t>(ptr))
-                    bw = *val_ptr;
+                if (auto val_ptr = std::get_if<Core::h_int>(ptr))
+                    if (!val_ptr->is_signed() || val_ptr->i64() > -1)
+                        bw = val_ptr->u64();
         }
 
         return std::visit(
-            [&](const auto &val) -> bool
+            [&](auto &val) -> bool
             {
                 using T = std::decay_t<decltype(val)>;
+                constexpr bool is_int = std::is_same_v<T, Core::h_int>;
 
-                if constexpr (std::is_same_v<T, double> ||
-                              std::is_same_v<T, int64_t> ||
-                              std::is_same_v<T, uint64_t>)
+                if constexpr (std::is_same_v<T, double> || is_int)
                 {
                     std::pair<uint, uint> bit_pairs[] = {
                         {3, 4}, {5, 10}, {8, 23}, {11, 52}};
@@ -177,7 +282,11 @@ namespace Core
                     size_t idx = bw == 8 ? 0 : bw == 16 ? 1 : bw == 32 ? 2 : 3;
                     auto &[exponent, mantissa] = bit_pairs[idx];
 
-                    return can_fit(val, exponent, mantissa);
+                    if constexpr (is_int)
+                        return can_fit(val.is_signed() ? val.i64() : val.u64(),
+                                       exponent, mantissa);
+                    else
+                        return can_fit(val, exponent, mantissa);
                 }
 
                 else
@@ -186,10 +295,42 @@ namespace Core
             value);
     }
 
-    std::unique_ptr<Type> FloatType::construct_wrapper() const
+    Type *FloatType::construct_wrapper() const
     {
-        return std::make_unique<Wrapper>(const_cast<FloatType *>(this),
-                                         std::vector<TypeArgument>{});
+        return Type::get_or_create<Wrapper>(const_cast<FloatType *>(this), {});
+    }
+
+    Type *FloatType::construct_wrapper(uint8_t bit_width) const
+    {
+        return Type::get_or_create<Wrapper>(const_cast<FloatType *>(this),
+                                            {bit_width});
+    }
+
+    Type *FloatType::from_value(const Core::Value &value) const
+    {
+        return std::visit(
+            [&](const auto &val) -> Type *
+            {
+                using T = std::decay_t<decltype(val)>;
+
+                if constexpr (std::is_same_v<T, double>)
+                {
+                    std::array<std::pair<uint, uint>, 4> bit_pairs = {
+                        std::pair{3, 4}, {5, 10}, {8, 23}, {11, 52}};
+
+                    for (const auto &[exponent, mantissa] : bit_pairs)
+                    {
+                        if (can_fit(val, exponent, mantissa))
+                            return construct_wrapper(exponent + mantissa + 1);
+                    }
+
+                    return nullptr;
+                }
+
+                else
+                    return nullptr;
+            },
+            value);
     }
 
     bool FloatType::assignable_with(const BaseType &type) const
@@ -197,9 +338,9 @@ namespace Core
         return BaseType::assignable_with(type);
     }
 
-    std::unique_ptr<Diagnostic::NoteDiagnostic>
-    FloatType::make_suggestion(AST::Node *node,
-                               const std::vector<TypeArgument> &arguments) const
+    std::unique_ptr<Diagnostic::NoteDiagnostic> FloatType::make_suggestion(
+        [[maybe_unused]] AST::Node *node,
+        [[maybe_unused]] const std::vector<TypeArgument> &arguments) const
     {
         return nullptr;
     }

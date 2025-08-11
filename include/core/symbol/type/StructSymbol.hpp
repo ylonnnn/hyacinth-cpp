@@ -12,7 +12,7 @@ namespace Core
     struct StructField
     {
         std::string_view name;
-        std::unique_ptr<Type> type;
+        Type *type;
     };
 
     struct StructSymbol : public TypeSymbol

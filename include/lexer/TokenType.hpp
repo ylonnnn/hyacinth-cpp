@@ -391,18 +391,33 @@ namespace Lexer
 
     } // namespace TokenTypes
 
-    using TokenType = std::variant<
-        TokenTypes::Reserved, TokenTypes::Primary, TokenTypes::Operator::Dot,
+    using TokenTypeOperator = std::variant<
         TokenTypes::Operator::Arrow, TokenTypes::Operator::Assignment,
         TokenTypes::Operator::ArithmeticUnary, TokenTypes::Operator::Arithmetic,
         TokenTypes::Operator::Unary, TokenTypes::Operator::Logical,
-        TokenTypes::Operator::Bitwise, TokenTypes::Operator::Relational,
-        TokenTypes::Delimeter, TokenTypes::Miscellaneous, TokenTypes::Invalid>;
+        TokenTypes::Operator::Bitwise, TokenTypes::Operator::Relational>;
+
+    using TokenType =
+        std::variant<TokenTypes::Reserved, TokenTypes::Primary,
+                     TokenTypes::Operator::Dot, TokenTypeOperator,
+                     TokenTypes::Delimeter, TokenTypes::Miscellaneous,
+                     TokenTypes::Invalid>;
 
     inline const char *type_to_string(TokenType type)
     {
-        return std::visit([&](auto value)
-                          { return TokenTypes::to_string(value); }, type);
+        return std::visit(
+            [&](const auto &value)
+            {
+                using T = std::decay_t<decltype(value)>;
+                if constexpr (std::is_same_v<T, TokenTypeOperator>)
+                    return std::visit([&](const auto &val) -> const char *
+                                      { return TokenTypes::to_string(val); },
+                                      value);
+
+                else
+                    return TokenTypes::to_string(value);
+            },
+            type);
     }
 
 } // namespace Lexer

@@ -12,21 +12,44 @@ namespace Core
     struct Type;
     struct FunctionSymbol;
 
+    struct h_int
+    {
+      private:
+        union
+        {
+            int64_t signed_;
+            uint64_t unsigned_;
+        } value_;
+
+        bool is_signed_ = true;
+
+      public:
+        h_int(int64_t s_val, bool is_signed = true);
+
+        bool is_signed() const;
+
+        int64_t &i64();
+        int64_t i64() const;
+        uint64_t &u64();
+        uint64_t u64() const;
+
+        operator std::string() const;
+    };
+
     struct object;
     struct null
     {
         operator std::string() const;
     };
 
-    using Value = std::variant<null, int64_t, uint64_t, double, bool, char,
-                               std::string, object>;
+    using Value =
+        std::variant<null, h_int, double, bool, char, std::string, object>;
 
     std::ostream &operator<<(std::ostream &os, const Value &value);
 
     struct object_entry;
     struct object
     {
-      private:
       private:
         std::unordered_map<std::string_view, object_entry> value_;
 
@@ -62,17 +85,5 @@ namespace Core
 
         operator std::string() const;
     };
-
-    template <typename T> Value make_value(T raw)
-    {
-        if constexpr (std::is_same_v<T, int> || std::is_same_v<T, int64_t>)
-            return int64_t(raw);
-
-        else if constexpr (std::is_same_v<T, unsigned int> ||
-                           std::is_same_v<T, uint64_t>)
-            return uint64_t(raw);
-
-        return raw;
-    }
 
 } // namespace Core

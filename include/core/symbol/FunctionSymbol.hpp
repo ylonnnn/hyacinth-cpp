@@ -12,7 +12,7 @@ namespace Core
     {
         std::string_view name;
         bool is_mutable;
-        std::unique_ptr<Type> type;
+        Type *type;
     };
 
     struct FunctionParameterSymbol : public IdentifierSymbol
@@ -24,8 +24,6 @@ namespace Core
                                 Core::Position &declared_at, bool is_mutable,
                                 Type *type, std::optional<Value> value,
                                 AST::FunctionParameter *node = nullptr);
-
-        Type *type_() override;
     };
 
     struct FunctionSymbol : public Symbol
@@ -33,14 +31,13 @@ namespace Core
         AST::FunctionDeclarationStmt *node = nullptr;
         AST::FunctionDefinitionStmt *definition = nullptr;
 
-        std::unique_ptr<Type> return_type;
+        Type *return_type;
         std::vector<FunctionParameter> parameters;
 
         std::string signature;
 
         FunctionSymbol(std::string_view name, SymbolAccessibility accessibility,
-                       Core::Position &declared_at,
-                       std::unique_ptr<Type> return_type,
+                       Core::Position &declared_at, Type *return_type,
                        std::vector<FunctionParameter> &&parameters,
                        AST::FunctionDeclarationStmt *node = nullptr);
 

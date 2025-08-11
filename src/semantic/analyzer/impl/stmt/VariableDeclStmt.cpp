@@ -94,10 +94,10 @@ namespace Semantic
         Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
         result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-        Core::Type *type = t_res.data.get();
+        Core::Type *type = t_res.data;
         result.data = type;
 
-        var->type = std::move(t_res.data);
+        var->type = t_res.data;
 
         if (typeid(*type->type) == typeid(Core::Void))
         {

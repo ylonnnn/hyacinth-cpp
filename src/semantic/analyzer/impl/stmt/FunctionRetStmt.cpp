@@ -36,7 +36,7 @@ namespace Semantic
         // Return Type
         auto *fn = fn_env->fn_symbol();
 
-        std::unique_ptr<Core::Type> &ret_type = fn->return_type;
+        Core::Type *ret_type = fn->return_type;
         Core::BaseType *b_type = ret_type->type;
 
         combination |= ((typeid(*b_type) != typeid(Core::Void)) << 1);
@@ -47,12 +47,17 @@ namespace Semantic
             case 0b00:
             case 0b11:
             {
-                result.data = ret_type.get();
+                result.data = ret_type;
+
                 if (ret_val == nullptr)
                 {
                     result.value = Core::null{};
                     return;
                 }
+
+                // std::cout << "ret_val: ";
+                // ret_val->print(std::cout, 1);
+                // std::cout << "\n";
 
                 AnalysisResult v_res =
                     AnalyzerImpl<AST::Expr>::analyze(analyzer, *ret_val);

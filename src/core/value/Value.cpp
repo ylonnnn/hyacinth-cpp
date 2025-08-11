@@ -21,6 +21,29 @@ namespace Core
             value);
     }
 
+    h_int::h_int(int64_t val, bool is_signed)
+        : value_({.signed_ = val}), is_signed_(is_signed)
+    {
+    }
+
+    int64_t &h_int::i64() { return value_.signed_; }
+
+    int64_t h_int::i64() const { return value_.signed_; }
+
+    uint64_t &h_int::u64() { return value_.unsigned_; }
+
+    uint64_t h_int::u64() const { return value_.unsigned_; }
+
+    bool h_int::is_signed() const { return is_signed_; }
+
+    h_int::operator std::string() const
+    {
+        if (is_signed_)
+            return std::to_string(value_.signed_);
+
+        return std::to_string(value_.unsigned_);
+    }
+
     null::operator std::string() const { return "null"; }
 
     object_entry *object::get(const std::string &key)
@@ -97,14 +120,15 @@ namespace Core
 
     callable::callable(FunctionSymbol *value) : value_(value) {}
 
-    Value callable::call(std::vector<Value> args)
+    Value callable::call([[maybe_unused]] std::vector<Value> args)
     {
         AST::FunctionDeclarationStmt *stmt = value_->node;
         if (stmt == nullptr)
             return null{};
 
         if (stmt->is_definition())
-            if (auto ptr = static_cast<AST::FunctionDefinitionStmt *>(stmt))
+            if ([[maybe_unused]] auto ptr =
+                    static_cast<AST::FunctionDefinitionStmt *>(stmt))
             {
                 // TODO: Call Function Symbol
                 // ptr->body();

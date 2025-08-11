@@ -7,12 +7,11 @@ namespace Core
     class StructType : public BaseType
     {
       private:
-        std::unordered_map<std::string_view, std::unique_ptr<Type>> fields_;
+        std::unordered_map<std::string_view, Type *> fields_;
 
       public:
         StructType(Environment *environment, std::string_view name,
-                   std::unordered_map<std::string_view, std::unique_ptr<Type>>
-                       &&fields,
+                   std::unordered_map<std::string_view, Type *> &&fields,
                    TypeSymbol *symbol = nullptr);
 
       protected:
@@ -26,7 +25,9 @@ namespace Core
       public:
         bool assignable_with(const BaseType &type) const override;
 
-        std::unordered_map<std::string_view, std::unique_ptr<Type>> &fields();
+        Type *from_value(const Core::Value &value) const override;
+
+        std::unordered_map<std::string_view, Type *> &fields();
     };
 
 } // namespace Core

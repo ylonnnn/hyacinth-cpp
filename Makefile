@@ -29,3 +29,6 @@ clean:
 	rm -rf $(BUILD_DIR) $(OBJ_DIR)
 
 .PHONY: all clean
+
+DEPS := $(OBJECTS:.o=.d)
+-include $(DEPS)

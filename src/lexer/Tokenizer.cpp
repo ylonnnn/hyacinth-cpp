@@ -279,8 +279,14 @@ namespace Lexer
 
             case '-':
             {
+                if (std::isdigit(peek()))
+                {
+                    next();
+                    return scan_numeric(pos);
+                }
+
                 // -=
-                if (match('='))
+                else if (match('='))
                     return create_token({pos, curr_pos()},
                                         Operator::Assignment::Subtraction);
 

@@ -26,19 +26,18 @@ namespace Utils
                             value.end());
 
                 if (token.value[0] == '-')
-                    return int64_t(std::stoll(value));
+                    return Core::h_int(std::stoll(value), true);
                 else
-                    return uint64_t(std::stoull(value));
+                {
+                    auto val = std::stoll(value);
+                    return Core::h_int(val, !(val >= 0 && val > INT64_MAX));
+                }
             }
 
             case Primary::Float:
             {
                 value.erase(std::remove(value.begin(), value.end(), '_'),
                             value.end());
-
-                char &ext = value.back();
-                if (ext == 'f')
-                    value.resize(value.size() - 1);
 
                 return std::stod(value);
             }

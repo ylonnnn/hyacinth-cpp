@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/type/Bases.hpp"
 #include "core/type/Type.hpp"
 #include "core/type/primitive/Integer.hpp"
 
@@ -22,7 +23,7 @@ namespace Core
         bool assignable_with(const BaseType &type) const override;
     };
 
-    class FloatType : public BaseType
+    class FloatType : public NumericBase
     {
       private:
         class Wrapper : public Type
@@ -37,10 +38,15 @@ namespace Core
         bool is_signed_;
         FloatBitWidthType bw_type_;
 
+        Wrapper *float_w_ = nullptr;
+        Type *bool_w_ = nullptr;
+
       public:
         FloatType(Environment *environment);
 
       protected:
+        void default_operations() override;
+
         bool can_fit(double value, uint bits, uint mantissa) const;
 
         bool
@@ -51,7 +57,10 @@ namespace Core
             const std::vector<TypeArgument> &arguments) const override;
 
       public:
-        std::unique_ptr<Type> construct_wrapper() const override;
+        Type *construct_wrapper() const override;
+        Type *construct_wrapper(uint8_t bit_width) const override;
+
+        Type *from_value(const Core::Value &value) const override;
 
         bool assignable_with(const BaseType &type) const override;
     };

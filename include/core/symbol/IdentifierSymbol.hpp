@@ -8,14 +8,12 @@ namespace Core
     struct IdentifierSymbol : public Symbol
     {
         bool is_mutable;
-        std::unique_ptr<Type> type;
+        Type *type;
         std::optional<Value> value = std::nullopt;
 
         IdentifierSymbol(std::string_view name, Core::Position declared_at,
-                         bool is_mutable, std::unique_ptr<Type> type,
+                         bool is_mutable, Type *type,
                          std::optional<Value> value, AST::Node *node = nullptr);
-
-        virtual Type *type_();
     };
 
 } // namespace Core

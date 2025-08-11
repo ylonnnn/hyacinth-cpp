@@ -6,10 +6,15 @@ namespace Core
 {
     class CharacterType : public BaseType
     {
+      private:
+        Type *char_w_ = nullptr, *bool_w_ = nullptr;
+
       public:
         CharacterType(Environment *environment);
 
       protected:
+        void default_operations();
+
         bool
         assignable(const Core::Value &value,
                    const std::vector<TypeArgument> &arguments) const override;
@@ -18,6 +23,8 @@ namespace Core
             const std::vector<TypeArgument> &arguments) const override;
 
       public:
+        Type *from_value(const Core::Value &value) const override;
+
         bool assignable_with(const BaseType &type) const override;
     };
 

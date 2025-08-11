@@ -12,7 +12,7 @@ namespace AST
 
     std::string_view ImportStmt::target_strv() const { return target_.value; }
 
-    void ImportStmt::print(std::ostream &os, uint8_t tab) const
+    void ImportStmt::print(std::ostream &os, [[maybe_unused]] uint8_t tab) const
     {
         os << "ImportStmt { target: " << target_ << " }";
     }

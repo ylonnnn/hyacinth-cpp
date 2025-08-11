@@ -29,8 +29,8 @@ namespace Semantic
         Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
         result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-        fn->return_type = std::move(t_res.data);
-        result.data = fn->return_type.get();
+        fn->return_type = t_res.data;
+        result.data = fn->return_type;
     }
 
     static void analyze_parameters(Analyzer &analyzer,
@@ -58,18 +58,17 @@ namespace Semantic
             Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-            Core::FunctionParameter parameter{
-                param.name().value, param.is_mutable(), std::move(t_res.data)};
+            Core::FunctionParameter parameter{param.name().value,
+                                              param.is_mutable(), t_res.data};
 
-            // Register/Declare the parameters as variables to the environment
-            // for analysis
+            // Register/Declare the parameters to the environment for analysis
             if (is_def)
             {
                 auto p_symbol = std::make_unique<Core::FunctionParameterSymbol>(
                     param.name().value, param.position(), param.is_mutable(),
-                    parameter.type.get(), std::nullopt, &param);
+                    parameter.type, std::nullopt, &param);
 
-                // TODO: .define() if defined
+                // TODO: .define() for defaulted parameters
 
                 body_env->declare_symbol(std::move(p_symbol));
             }

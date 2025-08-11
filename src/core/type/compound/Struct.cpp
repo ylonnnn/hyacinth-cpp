@@ -8,7 +8,7 @@ namespace Core
 {
     StructType::StructType(
         Environment *environment, std::string_view name,
-        std::unordered_map<std::string_view, std::unique_ptr<Type>> &&fields,
+        std::unordered_map<std::string_view, Type *> &&fields,
         TypeSymbol *symbol)
         : BaseType(environment, name, symbol), fields_(std::move(fields))
     {
@@ -35,6 +35,10 @@ namespace Core
             auto it = fields_.find(field);
             if (it == fields_.end())
                 return false;
+
+            std::cout << field << "\n";
+            std::cout << (value.value ? *value.value : "no val") << "\n";
+            std::cout << value.type << "\n";
 
             auto &type = it->second;
             if ((value.value && type->assignable(*value.value)) ||
@@ -103,8 +107,18 @@ namespace Core
         return diagnostic;
     }
 
-    std::unordered_map<std::string_view, std::unique_ptr<Type>> &
-    StructType::fields()
+    Type *StructType::from_value(const Core::Value &value) const
+    {
+        auto ptr = std::get_if<object>(&value);
+        if (ptr == nullptr)
+            return nullptr;
+
+        // TODO: StructType::from_value
+
+        return Type::get_or_create(const_cast<StructType *>(this), {});
+    }
+
+    std::unordered_map<std::string_view, Type *> &StructType::fields()
     {
         return fields_;
     }
