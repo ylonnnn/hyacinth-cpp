@@ -36,10 +36,6 @@ namespace Core
             if (it == fields_.end())
                 return false;
 
-            std::cout << field << "\n";
-            std::cout << (value.value ? *value.value : "no val") << "\n";
-            std::cout << value.type << "\n";
-
             auto &type = it->second;
             if ((value.value && type->assignable(*value.value)) ||
                 (value.type && type->assignable_with(*value.type)))

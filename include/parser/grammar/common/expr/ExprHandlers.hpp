@@ -13,6 +13,9 @@ namespace Parser
     std::unique_ptr<AST::LiteralExpr> parse_literal(Parser &parser,
                                                     ExprParseResult &result);
 
+    std::unique_ptr<AST::Expr> parse_idtype_expr(Parser &parser,
+                                                 ExprParseResult &result);
+
     std::unique_ptr<AST::IdentifierExpr>
     parse_identifier(Parser &parser, ExprParseResult &result);
 
@@ -34,8 +37,9 @@ namespace Parser
     parse_fncall(Parser &parser, std::unique_ptr<AST::Expr> &left,
                  float right_bp, ExprParseResult &result);
 
-    // Compound Value/Expr Parser
-    std::unique_ptr<AST::InstanceExpr> parse_instance(Parser &parser,
-                                                      ExprParseResult &result);
+    // Type-Related Parser
+    std::unique_ptr<AST::InstanceExpr>
+    parse_instance(Parser &parser, std::unique_ptr<AST::Expr> &left,
+                   float right_bp, ExprParseResult &result);
 
 } // namespace Parser

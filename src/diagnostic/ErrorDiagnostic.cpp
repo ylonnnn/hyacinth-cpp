@@ -48,6 +48,8 @@ namespace Diagnostic
             "HYC::TYPE:INVALID_TYPE_ARGUMENT_TYPE";
         ERROR_CODES[ErrorTypes::Type::InvalidReturnType] =
             "HYC::TYPE:INVALID_RETURN_TYPE";
+        ERROR_CODES[ErrorTypes::Type::InvalidInstantiationType] =
+            "HYC::TYPE:INVALID_INSTANTIATION_TYPE";
 
         ERROR_CODES[ErrorTypes::Semantic::NonCallableInvocation] =
             "HYC::SEMANTIC:NONCALLABLE_INVOCATION";
@@ -63,6 +65,8 @@ namespace Diagnostic
             "HYC::SEMANTIC::ILLEGAL_SHADOWING";
         ERROR_CODES[ErrorTypes::Semantic::NoViableOperatorOverload] =
             "HYC::SEMANTIC::NO_VIABLE_OPERATOR_OVERLOAD";
+        ERROR_CODES[ErrorTypes::Semantic::UnrecognizedField] =
+            "HYC::SEMANTIC::UNRECOGNIZED_FIELD";
 
         ERROR_CODES[ErrorTypes::Modification::ReadValueModification] =
             "HYC::MODIFICATION:RVALUE_MODIFICATION";

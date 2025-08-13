@@ -1,19 +1,48 @@
 #include <memory>
 
+#include "ast/expr/TypeExpr.hpp"
+#include "ast/type/SimpleType.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
+#include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/common/expr/Expr.hpp"
 #include "parser/grammar/common/expr/ExprHandlers.hpp"
 
 namespace Parser
 {
-    std::unique_ptr<AST::LiteralExpr>
-    parse_literal(Parser &parser, [[maybe_unused]] ExprParseResult &result)
+    std::unique_ptr<AST::LiteralExpr> parse_literal(Parser &parser,
+                                                    ExprParseResult &)
     {
         return std::make_unique<AST::LiteralExpr>(parser.lexer().current());
     }
 
-    std::unique_ptr<AST::IdentifierExpr>
-    parse_identifier(Parser &parser, [[maybe_unused]] ExprParseResult &result)
+    std::unique_ptr<AST::Expr> parse_idtype_expr(Parser &parser,
+                                                 ExprParseResult &__res)
+    {
+        auto &lexer = parser.lexer();
+
+        lexer.rewind(lexer.position() - 1);
+        Lexer::Token *p_token = lexer.peek();
+
+        TypeParseResult result = Common::Type.parse_type(parser);
+        Lexer::Token *n_token = lexer.peek();
+
+        AST::Type *type = result.data.get();
+
+        if (typeid(*type) == typeid(AST::SimpleType))
+            return std::make_unique<AST::IdentifierExpr>(*p_token);
+
+        LedHandler led = get_led(n_token->type);
+        if (led == nullptr)
+            return parse_identifier(parser, __res);
+
+        __res.data = std::make_unique<AST::TypeExpr>(std::move(result.data));
+        lexer.next();
+
+        return led(parser, __res.data, 0, __res);
+    }
+
+    std::unique_ptr<AST::IdentifierExpr> parse_identifier(Parser &parser,
+                                                          ExprParseResult &)
     {
         Lexer::Token &token = parser.lexer().current();
 
@@ -22,14 +51,14 @@ namespace Parser
 
     std::unique_ptr<AST::BinaryExpr>
     parse_binary(Parser &parser, std::unique_ptr<AST::Expr> &left,
-                 float right_bp, [[maybe_unused]] ExprParseResult &result)
+                 float right_bp, ExprParseResult &result)
     {
         auto &lexer = parser.lexer();
         Lexer::Token &operation = lexer.current();
 
-        Expr *expr_rule;
-        if (auto ptr = dynamic_cast<Expr *>(parser.grammar().fallback()))
-            expr_rule = ptr;
+        Expr *expr_rule = dynamic_cast<Expr *>(parser.grammar().fallback());
+        if (expr_rule == nullptr)
+            return nullptr;
 
         ExprParseResult r_res = expr_rule->parse_expr(parser, right_bp);
 
@@ -51,14 +80,14 @@ namespace Parser
                                                  std::move(right));
     }
 
-    std::unique_ptr<AST::UnaryExpr>
-    parse_unary(Parser &parser, [[maybe_unused]] ExprParseResult &result)
+    std::unique_ptr<AST::UnaryExpr> parse_unary(Parser &parser,
+                                                ExprParseResult &)
     {
         Lexer::Token &operation = parser.lexer().current();
 
-        Expr *expr_rule;
-        if (auto ptr = dynamic_cast<Expr *>(parser.grammar().fallback()))
-            expr_rule = ptr;
+        Expr *expr_rule = dynamic_cast<Expr *>(parser.grammar().fallback());
+        if (expr_rule == nullptr)
+            return nullptr;
 
         return std::make_unique<AST::UnaryExpr>(
             AST::UnaryType::Pre, operation,
@@ -66,9 +95,8 @@ namespace Parser
     }
 
     std::unique_ptr<AST::UnaryExpr>
-    parse_unary(Parser &parser, std::unique_ptr<AST::Expr> &left,
-                [[maybe_unused]] float right_bp,
-                [[maybe_unused]] ExprParseResult &result)
+    parse_unary(Parser &parser, std::unique_ptr<AST::Expr> &left, float,
+                ExprParseResult &)
     {
         return std::make_unique<AST::UnaryExpr>(
             AST::UnaryType::Post, parser.lexer().current(), std::move(left));
@@ -81,9 +109,9 @@ namespace Parser
         auto &lexer = parser.lexer();
         Lexer::Token &operation = lexer.current();
 
-        Expr *expr_rule;
-        if (auto ptr = dynamic_cast<Expr *>(parser.grammar().fallback()))
-            expr_rule = ptr;
+        Expr *expr_rule = dynamic_cast<Expr *>(parser.grammar().fallback());
+        if (expr_rule == nullptr)
+            return nullptr;
 
         ExprParseResult r_res = expr_rule->parse_expr(parser, right_bp);
 
@@ -106,14 +134,14 @@ namespace Parser
     }
 
     std::unique_ptr<AST::FunctionCalLExpr>
-    parse_fncall(Parser &parser, std::unique_ptr<AST::Expr> &left,
-                 [[maybe_unused]] float right_bp, ExprParseResult &result)
+    parse_fncall(Parser &parser, std::unique_ptr<AST::Expr> &left, float,
+                 ExprParseResult &result)
     {
         auto &lexer = parser.lexer();
 
-        Expr *expr_rule;
-        if (auto ptr = dynamic_cast<Expr *>(parser.grammar().fallback()))
-            expr_rule = ptr;
+        Expr *expr_rule = dynamic_cast<Expr *>(parser.grammar().fallback());
+        if (expr_rule == nullptr)
+            return nullptr;
 
         std::vector<std::unique_ptr<AST::Expr>> arguments;
         arguments.reserve(8);
@@ -127,6 +155,7 @@ namespace Parser
             if (expect_arg)
             {
                 ExprParseResult expr_res = expr_rule->parse_expr(parser, 0);
+
                 if (expr_res.data == nullptr)
                 {
                     result.error(
@@ -143,6 +172,9 @@ namespace Parser
             {
                 lexer.next();
                 expect_arg = true;
+
+                if (parser.expect(closing_token_type, false))
+                    break;
 
                 continue;
             }
@@ -174,19 +206,20 @@ namespace Parser
         return node;
     }
 
-    std::unique_ptr<AST::InstanceExpr> parse_instance(Parser &parser,
-                                                      ExprParseResult &result)
+    std::unique_ptr<AST::InstanceExpr>
+    parse_instance(Parser &parser, std::unique_ptr<AST::Expr> &left, float,
+                   ExprParseResult &result)
     {
         using namespace Lexer::TokenTypes;
         auto &lexer = parser.lexer();
 
-        Lexer::Token &open = lexer.current();
+        Expr *expr_rule = dynamic_cast<Expr *>(parser.grammar().fallback());
+        if (expr_rule == nullptr)
+            return nullptr;
 
-        Expr *expr_rule;
-        if (auto ptr = dynamic_cast<Expr *>(parser.grammar().fallback()))
-            expr_rule = ptr;
+        auto &opening = lexer.current();
 
-        std::unordered_map<std::string, std::unique_ptr<AST::Expr>> fields;
+        std::unordered_map<std::string, AST::InstanceField> fields;
         fields.reserve(8);
 
         auto expect_field = true;
@@ -223,8 +256,9 @@ namespace Parser
                     return nullptr;
                 }
 
-                auto [_, inserted] =
-                    fields.try_emplace(field_name, std::move(expr_res.data));
+                auto [_, inserted] = fields.try_emplace(
+                    field_name,
+                    AST::InstanceField{*field, std::move(expr_res.data)});
 
                 // Duplication
                 if (!inserted)
@@ -248,6 +282,10 @@ namespace Parser
                 lexer.next();
                 expect_field = true;
 
+                // Closing Brace Lookahead
+                if (parser.expect(closing, false))
+                    break;
+
                 continue;
             }
 
@@ -267,11 +305,30 @@ namespace Parser
         else
             c_ep = &lexer.next()->end_position;
 
-        // return std::make_unique<AST::BinaryExpr>(
-        //     std::move(left), operation,
-        //     expr_rule->parse_expr(parser, right_bp).data);
+        if (left == nullptr)
+        {
+            auto node = std::make_unique<AST::InstanceExpr>(opening.position,
+                                                            std::move(fields));
 
-        auto node = std::make_unique<AST::InstanceExpr>(open.position,
+            node->set_end_position(*c_ep);
+
+            return node;
+        }
+
+        std::unique_ptr<AST::Type> type;
+
+        AST::Expr *l_expr = left.get();
+        auto &t_info = typeid(*l_expr);
+
+        if (t_info == typeid(AST::IdentifierExpr))
+            type = std::make_unique<AST::SimpleType>(
+                static_cast<AST::IdentifierExpr *>(l_expr)->identifier());
+
+        else if (t_info == typeid(AST::TypeExpr))
+            type = std::move(
+                static_cast<AST::TypeExpr *>(left.release())->type_ptr());
+
+        auto node = std::make_unique<AST::InstanceExpr>(std::move(type),
                                                         std::move(fields));
 
         node->set_end_position(*c_ep);

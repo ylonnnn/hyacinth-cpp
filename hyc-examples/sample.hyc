@@ -5,12 +5,21 @@ struct Person {
     age: int[32];
 }
 
+fn use -> Person (p: Person) {
+    return Person { name: "test", age: 12 };
+}
+
 fn main -> void () {
-    let x: int[32] = 123;
-    let y: int[32] = 456;
+    let p: Person = Person { name: "John Doe", age: 32, };
+    let p2: Person = use(p);
 
-    let z: int[32] = subtract(x, y);
+    let p3: Person = use(Person {name: "Non Bonjour", age: 21});
 
-    let ha: str = "Ha";
-    let mult_ha: str = 10 * ha;
+    let p4: Person = use(
+        use({
+            name: "Test",
+            age: 23,
+            is_employed: false,
+        })
+    );
 }

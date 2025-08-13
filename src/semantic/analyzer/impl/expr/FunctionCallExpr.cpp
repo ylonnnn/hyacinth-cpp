@@ -90,6 +90,9 @@ namespace Semantic
                  parameter.type->assignable_with(*a_res.data)))
                 continue;
 
+            auto &[row, col, program] = argument->position();
+            std::cout << row << " | " << col << " | " << &program << "\n";
+
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
                 argument.get(),
                 Diagnostic::ErrorTypes::Type::InvalidArgumentType,

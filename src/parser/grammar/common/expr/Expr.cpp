@@ -2,7 +2,6 @@
 #include <utility>
 
 #include "ast/stmt/ExprStmt.hpp"
-#include "diagnostic/ErrorDiagnostic.hpp"
 #include "parser/ParseResult.hpp"
 #include "parser/Parser.hpp"
 #include "parser/grammar/GrammarRule.hpp"
@@ -99,7 +98,7 @@ namespace Parser
         }
 
         // Identifier
-        add_nud(Primary::Identifier, parse_identifier,
+        add_nud(Primary::Identifier, parse_idtype_expr,
                 std::pair<float, float>{primary_bp, primary_bp});
 
         // Grouping
@@ -129,7 +128,15 @@ namespace Parser
                 });
 
         // Compound
-        add_nud(Delimeter::BraceOpen, parse_instance);
+        add_nud(Delimeter::BraceOpen,
+                [&](Parser &parser,
+                    ExprParseResult &result) -> std::unique_ptr<AST::Expr>
+                {
+                    std::unique_ptr<AST::Expr> __left = nullptr;
+                    return parse_instance(parser, __left, 0, result);
+                });
+
+        add_led(Delimeter::BraceOpen, parse_instance);
 
         // Member Access
         float memaccess_bp = static_cast<int>(BindingPower::MemberAccess);

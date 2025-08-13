@@ -43,6 +43,7 @@ namespace Diagnostic
             InvalidArgumentType,
             InvalidTypeArgumentType,
             InvalidReturnType,
+            InvalidInstantiationType,
         };
 
         enum class Semantic
@@ -54,6 +55,7 @@ namespace Diagnostic
             InvalidReturnUsage,
             IllegalShadowing,
             NoViableOperatorOverload,
+            UnrecognizedField,
         };
 
         enum class Modification

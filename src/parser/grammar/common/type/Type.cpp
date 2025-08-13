@@ -166,10 +166,7 @@ namespace Parser
                               std::move(type_result.diagnostics)};
 
         if (result.status == Core::ResultStatus::Fail)
-        {
             result.data = nullptr;
-            return result;
-        }
 
         return result;
     }
