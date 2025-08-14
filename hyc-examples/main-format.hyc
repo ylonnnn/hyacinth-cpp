@@ -4,7 +4,54 @@
 
 import "@std/io";
 
+class Participant {
+    prot name_: str;
+
+    // Fields can be changed, regardless of their mutability state
+    // as long as they are being modified within the constructor
+    pub fn new -> Self (name: str) {
+        self.name_ = name;
+        name_ = name;
+    }
+
+    pub fn delete -> void () {
+        // Delete logic...
+    }
+
+    pub fn name -> str () { return name_; }
+}
+
+class Sender : Participant {}
+class Receiver : Participant {}
+
+class Message {
+    prot sender_: &Sender;
+    prot content_: str;
+
+    pub fn new -> Self (sender: &Sender) {
+        sender_ = sender;
+    }
+
+    pub fn delete -> void () {
+
+    }
+
+    pub fn sender -> const[&Sender] () { return as_const(sender_); }
+
+    pub fn content -> str () { return content_; }
+
+    pub fn send -> void (receiver: const[&Receiver]) {
+        // Send Logic...
+    }
+}
+
+struct Person {
+    name: str;
+    age: int[32];
+}
+
 fn main -> void (args: array[str]) {
+
     let some_var: int[32] = 123;
 
     std.io.writeln("Hello, World");

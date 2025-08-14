@@ -17,9 +17,9 @@ namespace Semantic
             return AnalyzerImpl<AST::BinaryExpr>::analyze(
                 analyzer, static_cast<AST::BinaryExpr &>(node));
 
-        else if (typeid(node) == typeid(AST::FunctionCalLExpr))
-            return AnalyzerImpl<AST::FunctionCalLExpr>::analyze(
-                analyzer, static_cast<AST::FunctionCalLExpr &>(node));
+        else if (typeid(node) == typeid(AST::FunctionCallExpr))
+            return AnalyzerImpl<AST::FunctionCallExpr>::analyze(
+                analyzer, static_cast<AST::FunctionCallExpr &>(node));
 
         else if (typeid(node) == typeid(AST::InstanceExpr))
             return AnalyzerImpl<AST::InstanceExpr>::analyze(

@@ -7,7 +7,7 @@ namespace Core
     class StructType : public BaseType
     {
       private:
-        std::unordered_map<std::string_view, Type *> fields_;
+        size_t field_count_ = 0;
 
       public:
         StructType(Environment *environment, std::string_view name,
@@ -27,7 +27,7 @@ namespace Core
 
         Type *from_value(const Core::Value &value) const override;
 
-        std::unordered_map<std::string_view, Type *> &fields();
+        size_t field_count() const;
     };
 
 } // namespace Core

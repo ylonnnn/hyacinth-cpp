@@ -25,8 +25,8 @@ namespace Diagnostic
 
       public:
         WarningDiagnostic(AST::Node *node, WarningType warn_type,
-                          const std::string & message,
-                          const std::string & submessage);
+                          const std::string &message,
+                          const std::string &submessage);
 
         WarningType warn_type();
 

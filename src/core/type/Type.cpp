@@ -164,6 +164,22 @@ namespace Core
         return nullptr;
     }
 
+    TypeMember::TypeMember(std::variant<Type *, FunctionSymbol *> &&value,
+                           TypeMemberAccessibility accessibility)
+        : accessibility_(accessibility), value_(std::move(value))
+    {
+    }
+
+    bool TypeMember::is_field() const
+    {
+        return std::holds_alternative<Type *>(value_);
+    }
+
+    bool TypeMember::is_function() const
+    {
+        return std::holds_alternative<FunctionSymbol *>(value_);
+    }
+
     BaseType::BaseType(Environment *environment, std::string_view name,
                        TypeSymbol *symbol)
         : environment_(environment), name_(name), symbol_(symbol)
@@ -181,6 +197,16 @@ namespace Core
     std::vector<TypeParameter> &BaseType::parameters() { return parameters_; }
 
     TypeSymbol *BaseType::symbol() { return symbol_; }
+
+    std::unordered_map<std::string, TypeMember> &BaseType::members()
+    {
+        return members_;
+    }
+
+    const std::unordered_map<std::string, TypeMember> &BaseType::members() const
+    {
+        return members_;
+    }
 
     void BaseType::add_parameter(TypeParameter &&parameter)
     {

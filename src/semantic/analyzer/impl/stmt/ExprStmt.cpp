@@ -1,3 +1,4 @@
+#include "ast/expr/FunctionCallExpr.hpp"
 #include "semantic/analyzer/impl/Stmt.hpp"
 
 namespace Semantic
@@ -5,7 +6,15 @@ namespace Semantic
     AnalysisResult AnalyzerImpl<AST::ExprStmt>::analyze(Analyzer &analyzer,
                                                         AST::ExprStmt &node)
     {
-        return AnalyzerImpl<AST::Expr>::analyze(analyzer, node.expr());
+        AST::Expr &expr = node.expr();
+        AnalysisResult result =
+            AnalyzerImpl<AST::Expr>::analyze(analyzer, expr);
+
+        if (typeid(expr) != typeid(AST::FunctionCallExpr))
+            result.warn(&expr, Diagnostic::WarningType::Unused,
+                        "Expression result unused", "Expression unused");
+
+        return result;
     }
 
 } // namespace Semantic

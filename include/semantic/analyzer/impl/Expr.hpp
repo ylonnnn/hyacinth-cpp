@@ -38,10 +38,10 @@ namespace Semantic
                                       AST::BinaryExpr &node);
     };
 
-    template <> struct AnalyzerImpl<AST::FunctionCalLExpr>
+    template <> struct AnalyzerImpl<AST::FunctionCallExpr>
     {
         static AnalysisResult analyze(Analyzer &analyzer,
-                                      AST::FunctionCalLExpr &node);
+                                      AST::FunctionCallExpr &node);
     };
 
     template <> struct AnalyzerImpl<AST::InstanceExpr>

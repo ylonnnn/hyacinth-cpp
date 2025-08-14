@@ -4,7 +4,7 @@
 
 namespace AST
 {
-    FunctionCalLExpr::FunctionCalLExpr(
+    FunctionCallExpr::FunctionCallExpr(
         std::unique_ptr<Expr> callee,
         std::vector<std::unique_ptr<Expr>> arguments)
         : Node(callee->position()), callee_(std::move(callee)),
@@ -15,14 +15,14 @@ namespace AST
                              : arguments_.back()->end_position());
     }
 
-    Expr &FunctionCalLExpr::callee() { return *callee_; }
+    Expr &FunctionCallExpr::callee() { return *callee_; }
 
-    std::vector<std::unique_ptr<Expr>> &FunctionCalLExpr::arguments()
+    std::vector<std::unique_ptr<Expr>> &FunctionCallExpr::arguments()
     {
         return arguments_;
     }
 
-    void FunctionCalLExpr::print(std::ostream &os, uint8_t tab) const
+    void FunctionCallExpr::print(std::ostream &os, uint8_t tab) const
     {
         std::string indentation = Utils::tab(tab - 1, 4),
                     inner_indentation = Utils::tab(tab, 4);

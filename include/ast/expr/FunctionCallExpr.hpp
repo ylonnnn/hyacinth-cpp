@@ -1,18 +1,19 @@
 #pragma once
 
-#include "ast/expr/Expr.hpp"
 #include <vector>
+
+#include "ast/expr/Expr.hpp"
 
 namespace AST
 {
-    class FunctionCalLExpr : public Expr
+    class FunctionCallExpr : public Expr
     {
       private:
         std::unique_ptr<Expr> callee_;
         std::vector<std::unique_ptr<Expr>> arguments_;
 
       public:
-        FunctionCalLExpr(std::unique_ptr<Expr> callee,
+        FunctionCallExpr(std::unique_ptr<Expr> callee,
                          std::vector<std::unique_ptr<Expr>> arguments);
 
         Expr &callee();

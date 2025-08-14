@@ -1,16 +1,146 @@
-#include "core/operation/Operation.hpp"
-#include "semantic/analyzer/impl/Expr.hpp"
 #include <utility>
+
+#include "core/operation/Operation.hpp"
+#include "core/symbol/FunctionSymbol.hpp"
+#include "core/type/compound/Struct.hpp"
+#include "semantic/analyzer/impl/Expr.hpp"
 
 namespace Semantic
 {
+    using SpecialOperatorHandler =
+        std::function<void(Analyzer &, AST::BinaryExpr &, AnalysisResult &)>;
+    static std::unordered_map<Lexer::TokenType, SpecialOperatorHandler>
+        special_handler;
+
+    void default_special_handlers()
+    {
+        using namespace Lexer::TokenTypes;
+        using namespace Operator;
+
+        special_handler.try_emplace(
+            Dot::Single,
+            [&](Analyzer &analyzer, AST::BinaryExpr &node,
+                AnalysisResult &result) -> void
+            {
+                auto __an_f = [&](AnalysisResult &result,
+                                  AST::Expr &expr) -> void
+                {
+                    Core::Type *basis = result.data;
+
+                    if (basis == nullptr)
+                    {
+                        AnalysisResult l_res =
+                            AnalyzerImpl<AST::Expr>::analyze(analyzer, expr);
+                        result.adapt(l_res.status, std::move(l_res.diagnostics),
+                                     l_res.data);
+
+                        return;
+                    }
+
+                    auto &t_info = typeid(expr);
+
+                    if (t_info == typeid(AST::BinaryExpr))
+                    {
+                        auto s_it = special_handler.find(Dot::Single);
+                        if (s_it == special_handler.end())
+                            return;
+
+                        s_it->second(analyzer,
+                                     static_cast<AST::BinaryExpr &>(expr),
+                                     result);
+
+                        return;
+                    }
+
+                    if (t_info != typeid(AST::IdentifierExpr))
+                    {
+                        AnalyzerImpl<AST::Expr>::analyze(analyzer, expr);
+                        return;
+                    }
+
+                    std::string m_name =
+                        std::string(static_cast<AST::IdentifierExpr &>(expr)
+                                        .identifier()
+                                        .value);
+
+                    auto &members = basis->type->members();
+                    auto m_it = members.find(m_name);
+
+                    if (m_it == members.end())
+                    {
+                        // TODO: Error Unrecognized member
+                        result.error(
+                            &expr,
+                            Diagnostic::ErrorTypes::Semantic::UnrecognizedField,
+                            std::string("Unrecognized field \"") +
+                                Diagnostic::ERR_GEN + m_name +
+                                Utils::Styles::Reset + "\" of type \"" +
+                                Diagnostic::ERR_GEN + basis->to_string() +
+                                Utils::Styles::Reset + "\".",
+                            "Unrecognized field provided");
+
+                        return;
+                    }
+
+                    auto &member = m_it->second;
+                    if (auto type = member.as<Core::Type>())
+                        result.data = type;
+
+                    else
+                    {
+                        auto fn = member.as<Core::FunctionSymbol>();
+
+                        result.data = fn->return_type;
+                        result.symbol = fn;
+                    }
+                };
+
+                AnalysisResult a_res = {
+                    std::nullopt, Core::ResultStatus::Success, result.data, {}};
+
+                __an_f(a_res, node.left());
+                result.adapt(a_res.status, std::move(a_res.diagnostics),
+                             a_res.data);
+
+                if (result.status == Core::ResultStatus::Fail)
+                    return;
+
+                __an_f(a_res, node.right());
+                result.adapt(a_res.status, std::move(a_res.diagnostics),
+                             a_res.data);
+            });
+    }
+
+    bool initialize()
+    {
+        using namespace Lexer::TokenTypes;
+        using namespace Operator;
+
+        special_handler.reserve(8);
+
+        default_special_handlers();
+
+        return true;
+    }
+
+    bool initialized = initialize();
+
     AnalysisResult AnalyzerImpl<AST::BinaryExpr>::analyze(Analyzer &analyzer,
                                                           AST::BinaryExpr &node)
     {
+        using namespace Lexer::TokenTypes;
+        using namespace Operator;
+
         AnalysisResult result = {
             std::nullopt, Core::ResultStatus::Success, nullptr, {}};
 
         auto op = node.operation().type;
+        auto s_it = special_handler.find(op);
+        if (s_it != special_handler.end())
+        {
+            s_it->second(analyzer, node, result);
+            return result;
+        }
 
         AnalysisResult l_res =
             AnalyzerImpl<AST::Expr>::analyze(analyzer, node.left());

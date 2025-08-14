@@ -1,25 +1,43 @@
 import "./test-math.hyc";
 
+struct City {
+    name: str;
+    postal_code: int[16];
+}
+
+struct Address {
+    street_no: int[32];
+    house_no: int[32];
+    city: City;
+}
+
 struct Person {
     name: str;
     age: int[32];
+    address: Address;
 }
 
-fn use -> Person (p: Person) {
-    return Person { name: "test", age: 12 };
+fn address_of -> Address (p: Person) {
+    return p.address;
+}
+
+fn postal_code_of -> int[32] (p: Person) {
+    return p.address.city.postal_code;
 }
 
 fn main -> void () {
-    let p: Person = Person { name: "John Doe", age: 32, };
-    let p2: Person = use(p);
+    let p: Person = Person {
+        name: "John",
+        age: 21,
+        address: Address {
+            street_no: 1,
+            house_no: 5,
+            city: City {
+                name: "Cityville",
+                postal_code: 8231,
+            },
+        },
+    };
 
-    let p3: Person = use(Person {name: "Non Bonjour", age: 21});
-
-    let p4: Person = use(
-        use({
-            name: "Test",
-            age: 23,
-            is_employed: false,
-        })
-    );
+    let p_postal_code: int[32] = postal_code_of(p);
 }

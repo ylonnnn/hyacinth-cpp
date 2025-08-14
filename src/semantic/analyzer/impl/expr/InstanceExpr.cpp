@@ -46,17 +46,19 @@ namespace Semantic
             }
         }
 
-        auto *fields = type == nullptr ? nullptr : &type->fields();
+        auto *members = type == nullptr ? nullptr : &type->members();
         for (auto &[name, field] : node.fields())
         {
+            AST::Expr &f_val = field.value();
+
             AnalysisResult v_res =
-                AnalyzerImpl<AST::Expr>::analyze(analyzer, field.value());
+                AnalyzerImpl<AST::Expr>::analyze(analyzer, f_val);
             result.adapt(v_res.status, std::move(v_res.diagnostics));
 
-            if (fields != nullptr)
+            if (members != nullptr)
             {
-                auto it = fields->find(name);
-                if (it == fields->end())
+                auto it = members->find(name);
+                if (it == members->end())
                 {
                     result.error(
                         &field,
@@ -66,6 +68,32 @@ namespace Semantic
                             "\" provided.",
                         "\"" + name + "\" is not a \"" +
                             std::string(type->name()) + "\" field");
+
+                    return result;
+                }
+
+                auto type = it->second.as<Core::Type>();
+                if (type == nullptr)
+                {
+                    // TODO: Non-field member error
+                    // result.error();
+                    return result;
+                }
+
+                if (!(v_res.value && type->assignable(*v_res.value)) &&
+                    !(v_res.data != nullptr &&
+                      type->assignable_with(*v_res.data)))
+                {
+                    result.error(
+                        &f_val, Diagnostic::ErrorTypes::Type::Mismatch,
+                        std::string("Field \"") + Diagnostic::ERR_GEN + name +
+                            Utils::Styles::Reset + "\" has a value of type \"" +
+                            Diagnostic::ERR_GEN + v_res.data->to_string() +
+                            Utils::Styles::Reset +
+                            "\". Expects values of type \"" +
+                            Diagnostic::ERR_GEN + type->to_string() +
+                            Utils::Styles::Reset + "\".",
+                        "Field type mismatch");
 
                     return result;
                 }

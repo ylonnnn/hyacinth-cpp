@@ -76,6 +76,38 @@ namespace Core
         size_t hash() const;
     };
 
+    enum class TypeMemberAccessibility
+    {
+        Public = 0,
+        Private,
+        Protected,
+    };
+
+    class TypeMember
+    {
+      private:
+        bool static_ = false;
+        TypeMemberAccessibility accessibility_;
+        std::variant<Type *, FunctionSymbol *> value_;
+
+      public:
+        TypeMember(std::variant<Type *, FunctionSymbol *> &&value,
+                   TypeMemberAccessibility accessibility =
+                       TypeMemberAccessibility::Private);
+
+        bool is_field() const;
+        bool is_function() const;
+
+        template <typename T>
+        std::enable_if_t<
+            std::is_same_v<T, Type> || std::is_same_v<T, FunctionSymbol>, T *>
+        as()
+        {
+            auto res = std::get_if<T *>(&value_);
+            return res == nullptr ? nullptr : *res;
+        }
+    };
+
     class BaseType
     {
       protected:
@@ -86,6 +118,7 @@ namespace Core
         std::vector<TypeParameter> parameters_;
 
         TypeSymbol *symbol_ = nullptr;
+        std::unordered_map<std::string, TypeMember> members_;
 
       public:
         BaseType(Environment *environment, std::string_view name,
@@ -132,6 +165,8 @@ namespace Core
         std::vector<TypeParameter> &parameters();
 
         TypeSymbol *symbol();
+        std::unordered_map<std::string, TypeMember> &members();
+        const std::unordered_map<std::string, TypeMember> &members() const;
 
         constexpr inline bool builtin() const { return builtin_; }
 

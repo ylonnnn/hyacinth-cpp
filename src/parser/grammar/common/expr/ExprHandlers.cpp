@@ -133,7 +133,7 @@ namespace Parser
                                                  std::move(right));
     }
 
-    std::unique_ptr<AST::FunctionCalLExpr>
+    std::unique_ptr<AST::FunctionCallExpr>
     parse_fncall(Parser &parser, std::unique_ptr<AST::Expr> &left, float,
                  ExprParseResult &result)
     {
@@ -198,7 +198,7 @@ namespace Parser
         //     std::move(left), operation,
         //     expr_rule->parse_expr(parser, right_bp).data);
 
-        auto node = std::make_unique<AST::FunctionCalLExpr>(
+        auto node = std::make_unique<AST::FunctionCallExpr>(
             std::move(left), std::move(arguments));
 
         node->set_end_position(*fnc_ep);

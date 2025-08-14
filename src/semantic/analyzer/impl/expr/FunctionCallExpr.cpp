@@ -5,7 +5,7 @@
 
 namespace Semantic
 {
-    bool analyze_callee(Analyzer &analyzer, AST::FunctionCalLExpr &node,
+    bool analyze_callee(Analyzer &analyzer, AST::FunctionCallExpr &node,
                         AnalysisResult &result)
     {
         auto &callee = node.callee();
@@ -41,7 +41,7 @@ namespace Semantic
     }
 
     static void analyze_arguments(Analyzer &analyzer,
-                                  AST::FunctionCalLExpr &node,
+                                  AST::FunctionCallExpr &node,
                                   AnalysisResult &result)
     {
         auto symbol = static_cast<Core::FunctionSymbol *>(result.symbol);
@@ -112,8 +112,8 @@ namespace Semantic
     }
 
     AnalysisResult
-    AnalyzerImpl<AST::FunctionCalLExpr>::analyze(Analyzer &analyzer,
-                                                 AST::FunctionCalLExpr &node)
+    AnalyzerImpl<AST::FunctionCallExpr>::analyze(Analyzer &analyzer,
+                                                 AST::FunctionCallExpr &node)
     {
         AnalysisResult result = {
             std::nullopt, Core::ResultStatus::Success, nullptr, {}};

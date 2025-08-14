@@ -10,12 +10,12 @@ namespace Core
         Environment *environment, std::string_view name,
         std::unordered_map<std::string_view, Type *> &&fields,
         TypeSymbol *symbol)
-        : BaseType(environment, name, symbol), fields_(std::move(fields))
+        : BaseType(environment, name, symbol), field_count_(fields.size())
     {
-        // fields_.reserve(fields.size());
+        members_.reserve(field_count_);
 
-        // for (auto &[name, field] : fields)
-        //     fields_.try_emplace(name, std::move(field));
+        for (const auto &[name, field] : fields)
+            members_.try_emplace(std::string(name), field);
     }
 
     bool StructType::assignable(
@@ -27,16 +27,22 @@ namespace Core
             return false;
 
         object &instance = const_cast<object &>(*instance_ptr);
-        if (instance.size() != fields_.size())
+        if (instance.size() != members_.size())
             return false;
 
         for (const auto &[field, value] : instance.value())
         {
-            auto it = fields_.find(field);
-            if (it == fields_.end())
+            auto it = members_.find(std::string(field));
+            if (it == members_.end())
                 return false;
 
-            auto &type = it->second;
+            auto &member = const_cast<TypeMember &>(it->second);
+            auto type = member.as<Type>();
+
+            // Non-field member
+            if (type == nullptr)
+                return false;
+
             if ((value.value && type->assignable(*value.value)) ||
                 (value.type && type->assignable_with(*value.type)))
                 continue;
@@ -55,16 +61,24 @@ namespace Core
             return false;
 
         auto &casted = static_cast<const StructType &>(type);
-        if (fields_.size() != casted.fields_.size())
+        if (field_count_ != casted.field_count_)
             return false;
 
-        for (const auto &[name, field] : fields_)
+        for (auto &[name, member] : members_)
         {
-            auto f_it = casted.fields_.find(name);
-            if (f_it == casted.fields_.end())
+            auto type = const_cast<TypeMember &>(member).as<Type>();
+            if (type == nullptr)
                 return false;
 
-            if (!f_it->second->assignable_with(*field))
+            auto f_it = casted.members_.find(name);
+            if (f_it == casted.members_.end())
+                return false;
+
+            auto f_type = const_cast<TypeMember &>(f_it->second).as<Type>();
+            if (f_type == nullptr)
+                return false;
+
+            if (!f_type->assignable_with(*type))
                 return false;
         }
 
@@ -114,9 +128,6 @@ namespace Core
         return Type::get_or_create(const_cast<StructType *>(this), {});
     }
 
-    std::unordered_map<std::string_view, Type *> &StructType::fields()
-    {
-        return fields_;
-    }
+    size_t StructType::field_count() const { return field_count_; }
 
 } // namespace Core

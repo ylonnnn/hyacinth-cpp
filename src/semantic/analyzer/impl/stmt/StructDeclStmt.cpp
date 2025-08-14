@@ -97,6 +97,8 @@ namespace Semantic
         Core::Environment *current = analyzer.current_env();
         auto def = struct_->definition;
 
+        auto &members = struct_->type->members();
+
         for (auto &[name, field] : def->fields())
         {
             AST::Type &ast_type = field.type();
@@ -112,7 +114,8 @@ namespace Semantic
             Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-            struct_->type->fields().try_emplace(name, t_res.data);
+            members.try_emplace(std::string(name),
+                                Core::TypeMember{t_res.data});
         }
     }
 
