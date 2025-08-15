@@ -21,6 +21,7 @@ namespace Core
     {
       protected:
         Environment *parent_ = nullptr;
+        std::string name_;
         std::vector<std::unique_ptr<Environment>> children_;
 
         TypeTable types_;
@@ -28,13 +29,16 @@ namespace Core
         std::unordered_map<std::string_view, Value> variables_;
 
       public:
-        Environment(Environment *parent);
+        Environment(Environment *parent, const std::string &name = "Env");
         virtual ~Environment() = default;
 
         Environment *parent();
 
         std::vector<std::unique_ptr<Environment>> &children();
+
         Environment &create_child();
+
+        void display_symbol_table(std::ostream &os, uint8_t tab) const;
 
         void declare_type(std::unique_ptr<BaseType> type);
         void declare_symbol(std::unique_ptr<Symbol> symbol);

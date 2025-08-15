@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -69,7 +70,7 @@ namespace Core
 
     struct object_entry
     {
-        std::optional<Value> value = std::nullopt;
+        std::shared_ptr<Value> value;
         Type *type = nullptr;
     };
 

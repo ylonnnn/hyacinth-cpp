@@ -143,11 +143,12 @@ namespace Core
 
                 if (left == nullptr || right == nullptr)
                     return Operation::Assignee{
-                        nv_handler(left_op.type, right_op.type), std::nullopt};
+                        nv_handler(left_op.type, right_op.type), nullptr};
 
                 auto result = handler(*left, *right);
                 return Operation::Assignee{
-                    Type::from_value(environment_, result), result};
+                    Type::from_value(environment_, result),
+                    std::make_shared<Core::Value>(std::move(result))};
             };
         }
 

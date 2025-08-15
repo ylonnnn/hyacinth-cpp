@@ -201,7 +201,7 @@ namespace Core
     ProgramFile::analyze(std::unique_ptr<AST::Program> &program)
     {
         if (analyzed_)
-            return {std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+            return {nullptr, Core::ResultStatus::Success, nullptr, {}};
 
         auto start = std::chrono::high_resolution_clock::now();
 
@@ -236,7 +236,7 @@ namespace Core
     Semantic::AnalysisResult ProgramFile::lex_parse_analyze()
     {
         Semantic::AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+            nullptr, Core::ResultStatus::Success, nullptr, {}};
 
         Lexer::LexerResult lex_result = lex();
         result.adapt(lex_result.status, std::move(lex_result.diagnostics));
@@ -297,6 +297,9 @@ namespace Core
 
         // TEMP
         std::cout << *node_ << "\n";
+
+        environment_->display_symbol_table(std::cout, 1);
+        std::cout << "\n";
 
         // Diagnostics
         for (auto &diagnostic : result.diagnostics)

@@ -5,12 +5,23 @@ namespace Core
 {
     FunctionParameterSymbol::FunctionParameterSymbol(
         std::string_view name, Core::Position &declared_at, bool is_mutable,
-        Type *type, std::optional<Value> value, AST::FunctionParameter *node)
+        Type *type, std::shared_ptr<Value> value, AST::FunctionParameter *node)
         : IdentifierSymbol(name, declared_at, is_mutable, type,
                            std::move(value), node)
     {
         this->type = type;
         this->node = dynamic_cast<AST::FunctionParameter *>(Symbol::node);
+    }
+
+    void FunctionParameterSymbol::print(std::ostream &os, uint8_t tab) const
+    {
+        std::string indentation = Utils::tab(tab - 1, 4),
+                    inner_indentation = Utils::tab(tab, 4);
+
+        os << "(param) " << name << " { "
+           << (is_mutable ? "Mutable" : "Immutable") << ", "
+           << type->to_string() << ", " << (value != nullptr ? *value : "null")
+           << " }";
     }
 
     FunctionSymbol::FunctionSymbol(std::string_view name,
@@ -52,6 +63,17 @@ namespace Core
     {
         define(&definition->position());
         this->definition = definition;
+    }
+
+    void FunctionSymbol::print(std::ostream &os, uint8_t tab) const
+    {
+        std::string indentation = Utils::tab(tab - 1, 4),
+                    inner_indentation = Utils::tab(tab, 4);
+
+        os << "(fn) " << name << " { "
+           << (accessibility == SymbolAccessibility::Public ? "Public"
+                                                            : "Private")
+           << ", " << return_type->to_string() << " }";
     }
 
 } // namespace Core

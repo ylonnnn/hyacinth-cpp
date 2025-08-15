@@ -51,13 +51,9 @@ namespace Semantic
 
                 if (ret_val == nullptr)
                 {
-                    result.value = Core::null{};
+                    result.value = std::make_shared<Core::Value>(Core::null{});
                     return;
                 }
-
-                // std::cout << "ret_val: ";
-                // ret_val->print(std::cout, 1);
-                // std::cout << "\n";
 
                 AnalysisResult v_res =
                     AnalyzerImpl<AST::Expr>::analyze(analyzer, *ret_val);
@@ -85,7 +81,7 @@ namespace Semantic
                     if (!result.data->assignable(*v_res.value))
                         error();
 
-                    result.value = std::move(*v_res.value);
+                    result.value = std::move(v_res.value);
                 }
 
                 // Analysis of returned type
@@ -140,7 +136,7 @@ namespace Semantic
     {
         Core::Environment *current = analyzer.current_env();
         AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+            nullptr, Core::ResultStatus::Success, nullptr, {}};
 
         result.diagnostics.reserve(8);
 

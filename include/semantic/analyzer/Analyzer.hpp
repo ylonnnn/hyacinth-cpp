@@ -13,10 +13,10 @@ namespace Semantic
 {
     struct AnalysisResult : public Core::Result<Core::Type *>
     {
-        std::optional<Core::Value> value = std::nullopt;
+        std::shared_ptr<Core::Value> value = nullptr;
         Core::Symbol *symbol = nullptr;
 
-        AnalysisResult(std::optional<Core::Value> value,
+        AnalysisResult(std::shared_ptr<Core::Value> value,
                        Core::ResultStatus status, Core::Type *data,
                        Diagnostic::DiagnosticList diagnostics);
     };

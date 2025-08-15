@@ -248,6 +248,7 @@ namespace Parser
                     lexer.next();
 
                 ExprParseResult expr_res = expr_rule->parse_expr(parser, 0);
+
                 if (expr_res.data == nullptr)
                 {
                     result.error(

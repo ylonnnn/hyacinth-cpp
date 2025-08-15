@@ -22,8 +22,10 @@ namespace Core
 
         FunctionParameterSymbol(std::string_view name,
                                 Core::Position &declared_at, bool is_mutable,
-                                Type *type, std::optional<Value> value,
+                                Type *type, std::shared_ptr<Value> value,
                                 AST::FunctionParameter *node = nullptr);
+
+        void print(std::ostream &os, uint8_t tab) const override;
     };
 
     struct FunctionSymbol : public Symbol
@@ -45,6 +47,8 @@ namespace Core
 
         void define(Core::Position *position) override;
         void define(AST::FunctionDefinitionStmt *definition);
+
+        void print(std::ostream &os, uint8_t tab) const override;
     };
 
 } // namespace Core

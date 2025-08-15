@@ -14,7 +14,7 @@ namespace Core
         struct Operand
         {
             Type *type = nullptr;
-            std::optional<Value> value = std::nullopt;
+            std::shared_ptr<Value> value;
         };
 
         struct Assignee : Operand

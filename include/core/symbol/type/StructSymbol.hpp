@@ -28,6 +28,8 @@ namespace Core
 
         void define(Core::Position *position) override;
         void define(AST::StructDefinitionStmt *definition);
+
+        void print(std::ostream &os, uint8_t tab) const override;
     };
 
 } // namespace Core

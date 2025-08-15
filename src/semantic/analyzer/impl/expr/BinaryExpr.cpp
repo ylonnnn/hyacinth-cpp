@@ -2,7 +2,6 @@
 
 #include "core/operation/Operation.hpp"
 #include "core/symbol/FunctionSymbol.hpp"
-#include "core/type/compound/Struct.hpp"
 #include "semantic/analyzer/impl/Expr.hpp"
 
 namespace Semantic
@@ -26,6 +25,7 @@ namespace Semantic
                                   AST::Expr &expr) -> void
                 {
                     Core::Type *basis = result.data;
+                    std::shared_ptr<Core::Value> &b_val = result.value;
 
                     if (basis == nullptr)
                     {
@@ -33,6 +33,9 @@ namespace Semantic
                             AnalyzerImpl<AST::Expr>::analyze(analyzer, expr);
                         result.adapt(l_res.status, std::move(l_res.diagnostics),
                                      l_res.data);
+
+                        result.value = std::move(l_res.value);
+                        result.symbol = l_res.symbol;
 
                         return;
                     }
@@ -84,7 +87,27 @@ namespace Semantic
 
                     auto &member = m_it->second;
                     if (auto type = member.as<Core::Type>())
+                    {
                         result.data = type;
+                        if (!b_val)
+                            return;
+
+                        auto val = b_val ? std::get_if<Core::object>(&*b_val)
+                                         : nullptr;
+
+                        if (val == nullptr)
+                            return;
+
+                        Core::object_entry *entry = val->get(m_name);
+                        if (entry == nullptr)
+                        {
+                            // result.error()
+                            return;
+                        }
+
+                        result.data = entry->type;
+                        result.value = entry->value;
+                    }
 
                     else
                     {
@@ -95,19 +118,11 @@ namespace Semantic
                     }
                 };
 
-                AnalysisResult a_res = {
-                    std::nullopt, Core::ResultStatus::Success, result.data, {}};
-
-                __an_f(a_res, node.left());
-                result.adapt(a_res.status, std::move(a_res.diagnostics),
-                             a_res.data);
-
+                __an_f(result, node.left());
                 if (result.status == Core::ResultStatus::Fail)
                     return;
 
-                __an_f(a_res, node.right());
-                result.adapt(a_res.status, std::move(a_res.diagnostics),
-                             a_res.data);
+                __an_f(result, node.right());
             });
     }
 
@@ -132,7 +147,7 @@ namespace Semantic
         using namespace Operator;
 
         AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+            nullptr, Core::ResultStatus::Success, nullptr, {}};
 
         auto op = node.operation().type;
         auto s_it = special_handler.find(op);

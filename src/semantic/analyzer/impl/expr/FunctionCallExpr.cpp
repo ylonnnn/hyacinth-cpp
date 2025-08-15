@@ -90,9 +90,6 @@ namespace Semantic
                  parameter.type->assignable_with(*a_res.data)))
                 continue;
 
-            auto &[row, col, program] = argument->position();
-            std::cout << row << " | " << col << " | " << &program << "\n";
-
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
                 argument.get(),
                 Diagnostic::ErrorTypes::Type::InvalidArgumentType,
@@ -116,7 +113,7 @@ namespace Semantic
                                                  AST::FunctionCallExpr &node)
     {
         AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+            nullptr, Core::ResultStatus::Success, nullptr, {}};
 
         if (!analyze_callee(analyzer, node, result))
             return result;

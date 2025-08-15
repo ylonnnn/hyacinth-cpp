@@ -1,6 +1,7 @@
 #include "core/type/compound/Struct.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "semantic/analyzer/impl/Expr.hpp"
+#include <memory>
 
 namespace Semantic
 {
@@ -8,11 +9,14 @@ namespace Semantic
     AnalyzerImpl<AST::InstanceExpr>::analyze(Analyzer &analyzer,
                                              AST::InstanceExpr &node)
     {
-        AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+        AnalysisResult result = {std::make_shared<Core::Value>(Core::object{}),
+                                 Core::ResultStatus::Success,
+                                 nullptr,
+                                 {}};
 
         Core::Environment *current = analyzer.current_env();
-        Core::object obj;
+        auto obj = std::get_if<Core::object>(result.value.get());
+
         Core::StructType *type = nullptr;
 
         AST::Type *ast_type = node.type();
@@ -99,11 +103,11 @@ namespace Semantic
                 }
             }
 
-            obj.set(name,
-                    Core::object_entry{std::move(v_res.value), v_res.data});
+            obj->set(name,
+                     Core::object_entry{std::move(v_res.value), v_res.data});
         }
 
-        result.value = std::move(obj);
+        result.value = std::make_shared<Core::Value>(*obj);
 
         return result;
     }

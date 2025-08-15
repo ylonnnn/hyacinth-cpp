@@ -153,7 +153,7 @@ namespace Semantic
                 if (!result.data->assignable(*v_res.value))
                     error();
 
-                var->value = std::move(*v_res.value);
+                var->value = std::move(v_res.value);
             }
 
             // Analysis of returned type
@@ -176,14 +176,15 @@ namespace Semantic
     {
         Core::Environment *current = analyzer.current_env();
         AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+            nullptr, Core::ResultStatus::Success, nullptr, {}};
 
         auto variable = std::make_unique<Core::VariableSymbol>(
             node.name().value,
             node.accessibility() == AST::DeclarationAccessibility::Public
                 ? Core::SymbolAccessibility::Public
                 : Core::SymbolAccessibility::Private,
-            node.position(), node.is_mutable(), nullptr, Core::null{}, &node);
+            node.position(), node.is_mutable(), nullptr,
+            std::make_shared<Core::Value>(Core::null{}), &node);
 
         validate_duplication(analyzer, variable, result);
 

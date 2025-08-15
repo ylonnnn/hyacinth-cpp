@@ -12,9 +12,10 @@ namespace Semantic
                                             AST::LiteralExpr &node)
     {
         AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+            nullptr, Core::ResultStatus::Success, nullptr, {}};
 
-        result.value = Utils::parse_val(node.value());
+        result.value =
+            std::make_shared<Core::Value>(Utils::parse_val(node.value()));
         if (result.value)
             result.data =
                 Core::Type::from_value(&analyzer.environment(), *result.value);

@@ -7,7 +7,7 @@ namespace Semantic
                                                        AST::Program &node)
     {
         AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+            nullptr, Core::ResultStatus::Success, nullptr, {}};
         result.diagnostics.reserve(32);
 
         for (auto &statement : node.statements())

@@ -1,5 +1,3 @@
-#include <optional>
-
 #include "ast/expr/LiteralExpr.hpp"
 #include "ast/stmt/function/FunctionDefStmt.hpp"
 #include "core/environment/FunctionEnvironment.hpp"
@@ -66,7 +64,7 @@ namespace Semantic
             {
                 auto p_symbol = std::make_unique<Core::FunctionParameterSymbol>(
                     param.name().value, param.position(), param.is_mutable(),
-                    parameter.type, std::nullopt, &param);
+                    parameter.type, nullptr, &param);
 
                 // TODO: .define() for defaulted parameters
 
@@ -200,7 +198,7 @@ namespace Semantic
     {
         Core::Environment *closure = analyzer.current_env(), *current = closure;
         AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+            nullptr, Core::ResultStatus::Success, nullptr, {}};
 
         result.diagnostics.reserve(8);
 

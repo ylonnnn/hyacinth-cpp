@@ -25,6 +25,8 @@ namespace Core
         virtual ~Symbol() = default;
 
         virtual void define(Core::Position *position);
+
+        virtual void print(std::ostream &os, uint8_t tab) const = 0;
     };
 
 } // namespace Core

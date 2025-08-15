@@ -18,7 +18,7 @@ namespace Semantic
             return AnalyzerImpl<AST::ExprStmt>::analyze(
                 analyzer, *static_cast<AST::ExprStmt *>(stmt));
 
-        return {std::nullopt, Core::ResultStatus::Fail, nullptr, {}};
+        return {nullptr, Core::ResultStatus::Fail, nullptr, {}};
     }
 
 } // namespace Semantic

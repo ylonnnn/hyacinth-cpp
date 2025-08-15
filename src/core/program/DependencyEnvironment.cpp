@@ -2,7 +2,9 @@
 
 namespace Core
 {
-    DependencyEnvironment::DependencyEnvironment() : Environment(nullptr) {}
+    DependencyEnvironment::DependencyEnvironment() : Environment(nullptr, "Dep")
+    {
+    }
 
     std::vector<Environment *> &DependencyEnvironment::dependencies()
     {

@@ -12,7 +12,7 @@ namespace Semantic
         else if (auto ptr = dynamic_cast<AST::DeclarationStmt *>(&node))
             return AnalyzerImpl<AST::DeclarationStmt>::analyze(analyzer, *ptr);
 
-        return {std::nullopt, Core::ResultStatus::Fail, nullptr, {}};
+        return {nullptr, Core::ResultStatus::Fail, nullptr, {}};
     }
 
 } // namespace Semantic

@@ -1,8 +1,10 @@
 #include "core/environment/Environment.hpp"
+#include "utils/style.hpp"
 
 namespace Core
 {
-    Environment::Environment(Environment *parent) : parent_(parent)
+    Environment::Environment(Environment *parent, const std::string &name)
+        : parent_(parent), name_(std::move(name))
     {
         children_.reserve(8);
 
@@ -23,6 +25,28 @@ namespace Core
         children_.emplace_back(std::make_unique<Environment>(this));
 
         return *children_.back();
+    }
+
+    void Environment::display_symbol_table(std::ostream &os, uint8_t tab) const
+    {
+        std::string indentation = Utils::tab(tab - 1, 4),
+                    inner_indentation = Utils::tab(tab, 4);
+
+        os << "[" << name_ << "] {";
+
+        for (const auto &[_, symbol] : symbols_)
+        {
+            os << "\n" << inner_indentation;
+            symbol->print(os, tab + 1);
+        }
+
+        for (const auto &child : children_)
+        {
+            os << "\n" << inner_indentation;
+            child->display_symbol_table(os, tab + 1);
+        }
+
+        os << "\n" << indentation << "}";
     }
 
     void Environment::declare_type(std::unique_ptr<BaseType> type)

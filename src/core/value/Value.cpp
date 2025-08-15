@@ -95,6 +95,9 @@ namespace Core
         {
             en_c++;
 
+            if (value.type != nullptr)
+                str += "<" + value.type->to_string() + ">";
+
             str += std::string(field) + ":" +
                    std::visit(
                        [&](const auto &val) -> std::string
@@ -107,9 +110,6 @@ namespace Core
                                return std::to_string(val);
                        },
                        value.value ? *value.value : Core::null{});
-
-            if (value.type != nullptr)
-                str += "[" + value.type->to_string() + "]";
 
             if (en_c < value_.size())
                 str += ",";

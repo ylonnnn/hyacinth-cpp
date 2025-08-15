@@ -8,7 +8,7 @@ namespace Semantic
     {
         Core::Environment *current = analyzer.current_env();
         AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Fail, nullptr, {}};
+            nullptr, Core::ResultStatus::Fail, nullptr, {}};
 
         std::string identifier(node.identifier().value);
         Core::Symbol *symbol = current->resolve_symbol(identifier);

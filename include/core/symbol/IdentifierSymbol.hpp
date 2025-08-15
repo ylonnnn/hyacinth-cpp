@@ -9,11 +9,14 @@ namespace Core
     {
         bool is_mutable;
         Type *type;
-        std::optional<Value> value = std::nullopt;
+        std::shared_ptr<Value> value;
 
         IdentifierSymbol(std::string_view name, Core::Position declared_at,
                          bool is_mutable, Type *type,
-                         std::optional<Value> value, AST::Node *node = nullptr);
+                         std::shared_ptr<Value> value = nullptr,
+                         AST::Node *node = nullptr);
+
+        virtual void print(std::ostream &os, uint8_t tab) const override;
     };
 
 } // namespace Core

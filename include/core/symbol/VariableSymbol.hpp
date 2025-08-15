@@ -13,8 +13,10 @@ namespace Core
 
         VariableSymbol(std::string_view name, SymbolAccessibility accessibility,
                        Core::Position declared_at, bool is_mutable, Type *type,
-                       std::optional<Value> value = std::nullopt,
+                       std::shared_ptr<Value> value = nullptr,
                        AST::VariableDeclarationStmt *node = nullptr);
+
+        void print(std::ostream &os, uint8_t tab) const override;
     };
 
 } // namespace Core

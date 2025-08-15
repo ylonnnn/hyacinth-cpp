@@ -21,7 +21,7 @@ namespace Semantic
             return AnalyzerImpl<AST::StructDeclarationStmt>::analyze(analyzer,
                                                                      *ptr);
 
-        return {std::nullopt, Core::ResultStatus::Fail, nullptr, {}};
+        return {nullptr, Core::ResultStatus::Fail, nullptr, {}};
     }
 
 } // namespace Semantic

@@ -9,7 +9,7 @@
 
 namespace Semantic
 {
-    AnalysisResult::AnalysisResult(std::optional<Core::Value> value,
+    AnalysisResult::AnalysisResult(std::shared_ptr<Core::Value> value,
                                    Core::ResultStatus status, Core::Type *data,
                                    Diagnostic::DiagnosticList diagnostics)
         : Core::Result<Core::Type *>(status, data, std::move(diagnostics)),

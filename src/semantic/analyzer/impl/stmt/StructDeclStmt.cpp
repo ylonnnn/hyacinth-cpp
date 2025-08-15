@@ -124,7 +124,7 @@ namespace Semantic
     {
         Core::Environment *current = analyzer.current_env();
         AnalysisResult result = {
-            std::nullopt, Core::ResultStatus::Success, nullptr, {}};
+            nullptr, Core::ResultStatus::Success, nullptr, {}};
 
         result.diagnostics.reserve(8);
 
