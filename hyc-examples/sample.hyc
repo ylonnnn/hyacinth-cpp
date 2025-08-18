@@ -3,23 +3,16 @@ struct Person {
     age: int<32>;
 }
 
+fn create_person -> Person (name: str, age: int<7>) {
+    return Person { name: name, age: age };
+}
+
 fn main -> void () {
     let people := {
-        Person { name: "Person 1", age: 21 },
-        Person { name: "Person 2", age: 22 },
-        Person { name: "Person 3", age: 23 },
+        create_person("Person 1", 21),
+        create_person("Person 2", 22),
+        create_person("Person 3", 23),
     };
 
     let p1 := people[0];
-    let p2: Person = people[1];
-    let p3 !:= people[2];
 
-    let test_person := Person {
-        name: "John Doe",
-        age: 34,
-    };
-
-    let tp_name: str = test_person.name;
-    let tp_age: int<32> = test_person.age;
-    let imp_tp_age := test_person.age;
-}

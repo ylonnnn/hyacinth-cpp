@@ -157,8 +157,6 @@ namespace Parser
         ParseResult tp_res = Common::Terminator.parse(parser);
         result.adapt(tp_res.status, std::move(tp_res.diagnostics));
 
-        std::cout << "result.data.get(): " << result.data.get() << "\n";
-
         if (auto ptr =
                 dynamic_cast<AST::VariableDeclarationStmt *>(result.data.get()))
         {

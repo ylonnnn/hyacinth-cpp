@@ -187,18 +187,21 @@ namespace Semantic
         if (!analyze_type(analyzer, variable, result))
             return result;
 
-        if (!node.is_definition())
+        if (node.is_definition())
+            analyze_value(analyzer, variable, result);
+        else
         {
-            result.error(&node,
-                         Diagnostic::ErrorTypes::Type::InvalidVariableType,
-                         std::string("Variables must either have explicit TYPE"
-                                     "or VALUE."),
-                         "No explicit type nor value provided");
+            if (node.type() == nullptr)
+                result.error(
+                    &node, Diagnostic::ErrorTypes::Type::InvalidVariableType,
+                    std::string("Variables must either have explicit ") +
+                        Diagnostic::ERR_GEN + "TYPE" + Utils::Styles::Reset +
+                        " or " + Diagnostic::ERR_GEN + "VALUE" +
+                        Utils::Styles::Reset + ".",
+                    "No explicit type nor value provided");
 
             return result;
         }
-
-        analyze_value(analyzer, variable, result);
 
         current->declare_variable(std::move(variable));
 

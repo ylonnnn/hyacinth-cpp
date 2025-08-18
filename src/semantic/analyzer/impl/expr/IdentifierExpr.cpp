@@ -39,9 +39,6 @@ namespace Semantic
             result.value = ta_res.value;
             result.symbol = ta_res.symbol;
 
-            std::cout << result.status << "\n";
-            std::cout << ta_res.status << "\n";
-
             if (result.status == Core::ResultStatus::Fail)
                 result.error(
                     &node, Diagnostic::ErrorTypes::Semantic::UnrecognizedSymbol,
