@@ -56,6 +56,8 @@ namespace Diagnostic
             IllegalShadowing,
             NoViableOperatorOverload,
             UnrecognizedField,
+            IllegalNonArrayElementAccess,
+            OutOfRange,
         };
 
         enum class Modification

@@ -187,6 +187,8 @@ namespace Core
         return idx >= elements_.size() ? nullptr : &elements_[idx];
     }
 
+    size_t array::size() const { return elements_.size(); }
+
     array::operator std::string() const
     {
         std::string str("{");

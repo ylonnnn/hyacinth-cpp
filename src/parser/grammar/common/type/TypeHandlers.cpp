@@ -20,6 +20,9 @@ namespace Parser
     parse_generic(Parser &parser, std::unique_ptr<AST::Type> &constructor,
                   [[maybe_unused]] float right_bp, TypeParseResult &result)
     {
+        using namespace Lexer::TokenTypes;
+        using namespace Operator;
+
         auto &lexer = parser.lexer();
 
         auto type = std::make_unique<AST::GenericType>(
@@ -32,8 +35,7 @@ namespace Parser
         auto expect_type = true;
         std::vector<std::unique_ptr<AST::Type>> &arguments = type->arguments();
 
-        Lexer::TokenType closing_token =
-            Lexer::TokenTypes::Delimeter::BracketClose;
+        Lexer::TokenType closing_token = Relational::GreaterThan;
 
         while (!parser.expect(closing_token, false))
         {

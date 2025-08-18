@@ -1,5 +1,6 @@
 #include "ast/type/SimpleType.hpp"
 #include "semantic/analyzer/impl/Expr.hpp"
+#include <array>
 
 namespace Semantic
 {

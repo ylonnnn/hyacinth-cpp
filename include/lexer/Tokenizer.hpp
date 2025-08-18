@@ -40,7 +40,7 @@ namespace Lexer
         bool match(char expect);
 
         Token create_token(const std::pair<size_t, size_t> &range,
-                           TokenType type);
+                           TokenType type, bool advance = true);
 
         LexerResult scan();
         Token scan(char ch);

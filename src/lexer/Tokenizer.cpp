@@ -3,9 +3,11 @@
 #include <cwctype>
 #include <iostream>
 #include <string_view>
+#include <variant>
 
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "lexer/Lexer.hpp"
+#include "lexer/Token.hpp"
 #include "lexer/Tokenizer.hpp"
 
 namespace Lexer
@@ -89,7 +91,7 @@ namespace Lexer
     }
 
     Token Tokenizer::create_token(const std::pair<size_t, size_t> &range,
-                                  TokenType type)
+                                  TokenType type, bool advance)
     {
         auto &[start, end] = range;
         size_t len = (end - start) + 1;
@@ -98,7 +100,8 @@ namespace Lexer
             Token{source_.substr(start, len), program_.position_at(row_, col_),
                   program_.position_at(row_, col_ + (len - 1)), type};
 
-        col_ += len;
+        if (advance)
+            col_ += len;
 
         return token;
     }
@@ -223,8 +226,17 @@ namespace Lexer
             {
                 // <-
                 if (match('-'))
+                {
+                    if (std::isdigit(peek()))
+                    {
+                        position_--;
+                        return create_token({pos, pos},
+                                            Operator::Relational::LessThan);
+                    }
+
                     return create_token({pos, curr_pos()},
                                         Operator::Arrow::Left);
+                }
 
                 // <=
                 else if (match('='))

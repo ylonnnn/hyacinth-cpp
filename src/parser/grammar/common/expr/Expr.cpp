@@ -131,6 +131,9 @@ namespace Parser
         add_nud(Delimeter::BraceOpen, parse_array);
         add_led(Delimeter::BraceOpen, parse_instance);
 
+        // Element Access
+        add_led(Delimeter::BracketOpen, parse_elaccess);
+
         // Member Access
         float memaccess_bp = static_cast<int>(BindingPower::MemberAccess);
         for (const auto &type :
@@ -321,14 +324,7 @@ namespace Parser
         }
 
         ParseResult t_res = Common::Terminator.parse(parser);
-
-        if (t_res.status == Core::ResultStatus::Fail)
-        {
-            result.status = t_res.status;
-            result.data = nullptr;
-        }
-
-        result.adapt(std::move(t_res.diagnostics));
+        result.adapt(t_res.status, std::move(t_res.diagnostics));
 
         return result;
     }

@@ -23,13 +23,13 @@ namespace AST
     {
         std::string str(value_.value);
 
-        str += "[";
+        str += "<";
 
         for (auto &argument : arguments_)
             str += argument->to_string() +
                    (arguments_.back() == argument ? "" : ", ");
 
-        return str += "]";
+        return str += ">";
     }
 
     void GenericType::print(std::ostream &os, uint8_t tab) const

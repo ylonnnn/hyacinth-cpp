@@ -112,6 +112,44 @@ namespace Parser
                                                  std::move(right));
     }
 
+    std::unique_ptr<AST::BinaryExpr>
+    parse_elaccess(Parser &parser, std::unique_ptr<AST::Expr> &left,
+                   float right_bp, ExprParseResult &result)
+    {
+        auto &lexer = parser.lexer();
+        Lexer::Token &operation = lexer.current();
+
+        ExprParseResult r_res = Common::Expr.parse_expr(parser, right_bp);
+
+        std::unique_ptr<AST::Expr> right = std::move(r_res.data);
+        result.adapt(r_res.status, std::move(r_res.diagnostics));
+
+        if (right == nullptr)
+        {
+            auto node = AST::LiteralExpr(lexer.current());
+            result.force_error(&node,
+                               Diagnostic::ErrorTypes::Syntax::MissingValue,
+                               std::string("Missing ") + Diagnostic::ERR_GEN +
+                                   "INDEX" + Utils::Styles::Reset +
+                                   " for the the element access expression",
+                               "No specified element index to be accessed");
+        }
+
+        Core::Position *c_ep = nullptr;
+        if (auto diagnostic = parser.expect_or_error(
+                Lexer::TokenTypes::Delimeter::BracketClose, false))
+            result.error(std::move(diagnostic));
+        else
+            c_ep = &lexer.next()->position;
+
+        auto node = std::make_unique<AST::BinaryExpr>(
+            std::move(left), operation, std::move(right));
+
+        node->set_end_position(*c_ep);
+
+        return node;
+    }
+
     std::unique_ptr<AST::FunctionCallExpr>
     parse_fncall(Parser &parser, std::unique_ptr<AST::Expr> &left, float,
                  ExprParseResult &result)

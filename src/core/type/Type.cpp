@@ -95,7 +95,7 @@ namespace Core
         if (arguments.empty())
             return str;
 
-        str += "[";
+        str += "<";
 
         for (auto &argument : arguments)
         {
@@ -121,7 +121,7 @@ namespace Core
                 str += ", ";
         }
 
-        return str += "]";
+        return str += ">";
     }
 
     size_t Type::hash() const { return std::hash<std::string>{}(signature_); }
@@ -329,7 +329,7 @@ namespace Core
                     type.to_string() + Utils::Styles::Reset +
                     "\" for type parameter \"" + Diagnostic::ERR_GEN +
                     std::string(param.name) + Utils::Styles::Reset +
-                    ". Expected a " + Diagnostic::ERR_GEN +
+                    "\". Expected a " + Diagnostic::ERR_GEN +
                     (param.param_type == TypeParameterType::Type ? "TYPE"
                                                                  : "VALUE") +
                     Utils::Styles::Reset +

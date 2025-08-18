@@ -2,6 +2,9 @@
 
 #include "core/operation/Operation.hpp"
 #include "core/symbol/FunctionSymbol.hpp"
+#include "core/type/compound/Array.hpp"
+#include "core/type/primitive/Integer.hpp"
+#include "lexer/Token.hpp"
 #include "semantic/analyzer/impl/Expr.hpp"
 
 namespace Semantic
@@ -123,6 +126,85 @@ namespace Semantic
                     return;
 
                 __an_f(result, node.right());
+            });
+
+        special_handler.try_emplace(
+            Delimeter::BracketOpen,
+            [&](Analyzer &analyzer, AST::BinaryExpr &node,
+                AnalysisResult &result) -> void
+            {
+                AST::Expr &left = node.left(), &right = node.right();
+
+                AnalysisResult al_res =
+                    AnalyzerImpl<AST::Expr>::analyze(analyzer, left);
+                result.adapt(al_res.status, std::move(al_res.diagnostics));
+
+                Core::Type *type = al_res.data;
+                Core::BaseType *base_type = type->type;
+
+                if (typeid(*base_type) != typeid(Core::ArrayType))
+                {
+                    result.error(
+                        &left,
+                        Diagnostic::ErrorTypes::Semantic::
+                            IllegalNonArrayElementAccess,
+                        std::string(
+                            "Illegal element access on non-array type \"") +
+                            Diagnostic::ERR_GEN + type->to_string() +
+                            Utils::Styles::Reset + "\".",
+                        "Value must be an array type to perform an element "
+                        "access");
+
+                    return;
+                }
+
+                AnalysisResult ar_res =
+                    AnalyzerImpl<AST::Expr>::analyze(analyzer, right);
+                result.adapt(ar_res.status, std::move(ar_res.diagnostics));
+
+                Core::Type *idx_type = ar_res.data;
+                Core::BaseType *idx_btype = idx_type->type;
+
+                if (typeid(*idx_btype) != typeid(Core::IntegerType))
+                {
+                    result.error(&right, Diagnostic::ErrorTypes::Type::Mismatch,
+                                 "Array indices used for element access must "
+                                 "be an integer.",
+                                 std::string("Index is of type \"") +
+                                     idx_type->to_string() + "\".");
+
+                    return;
+                }
+
+                if (al_res.value != nullptr && ar_res.value != nullptr)
+                {
+                    auto &val = std::get<Core::array>(*al_res.value);
+                    auto &idx = std::get<Core::h_int>(*ar_res.value);
+
+                    int64_t index = idx.i64();
+                    size_t n = val.size();
+
+                    if (index < 0 || static_cast<size_t>(index) >= n)
+                    {
+                        result.error(
+                            &right,
+                            Diagnostic::ErrorTypes::Semantic::OutOfRange,
+                            std::string("Invalid index \"") +
+                                Diagnostic::ERR_GEN + std::to_string(index) +
+                                Utils::Styles::Reset + "\" provided.",
+                            std::string("Valid index range 0-") +
+                                std::to_string(n - 1) + ".");
+
+                        return;
+                    }
+
+                    Core::value_data *data = val.get(index);
+
+                    result.data = data->type;
+                    result.value = data->value;
+                }
+
+                return;
             });
     }
 

@@ -97,6 +97,8 @@ namespace Core
         std::vector<value_data> &elements();
         const std::vector<value_data> &elements() const;
 
+        size_t size() const;
+
         value_data *get(size_t idx);
         const value_data *get(size_t idx) const;
 

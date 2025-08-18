@@ -1,22 +1,17 @@
 struct Person {
     name: str;
-    age: int[32];
+    age: int<32>;
 }
 
 fn main -> void () {
-    let val: int[32] = 123;
+    let test_val: int<3> = 2;
 
-    int[32];
-    Person;
-    str;
-    array[array[str]];
-    bool;
-
-    val;
-
-    let multd_arr: array[array[int[32]]] = {
-        { 1 },
-        { 10, },
-        { 16_342, },
+    let simple_arr: array<int<32>> = {
+        1, 2, 3, 4, 5,
     };
+
+    let first: int<32> = simple_arr[0];
+
+    let third: int<32> = simple_arr[test_val];
+    let fourth: int<32> = simple_arr[test_val + 1];
 }

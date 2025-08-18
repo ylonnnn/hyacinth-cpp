@@ -67,6 +67,10 @@ namespace Diagnostic
             "HYC::SEMANTIC::NO_VIABLE_OPERATOR_OVERLOAD";
         ERROR_CODES[ErrorTypes::Semantic::UnrecognizedField] =
             "HYC::SEMANTIC::UNRECOGNIZED_FIELD";
+        ERROR_CODES[ErrorTypes::Semantic::IllegalNonArrayElementAccess] =
+            "HYC::SEMANTIC::ILLEGAL_NONARRAY_ELEMENT_ACCESS";
+        ERROR_CODES[ErrorTypes::Semantic::OutOfRange] =
+            "HYC::SEMANTIC::OUT_OF_RANGE";
 
         ERROR_CODES[ErrorTypes::Modification::ReadValueModification] =
             "HYC::MODIFICATION:RVALUE_MODIFICATION";

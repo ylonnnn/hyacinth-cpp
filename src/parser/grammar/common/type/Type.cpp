@@ -86,7 +86,7 @@ namespace Parser
                          std::pair<float, float>{primary_bp, primary_bp});
 
         float generic_bp = static_cast<int>(TypeBindingPower::Generic);
-        add_type_led(Delimeter::BracketOpen, parse_generic,
+        add_type_led(Relational::LessThan, parse_generic,
                      std::pair<float, float>{generic_bp, generic_bp});
     }
 
