@@ -1,5 +1,4 @@
 #include "ast/type/ConstantType.hpp"
-#include "utils/style.hpp"
 
 namespace AST
 {
@@ -15,20 +14,9 @@ namespace AST
         return std::string(value_.value);
     }
 
-    void ConstantType::print(std::ostream &os, uint8_t tab) const
+    void ConstantType::print(std::ostream &os, uint8_t) const
     {
-        std::string indentation = Utils::tab(tab - 1, 4),
-                    inner_indentation = Utils::tab(tab, 4);
-        os << "ConstantType {";
-
-        os << "\n" << inner_indentation << "constant: " << constant_;
-
-        os << "\n" << indentation << "}";
-    }
-
-    bool ConstantType::operator==(const Type &other) const
-    {
-        return value_.value == other.value().value;
+        os << "ConstantType { constant: " << constant_ << " }";
     }
 
 } // namespace AST

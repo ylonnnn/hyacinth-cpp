@@ -57,7 +57,8 @@ namespace Core
             const std::vector<TypeArgument> &arguments) const override;
 
       public:
-        Type *construct_wrapper() const override;
+        Type *
+        construct_wrapper(std::vector<TypeArgument> &&arguments) const override;
         Type *construct_wrapper(uint8_t bit_width) const override;
 
         Type *from_value(const Core::Value &value) const override;

@@ -75,7 +75,7 @@ namespace Semantic
         }
     }
 
-    static bool analyze_type([[maybe_unused]] Analyzer &analyzer,
+    static bool analyze_type(Analyzer &analyzer,
                              std::unique_ptr<Core::VariableSymbol> &var,
                              AnalysisResult &result)
     {

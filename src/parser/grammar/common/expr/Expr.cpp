@@ -128,14 +128,7 @@ namespace Parser
                 });
 
         // Compound
-        add_nud(Delimeter::BraceOpen,
-                [&](Parser &parser,
-                    ExprParseResult &result) -> std::unique_ptr<AST::Expr>
-                {
-                    std::unique_ptr<AST::Expr> __left = nullptr;
-                    return parse_instance(parser, __left, 0, result);
-                });
-
+        add_nud(Delimeter::BraceOpen, parse_array);
         add_led(Delimeter::BraceOpen, parse_instance);
 
         // Member Access

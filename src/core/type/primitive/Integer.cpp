@@ -69,8 +69,10 @@ namespace Core
                        using Ty = std::decay_t<decltype(val)>;
                        using Ty_ = std::decay_t<decltype(val_)>;
 
-                       if constexpr (std::is_same_v<Ty, Core::Value> &&
-                                     std::is_same_v<Ty_, Core::Value>)
+                       if constexpr (std::is_same_v<
+                                         Ty, std::shared_ptr<Core::Value>> &&
+                                     std::is_same_v<
+                                         Ty_, std::shared_ptr<Core::Value>>)
 
                            return std::visit(
                                [&](auto &v, auto &v_) -> bool
@@ -82,12 +84,16 @@ namespace Core
                                                                 Core::h_int> &&
                                                  std::is_same_v<T_,
                                                                 Core::h_int>)
+                                   {
+                                       std::cout << v.u64() << " | " << v_.u64()
+                                                 << "\n";
                                        return v.u64() <= v_.u64();
+                                   }
 
                                    else
                                        return false;
                                },
-                               val, val_);
+                               *val, *val_);
 
                        else
                            return false;
@@ -226,8 +232,9 @@ namespace Core
 
         if (!arguments.empty())
         {
-            if (auto ptr = std::get_if<Core::Value>(&arguments[0]))
-                if (auto val_ptr = std::get_if<Core::h_int>(ptr))
+            if (auto ptr =
+                    std::get_if<std::shared_ptr<Core::Value>>(&arguments[0]))
+                if (auto val_ptr = std::get_if<Core::h_int>(&**ptr))
                     bw = val_ptr->u64();
         }
 
@@ -261,16 +268,18 @@ namespace Core
             value);
     }
 
-    Type *IntegerType::construct_wrapper() const
+    Type *
+    IntegerType::construct_wrapper(std::vector<TypeArgument> &&arguments) const
     {
         return Type::get_or_create<Wrapper>(const_cast<IntegerType *>(this),
-                                            {});
+                                            std::move(arguments));
     }
 
     Type *IntegerType::construct_wrapper(uint8_t bit_width) const
     {
-        return Type::get_or_create<Wrapper>(const_cast<IntegerType *>(this),
-                                            {bit_width});
+        return Type::get_or_create<Wrapper>(
+            const_cast<IntegerType *>(this),
+            {std::make_shared<Core::Value>(bit_width)});
     }
 
     Type *IntegerType::from_value(const Core::Value &value) const
@@ -315,8 +324,9 @@ namespace Core
 
         if (!arguments.empty())
         {
-            if (auto ptr = std::get_if<Core::Value>(&arguments[0]))
-                if (auto val_ptr = std::get_if<Core::h_int>(ptr))
+            if (auto ptr =
+                    std::get_if<std::shared_ptr<Core::Value>>(&arguments[0]))
+                if (auto val_ptr = std::get_if<Core::h_int>(&**ptr))
                     if (!val_ptr->is_signed())
                         bw = val_ptr->u64();
         }

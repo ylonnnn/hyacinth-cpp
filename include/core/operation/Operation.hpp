@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 
 #include "core/value/Value.hpp"
 #include "lexer/Token.hpp"

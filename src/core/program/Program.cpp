@@ -296,7 +296,8 @@ namespace Core
                 std::chrono::high_resolution_clock::now() - start);
 
         // TEMP
-        std::cout << *node_ << "\n";
+        if (node_ != nullptr)
+            std::cout << *node_ << "\n";
 
         environment_->display_symbol_table(std::cout, 1);
         std::cout << "\n";

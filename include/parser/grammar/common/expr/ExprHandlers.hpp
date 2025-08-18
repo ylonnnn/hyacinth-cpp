@@ -4,6 +4,7 @@
 #include "ast/expr/IdentifierExpr.hpp"
 #include "ast/expr/LiteralExpr.hpp"
 #include "ast/expr/UnaryExpr.hpp"
+#include "ast/expr/compound/ArrayExpr.hpp"
 #include "ast/expr/compound/InstanceExpr.hpp"
 #include "parser/Parser.hpp"
 #include "parser/grammar/common/expr/Expr.hpp"
@@ -38,6 +39,9 @@ namespace Parser
                  float right_bp, ExprParseResult &result);
 
     // Type-Related Parser
+    std::unique_ptr<AST::ArrayExpr> parse_array(Parser &parser,
+                                                ExprParseResult &result);
+
     std::unique_ptr<AST::InstanceExpr>
     parse_instance(Parser &parser, std::unique_ptr<AST::Expr> &left,
                    float right_bp, ExprParseResult &result);

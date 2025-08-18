@@ -16,9 +16,4 @@ namespace AST
         os << "SimpleType { identifier: " << value_ << " }";
     }
 
-    bool SimpleType::operator==(const Type &other) const
-    {
-        return value_.value == other.value().value;
-    }
-
 } // namespace AST

@@ -1,8 +1,9 @@
-#include "core/value/Value.hpp"
+#include <string>
+
 #include "ast/stmt/function/FunctionDefStmt.hpp"
 #include "core/symbol/FunctionSymbol.hpp"
 #include "core/type/Type.hpp"
-#include <string>
+#include "core/value/Value.hpp"
 
 namespace Core
 {
@@ -16,7 +17,12 @@ namespace Core
                 if constexpr (std::is_convertible_v<T, std::string>)
                     return os << std::string(val);
                 else
+                {
+                    if constexpr (std::is_same_v<T, char>)
+                        return os << std::string({val});
+
                     return os << std::to_string(val);
+                }
             },
             value);
     }
@@ -46,7 +52,7 @@ namespace Core
 
     null::operator std::string() const { return "null"; }
 
-    object_entry *object::get(const std::string &key)
+    value_data *object::get(const std::string &key)
     {
         auto it = value_.find(key);
         if (it == value_.end())
@@ -74,14 +80,14 @@ namespace Core
         return it->second.type;
     }
 
-    bool object::set(const std::string &key, object_entry &&value)
+    bool object::set(const std::string &key, value_data &&value)
     {
         return value_.try_emplace(key, std::move(value)).second;
     }
 
     size_t object::size() const { return value_.size(); }
 
-    std::unordered_map<std::string_view, object_entry> &object::value()
+    std::unordered_map<std::string_view, value_data> &object::value()
     {
         return value_;
     }
@@ -107,11 +113,72 @@ namespace Core
                            if constexpr (std::is_convertible_v<T, std::string>)
                                return std::string(val);
                            else
+                           {
+                               if constexpr (std::is_same_v<T, char>)
+                                   return std::string({val});
+
                                return std::to_string(val);
+                           }
                        },
                        value.value ? *value.value : Core::null{});
 
             if (en_c < value_.size())
+                str += ",";
+        }
+
+        return str + "}";
+    }
+
+    array::array(Type *element_type) : element_type_(element_type) {}
+
+    Type *&array::element_type() { return element_type_; }
+
+    const Type *array::element_type() const { return element_type_; }
+
+    std::vector<value_data> &array::elements() { return elements_; }
+
+    const std::vector<value_data> &array::elements() const { return elements_; }
+
+    value_data *array::get(size_t idx)
+    {
+        return idx >= elements_.size() ? nullptr : &elements_[idx];
+    }
+
+    const value_data *array::get(size_t idx) const
+    {
+        return idx >= elements_.size() ? nullptr : &elements_[idx];
+    }
+
+    array::operator std::string() const
+    {
+        std::string str("{");
+
+        size_t en_c = 0;
+        for (const auto &[value, type] : elements_)
+        {
+            en_c++;
+
+            if (type != nullptr)
+                str += "<" + type->to_string() + ">";
+
+            str += std::visit(
+                [&](const auto &val) -> std::string
+                {
+                    using T = std::decay_t<decltype(val)>;
+
+                    if constexpr (std::is_convertible_v<T, std::string>)
+                        return std::string(val);
+                    else
+                    {
+                        if constexpr (std::is_same_v<T, char>)
+                            return std::string({val});
+
+                        return std::to_string(val);
+                    }
+                },
+                value ? *value : Core::null{});
+
+            if (en_c < elements_.size())
                 str += ",";
         }
 

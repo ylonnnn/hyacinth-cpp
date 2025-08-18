@@ -56,11 +56,7 @@ namespace Parser
         auto &lexer = parser.lexer();
         Lexer::Token &operation = lexer.current();
 
-        Expr *expr_rule = dynamic_cast<Expr *>(parser.grammar().fallback());
-        if (expr_rule == nullptr)
-            return nullptr;
-
-        ExprParseResult r_res = expr_rule->parse_expr(parser, right_bp);
+        ExprParseResult r_res = Common::Expr.parse_expr(parser, right_bp);
 
         std::unique_ptr<AST::Expr> right = std::move(r_res.data);
         result.adapt(r_res.status, std::move(r_res.diagnostics));
@@ -85,13 +81,9 @@ namespace Parser
     {
         Lexer::Token &operation = parser.lexer().current();
 
-        Expr *expr_rule = dynamic_cast<Expr *>(parser.grammar().fallback());
-        if (expr_rule == nullptr)
-            return nullptr;
-
         return std::make_unique<AST::UnaryExpr>(
             AST::UnaryType::Pre, operation,
-            expr_rule->parse_expr(parser, 0).data);
+            Common::Expr.parse_expr(parser, 0).data);
     }
 
     std::unique_ptr<AST::UnaryExpr>
@@ -109,11 +101,7 @@ namespace Parser
         auto &lexer = parser.lexer();
         Lexer::Token &operation = lexer.current();
 
-        Expr *expr_rule = dynamic_cast<Expr *>(parser.grammar().fallback());
-        if (expr_rule == nullptr)
-            return nullptr;
-
-        ExprParseResult r_res = expr_rule->parse_expr(parser, right_bp);
+        ExprParseResult r_res = Common::Expr.parse_expr(parser, right_bp);
 
         std::unique_ptr<AST::Expr> right = std::move(r_res.data);
         result.adapt(r_res.status, std::move(r_res.diagnostics));
@@ -139,10 +127,6 @@ namespace Parser
     {
         auto &lexer = parser.lexer();
 
-        Expr *expr_rule = dynamic_cast<Expr *>(parser.grammar().fallback());
-        if (expr_rule == nullptr)
-            return nullptr;
-
         std::vector<std::unique_ptr<AST::Expr>> arguments;
         arguments.reserve(8);
 
@@ -154,7 +138,7 @@ namespace Parser
         {
             if (expect_arg)
             {
-                ExprParseResult expr_res = expr_rule->parse_expr(parser, 0);
+                ExprParseResult expr_res = Common::Expr.parse_expr(parser, 0);
 
                 if (expr_res.data == nullptr)
                 {
@@ -196,12 +180,86 @@ namespace Parser
 
         // return std::make_unique<AST::BinaryExpr>(
         //     std::move(left), operation,
-        //     expr_rule->parse_expr(parser, right_bp).data);
+        //     Common::Expr.parse_expr(parser, right_bp).data);
 
         auto node = std::make_unique<AST::FunctionCallExpr>(
             std::move(left), std::move(arguments));
 
         node->set_end_position(*fnc_ep);
+
+        return node;
+    }
+
+    std::unique_ptr<AST::ArrayExpr> parse_array(Parser &parser,
+                                                ExprParseResult &result)
+    {
+        using namespace Lexer::TokenTypes;
+        auto &lexer = parser.lexer();
+
+        lexer.rewind(lexer.position() - 1);
+
+        // Parse Value
+        std::vector<std::unique_ptr<AST::Expr>> elements;
+        elements.reserve(8);
+
+        Core::Position *o_p = nullptr;
+        if (auto diagnostic =
+                parser.expect_or_error(Delimeter::BraceOpen, false))
+            result.error(std::move(diagnostic));
+        else
+            o_p = &lexer.next()->position;
+
+        auto expect_el = true;
+        auto closing = Delimeter::BraceClose;
+
+        while (!parser.expect(closing, false))
+        {
+            if (expect_el)
+            {
+                ExprParseResult expr_res = Common::Expr.parse_expr(parser, 0);
+                if (expr_res.data == nullptr)
+                {
+                    result.error(
+                        Diagnostic::create_syntax_error(&lexer.current()));
+
+                    return nullptr;
+                }
+
+                elements.emplace_back(std::move(expr_res.data));
+                expect_el = false;
+            }
+
+            if (parser.expect(Delimeter::Comma, false))
+            {
+                lexer.next();
+                expect_el = true;
+
+                // Closing Brace Lookahead
+                if (parser.expect(closing, false))
+                    break;
+
+                continue;
+            }
+
+            break;
+        }
+
+        Core::Position *c_ep = nullptr;
+        if (auto diagnostic = parser.expect_or_error(closing, false))
+        {
+            parser.panic();
+            result.adapt(Core::ResultStatus::Fail,
+                         Diagnostic::DiagnosticList{
+                             std::make_move_iterator(&diagnostic),
+                             std::make_move_iterator(&diagnostic + 1)});
+        }
+
+        else
+            c_ep = &lexer.next()->position;
+
+        auto node = std::make_unique<AST::ArrayExpr>(*o_p, std::move(elements));
+
+        node->set_end_position(*c_ep);
 
         return node;
     }
@@ -212,10 +270,6 @@ namespace Parser
     {
         using namespace Lexer::TokenTypes;
         auto &lexer = parser.lexer();
-
-        Expr *expr_rule = dynamic_cast<Expr *>(parser.grammar().fallback());
-        if (expr_rule == nullptr)
-            return nullptr;
 
         auto &opening = lexer.current();
 
@@ -247,7 +301,7 @@ namespace Parser
                 else
                     lexer.next();
 
-                ExprParseResult expr_res = expr_rule->parse_expr(parser, 0);
+                ExprParseResult expr_res = Common::Expr.parse_expr(parser, 0);
 
                 if (expr_res.data == nullptr)
                 {

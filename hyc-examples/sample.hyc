@@ -4,11 +4,20 @@ struct Person {
 }
 
 fn main -> void () {
-    let ha: str = "Ha";
-    let mult_ha: str = 10 * ha;
+    let val: int[32] = 123;
 
-    let p: Person = Person { name: "John Doe", age: 21 };
+    let arr: array[int[2]] = {0, 1, 0};
+    let arr2: array[bool] = { false, true };
 
-    let p_name: str = p.name;
-    let p_age: int[32] = p.age;
+    let people: array[Person] = {
+        Person { name: "Person 1", age: 21 },
+        Person { name: "Person 2", age: 29 },
+        Person { name: "Person 3", age: 27 },
+        Person { name: "Person 4", age: 20 },
+        Person { name: "Person 4", age: 20 },
+    };
+
+    let strs: array[str] = {
+        "string 1", "string2 ", "hello, World",
+    };
 }

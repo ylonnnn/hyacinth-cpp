@@ -82,8 +82,8 @@ namespace Diagnostic
 
             // Pointer
             offset = Utils::tab((prefix.size() + line_start) - 1, 1);
-            constructed_ += (offset + pointer + (edge ? "^" : "~") +
-                             std::string(line_end - line_start, '~') +
+            constructed_ += (offset + pointer + "^" +
+                             std::string(line_end - line_start, '^') +
                              Utils::Styles::Reset + "\n");
         }
 

@@ -148,4 +148,22 @@ namespace Diagnostic
             "Type received here");
     }
 
+    std::unique_ptr<ErrorDiagnostic>
+    create_invalid_arguments_error(AST::Node *node, size_t expected,
+                                   size_t provided)
+    {
+        assert(node != nullptr);
+
+        auto arg__ = [](size_t n) -> std::string
+        { return std::string("argument") + (n > 1 ? "s" : ""); };
+
+        return std::make_unique<ErrorDiagnostic>(
+            node, ErrorTypes::Semantic::InvalidArgumentCount,
+            std::string("Expects ") + ERR_GEN + std::to_string(expected) +
+                Utils::Styles::Reset + " " + arg__(expected) + ". Provided " +
+                ERR_GEN + std::to_string(provided) + Utils::Styles::Reset +
+                " " + arg__(provided) + ".",
+            "");
+    }
+
 } // namespace Diagnostic

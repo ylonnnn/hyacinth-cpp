@@ -21,7 +21,7 @@ namespace Core
         std::string indentation = Utils::tab(tab - 1, 4),
                     inner_indentation = Utils::tab(tab, 4);
 
-        os << "(var) " << name << " { "
+        os << "(var) " << name << " {"
            << (accessibility == SymbolAccessibility::Public ? "Public"
                                                             : "Private")
            << ", " << (is_mutable ? "Mutable" : "Immutable") << ", "

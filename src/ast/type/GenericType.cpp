@@ -57,29 +57,29 @@ namespace AST
         os << "\n" << indentation << "}";
     }
 
-    bool GenericType::operator==(const Type &other) const
-    {
-        if (typeid(other) != typeid(GenericType))
-            return false;
+    // bool GenericType::operator==(const Type &other) const
+    // {
+    //     if (typeid(other) != typeid(GenericType))
+    //         return false;
 
-        const GenericType &generic = static_cast<const GenericType &>(other);
-        auto generic_size = generic.arguments_.size();
+    //     const GenericType &generic = static_cast<const GenericType &>(other);
+    //     auto generic_size = generic.arguments_.size();
 
-        if (!(*constructor_ == *generic.constructor_) ||
-            arguments_.size() != generic_size)
-            return false;
+    //     if (!(*constructor_ == *generic.constructor_) ||
+    //         arguments_.size() != generic_size)
+    //         return false;
 
-        for (size_t i = 0; i < generic_size; i++)
-        {
-            auto &arg = generic.arguments_[i], &c_arg = arguments_[i];
+    //     for (size_t i = 0; i < generic_size; i++)
+    //     {
+    //         auto &arg = generic.arguments_[i], &c_arg = arguments_[i];
 
-            if (*arg == *c_arg)
-                continue;
+    //         if (*arg == *c_arg)
+    //             continue;
 
-            return false;
-        }
+    //         return false;
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
 
 } // namespace AST

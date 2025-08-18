@@ -93,7 +93,7 @@ namespace Core
 
         for (auto &argument : arguments)
         {
-            if (auto ptr = std::get_if<Core::Value>(&argument))
+            if (auto ptr = std::get_if<std::shared_ptr<Core::Value>>(&argument))
             {
                 std::visit(
                     [&str](const auto &val) -> void
@@ -105,11 +105,11 @@ namespace Core
                         else
                             str += std::to_string(val);
                     },
-                    *ptr);
+                    **ptr);
             }
 
-            else if (auto ptr = std::get_if<Type>(&argument))
-                str += ptr->to_string();
+            else if (auto ptr = std::get_if<Type *>(&argument))
+                str += (*ptr)->to_string();
 
             if (&argument != &arguments.back())
                 str += ", ";
@@ -142,22 +142,20 @@ namespace Core
             {
                 BaseType *resolved =
                     environment.resolve_type(std::string(type.value().value));
-                if (resolved == nullptr || this->type == nullptr)
-                    return Type(resolved, {});
+                if (resolved == nullptr)
+                    return Type::get_or_create(resolved, {});
 
-                return Type(this->type->type->assignable_with(*resolved)
-                                ? resolved
-                                : nullptr,
-                            {});
+                return resolved->resolve(type).data;
             }
 
             case Core::TypeParameterType::Constant:
             {
                 Core::Value parsed = Utils::parse_val(type.value());
                 if (this->type == nullptr)
-                    return Core::null{};
+                    return std::make_shared<Core::Value>(Core::null{});
 
-                return this->type->assignable(parsed) ? parsed : Core::null{};
+                return std::make_shared<Core::Value>(
+                    this->type->assignable(parsed) ? parsed : Core::null{});
             }
         }
 
@@ -216,7 +214,7 @@ namespace Core
     std::pair<bool, TypeArgument> BaseType::resolve_argument(size_t param_idx,
                                                              AST::Type &type)
     {
-        std::pair<bool, TypeArgument> result = {false, Type(nullptr, {})};
+        std::pair<bool, TypeArgument> result = {false, nullptr};
 
         if (param_idx >= parameters_.size())
             return result;
@@ -224,9 +222,9 @@ namespace Core
         TypeParameter &param = parameters_[param_idx];
         TypeArgument resolved = param.resolve(*environment_, type);
 
-        if (auto ptr = std::get_if<Type>(&resolved))
+        if (auto ptr = std::get_if<Type *>(&resolved))
         {
-            if (ptr->type == nullptr)
+            if ((*ptr)->type == nullptr)
                 return result;
 
             result.first = true;
@@ -235,9 +233,10 @@ namespace Core
             return result;
         }
 
-        else if (auto ptr = std::get_if<Core::Value>(&resolved))
+        else if (auto ptr =
+                     std::get_if<std::shared_ptr<Core::Value>>(&resolved))
         {
-            if (std::holds_alternative<Core::null>(*ptr))
+            if (std::holds_alternative<Core::null>(**ptr))
             {
                 result.first = false;
 
@@ -252,20 +251,22 @@ namespace Core
 
         result.second = param.param_type == Core::TypeParameterType::Type
                             ? nullptr
-                            : Core::Value(Core::null{});
+                            : std::make_shared<Core::Value>(Core::null{});
 
         return result;
     }
 
-    Type *BaseType::construct_wrapper() const
+    Type *
+    BaseType::construct_wrapper(std::vector<TypeArgument> &&arguments) const
     {
-        return Type::get_or_create<>(const_cast<BaseType *>(this), {});
+        return Type::get_or_create<>(const_cast<BaseType *>(this),
+                                     std::move(arguments));
     }
 
     TypeResolutionResult BaseType::resolve(AST::Type &type)
     {
         TypeResolutionResult result = {
-            ResultStatus::Success, construct_wrapper(), {}};
+            ResultStatus::Success, construct_wrapper({}), {}};
 
         bool is_generic = typeid(type) == typeid(AST::GenericType);
 
@@ -280,8 +281,13 @@ namespace Core
             return result;
         }
 
+        size_t param_count = parameters_.size();
+
         if (!is_generic)
         {
+            result.error(Diagnostic::create_invalid_arguments_error(
+                &type, param_count, 0));
+
             return result;
             // return TypeResolutionStatus::InvalidNonGenericUse;
         }
@@ -291,7 +297,7 @@ namespace Core
 
         size_t arg_count = arguments.size();
 
-        if (parameters_.size() != arg_count)
+        if (param_count != arg_count)
         {
             return result;
             // return TypeResolutionStatus::ArgumentCountMismatch;
@@ -337,8 +343,7 @@ namespace Core
             return result;
         }
 
-        result.data = Type::get_or_create<>(const_cast<BaseType *>(this),
-                                            std::move(_arguments));
+        result.data = construct_wrapper(std::move(_arguments));
 
         return result;
     }

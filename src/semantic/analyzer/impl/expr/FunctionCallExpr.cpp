@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include "core/symbol/FunctionSymbol.hpp"
+#include "diagnostic/ErrorDiagnostic.hpp"
 #include "semantic/analyzer/impl/Expr.hpp"
 
 namespace Semantic
@@ -52,17 +53,8 @@ namespace Semantic
         size_t param_count = parameters.size(), arg_count = arguments.size();
         if (param_count != arg_count)
         {
-            auto arg__ = [](size_t n) -> std::string
-            { return std::string("argument") + (n > 1 ? "s" : ""); };
-
-            auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
-                &node, Diagnostic::ErrorTypes::Semantic::InvalidArgumentCount,
-                std::string("Function expects ") + Diagnostic::ERR_GEN +
-                    std::to_string(param_count) + Utils::Styles::Reset + " " +
-                    arg__(param_count) + ". Provided " + Diagnostic::ERR_GEN +
-                    std::to_string(arg_count) + Utils::Styles::Reset + " " +
-                    arg__(arg_count) + ".",
-                "");
+            auto diagnostic = Diagnostic::create_invalid_arguments_error(
+                &node, param_count, arg_count);
 
             diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
                 symbol->node, Diagnostic::NoteType::Declaration,

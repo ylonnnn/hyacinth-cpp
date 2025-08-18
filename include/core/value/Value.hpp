@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <optional>
 #include <string>
 #include <unordered_map>
 #include <variant>
@@ -38,40 +37,61 @@ namespace Core
     };
 
     struct object;
+    struct array;
     struct null
     {
         operator std::string() const;
     };
 
-    using Value =
-        std::variant<null, h_int, double, bool, char, std::string, object>;
+    using Value = std::variant<null, h_int, double, bool, char, std::string,
+                               object, array>;
 
     std::ostream &operator<<(std::ostream &os, const Value &value);
 
-    struct object_entry;
+    struct value_data
+    {
+        std::shared_ptr<Value> value;
+        Type *type = nullptr;
+    };
+
     struct object
     {
       private:
-        std::unordered_map<std::string_view, object_entry> value_;
+        std::unordered_map<std::string_view, value_data> value_;
 
       public:
-        object_entry *get(const std::string &key);
-        bool set(const std::string &key, object_entry &&value);
+        value_data *get(const std::string &key);
+        bool set(const std::string &key, value_data &&value);
 
         Value *get_value(const std::string &key);
         Type *get_type(const std::string &key);
 
         size_t size() const;
 
-        std::unordered_map<std::string_view, object_entry> &value();
+        std::unordered_map<std::string_view, value_data> &value();
 
         operator std::string() const;
     };
 
-    struct object_entry
+    struct array
     {
-        std::shared_ptr<Value> value;
-        Type *type = nullptr;
+      private:
+        Type *element_type_ = nullptr;
+        std::vector<value_data> elements_;
+
+      public:
+        array(Type *element_type);
+
+        Type *&element_type();
+        const Type *element_type() const;
+
+        std::vector<value_data> &elements();
+        const std::vector<value_data> &elements() const;
+
+        value_data *get(size_t idx);
+        const value_data *get(size_t idx) const;
+
+        operator std::string() const;
     };
 
     struct callable

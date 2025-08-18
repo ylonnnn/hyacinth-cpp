@@ -104,7 +104,7 @@ namespace Semantic
             }
 
             obj->set(name,
-                     Core::object_entry{std::move(v_res.value), v_res.data});
+                     Core::value_data{std::move(v_res.value), v_res.data});
         }
 
         result.value = std::make_shared<Core::Value>(*obj);

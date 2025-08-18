@@ -98,7 +98,7 @@ namespace Semantic
                         if (val == nullptr)
                             return;
 
-                        Core::object_entry *entry = val->get(m_name);
+                        Core::value_data *entry = val->get(m_name);
                         if (entry == nullptr)
                         {
                             // result.error()

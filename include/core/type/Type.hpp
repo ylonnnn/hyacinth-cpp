@@ -20,7 +20,7 @@ namespace Core
     class Type;
     class Environment;
 
-    using TypeArgument = std::variant<Type, Core::Value>;
+    using TypeArgument = std::variant<Type *, std::shared_ptr<Core::Value>>;
 
     enum class TypeParameterType
     {
@@ -175,7 +175,8 @@ namespace Core
         std::pair<bool, TypeArgument> resolve_argument(size_t param_idx,
                                                        AST::Type &type);
 
-        virtual Type *construct_wrapper() const;
+        virtual Type *
+        construct_wrapper(std::vector<TypeArgument> &&arguments) const;
 
         TypeResolutionResult resolve(AST::Type &type);
 
@@ -210,10 +211,11 @@ namespace Core
 
             for (const auto &argument : arguments)
             {
-                if (auto ptr = std::get_if<Type>(&argument))
-                    str += ptr->to_string();
+                if (auto ptr = std::get_if<Type *>(&argument))
+                    str += (*ptr)->to_string();
 
-                else if (auto ptr = std::get_if<Value>(&argument))
+                else if (auto ptr =
+                             std::get_if<std::shared_ptr<Value>>(&argument))
 
                     str += std::visit(
                         [&](const auto &val) -> std::string
@@ -226,7 +228,7 @@ namespace Core
                             else
                                 return std::to_string(val);
                         },
-                        *ptr);
+                        **ptr);
             }
 
             str += "]";

@@ -262,8 +262,9 @@ namespace Core
 
         if (!arguments.empty())
         {
-            if (auto ptr = std::get_if<Core::Value>(&arguments[0]))
-                if (auto val_ptr = std::get_if<Core::h_int>(ptr))
+            if (auto ptr =
+                    std::get_if<std::shared_ptr<Core::Value>>(&arguments[0]))
+                if (auto val_ptr = std::get_if<Core::h_int>(&**ptr))
                     if (!val_ptr->is_signed() || val_ptr->i64() > -1)
                         bw = val_ptr->u64();
         }
@@ -295,15 +296,18 @@ namespace Core
             value);
     }
 
-    Type *FloatType::construct_wrapper() const
+    Type *
+    FloatType::construct_wrapper(std::vector<TypeArgument> &&arguments) const
     {
-        return Type::get_or_create<Wrapper>(const_cast<FloatType *>(this), {});
+        return Type::get_or_create<Wrapper>(const_cast<FloatType *>(this),
+                                            std::move(arguments));
     }
 
     Type *FloatType::construct_wrapper(uint8_t bit_width) const
     {
-        return Type::get_or_create<Wrapper>(const_cast<FloatType *>(this),
-                                            {bit_width});
+        return Type::get_or_create<Wrapper>(
+            const_cast<FloatType *>(this),
+            {std::make_shared<Core::Value>(bit_width)});
     }
 
     Type *FloatType::from_value(const Core::Value &value) const

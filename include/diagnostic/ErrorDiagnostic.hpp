@@ -101,4 +101,8 @@ namespace Diagnostic
 
     std::unique_ptr<ErrorDiagnostic> create_unknown_type_error(AST::Type *type);
 
+    std::unique_ptr<ErrorDiagnostic>
+    create_invalid_arguments_error(AST::Node *node, size_t expected,
+                                   size_t provided);
+
 } // namespace Diagnostic

@@ -1,5 +1,6 @@
 #include "semantic/analyzer/Analyzer.hpp"
 #include "core/environment/Environment.hpp"
+#include "core/type/compound/Array.hpp"
 #include "core/type/primitive/Boolean.hpp"
 #include "core/type/primitive/Character.hpp"
 #include "core/type/primitive/Float.hpp"
@@ -27,24 +28,27 @@ namespace Semantic
     void Analyzer::initialize_types()
     {
         // Return Type Only
-        current_env_->declare_type(std::make_unique<Core::Void>(current_env_));
+        environment_.declare_type(std::make_unique<Core::Void>(&environment_));
 
-        current_env_->declare_type(
-            std::make_unique<Core::BooleanType>(current_env_));
+        environment_.declare_type(
+            std::make_unique<Core::ArrayType>(&environment_));
 
-        current_env_->declare_type(
-            std::make_unique<Core::CharacterType>(current_env_));
+        environment_.declare_type(
+            std::make_unique<Core::BooleanType>(&environment_));
 
-        current_env_->declare_type(
-            std::make_unique<Core::IntegerType>(current_env_, true));
-        current_env_->declare_type(
-            std::make_unique<Core::IntegerType>(current_env_, false));
+        environment_.declare_type(
+            std::make_unique<Core::CharacterType>(&environment_));
 
-        current_env_->declare_type(
-            std::make_unique<Core::FloatType>(current_env_));
+        environment_.declare_type(
+            std::make_unique<Core::IntegerType>(&environment_, true));
+        environment_.declare_type(
+            std::make_unique<Core::IntegerType>(&environment_, false));
 
-        current_env_->declare_type(
-            std::make_unique<Core::StringType>(current_env_));
+        environment_.declare_type(
+            std::make_unique<Core::FloatType>(&environment_));
+
+        environment_.declare_type(
+            std::make_unique<Core::StringType>(&environment_));
     }
 
     Core::ProgramFile &Analyzer::program() { return program_; }

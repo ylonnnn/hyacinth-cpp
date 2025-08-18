@@ -5,6 +5,7 @@
 #include "ast/expr/IdentifierExpr.hpp"
 #include "ast/expr/LiteralExpr.hpp"
 #include "ast/expr/UnaryExpr.hpp"
+#include "ast/expr/compound/ArrayExpr.hpp"
 #include "ast/expr/compound/InstanceExpr.hpp"
 #include "semantic/analyzer/Analyzer.hpp"
 
@@ -48,6 +49,11 @@ namespace Semantic
     {
         static AnalysisResult analyze(Analyzer &analyzer,
                                       AST::InstanceExpr &node);
+    };
+
+    template <> struct AnalyzerImpl<AST::ArrayExpr>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer, AST::ArrayExpr &node);
     };
 
 } // namespace Semantic
