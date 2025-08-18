@@ -43,7 +43,7 @@ namespace AST
     {
     }
 
-    Type *InstanceExpr::type() { return type_.get(); }
+    Type &InstanceExpr::type() { return *type_; }
 
     std::unordered_map<std::string, InstanceField> &InstanceExpr::fields()
     {

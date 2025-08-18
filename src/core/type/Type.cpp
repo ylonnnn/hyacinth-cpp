@@ -55,7 +55,7 @@ namespace Core
                 using T = std::decay_t<decltype(val)>;
                 std::string type_name;
 
-                if constexpr (std::is_same_v<T, Core::h_int>)
+                if constexpr (std::is_same_v<T, h_int>)
                     type_name = val.is_signed() ? "int" : "uint";
 
                 else if constexpr (std::is_same_v<T, double>)
@@ -72,6 +72,12 @@ namespace Core
 
                 else if constexpr (std::is_same_v<T, std::string>)
                     type_name = "void";
+
+                else if constexpr (std::is_same_v<T, object>)
+                    type_name = val.type()->type->name();
+
+                else if constexpr (std::is_same_v<T, array>)
+                    type_name = "array";
 
                 BaseType *resolved = environment->resolve_type(type_name);
                 if (resolved == nullptr)

@@ -6,18 +6,9 @@ struct Person {
 fn main -> void () {
     let val: int[32] = 123;
 
-    let arr: array[int[2]] = {0, 1, 0};
-    let arr2: array[bool] = { false, true };
-
-    let people: array[Person] = {
-        Person { name: "Person 1", age: 21 },
-        Person { name: "Person 2", age: 29 },
-        Person { name: "Person 3", age: 27 },
-        Person { name: "Person 4", age: 20 },
-        Person { name: "Person 4", age: 20 },
-    };
-
-    let strs: array[str] = {
-        "string 1", "string2 ", "hello, World",
+    let multd_arr: array[array[int[32]]] = {
+        { 1 },
+        { 10, },
+        { 16_342, },
     };
 }

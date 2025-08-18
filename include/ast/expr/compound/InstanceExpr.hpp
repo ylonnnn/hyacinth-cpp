@@ -36,7 +36,7 @@ namespace AST
         InstanceExpr(Core::Position &position,
                      std::unordered_map<std::string, InstanceField> fields);
 
-        Type *type();
+        Type &type();
         std::unordered_map<std::string, InstanceField> &fields();
 
         std::unique_ptr<Type> &type_ptr();

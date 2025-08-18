@@ -57,18 +57,27 @@ namespace Core
     struct object
     {
       private:
+        Type *type_;
         std::unordered_map<std::string_view, value_data> value_;
 
       public:
+        Type *&type();
+        const Type *type() const;
+
+        std::unordered_map<std::string_view, value_data> &value();
+        const std::unordered_map<std::string_view, value_data> &value() const;
+
         value_data *get(const std::string &key);
+        const value_data *get(const std::string &key) const;
+
         bool set(const std::string &key, value_data &&value);
 
         Value *get_value(const std::string &key);
+        const Value *get_value(const std::string &key) const;
         Type *get_type(const std::string &key);
+        const Type *get_type(const std::string &key) const;
 
         size_t size() const;
-
-        std::unordered_map<std::string_view, value_data> &value();
 
         operator std::string() const;
     };

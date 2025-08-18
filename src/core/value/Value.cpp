@@ -52,7 +52,31 @@ namespace Core
 
     null::operator std::string() const { return "null"; }
 
+    Type *&object::type() { return type_; }
+
+    const Type *object::type() const { return type_; }
+
+    std::unordered_map<std::string_view, value_data> &object::value()
+    {
+        return value_;
+    }
+
+    const std::unordered_map<std::string_view, value_data> &
+    object::value() const
+    {
+        return value_;
+    }
+
     value_data *object::get(const std::string &key)
+    {
+        auto it = value_.find(key);
+        if (it == value_.end())
+            return nullptr;
+
+        return &it->second;
+    }
+
+    const value_data *object::get(const std::string &key) const
     {
         auto it = value_.find(key);
         if (it == value_.end())
@@ -71,7 +95,26 @@ namespace Core
         return entry.value ? &*entry.value : nullptr;
     }
 
+    const Value *object::get_value(const std::string &key) const
+    {
+        auto it = value_.find(key);
+        if (it == value_.end())
+            return nullptr;
+
+        auto &entry = it->second;
+        return entry.value ? &*entry.value : nullptr;
+    }
+
     Type *object::get_type(const std::string &key)
+    {
+        auto it = value_.find(key);
+        if (it == value_.end())
+            return nullptr;
+
+        return it->second.type;
+    }
+
+    const Type *object::get_type(const std::string &key) const
     {
         auto it = value_.find(key);
         if (it == value_.end())
@@ -86,11 +129,6 @@ namespace Core
     }
 
     size_t object::size() const { return value_.size(); }
-
-    std::unordered_map<std::string_view, value_data> &object::value()
-    {
-        return value_;
-    }
 
     object::operator std::string() const
     {

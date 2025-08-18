@@ -17,40 +17,37 @@ namespace Semantic
         Core::Environment *current = analyzer.current_env();
         auto obj = std::get_if<Core::object>(result.value.get());
 
-        Core::StructType *type = nullptr;
+        AST::Type &ast_type = node.type();
+        Core::BaseType *resolved =
+            current->resolve_type(std::string(ast_type.value().value));
 
-        AST::Type *ast_type = node.type();
-        if (ast_type != nullptr)
+        if (resolved == nullptr)
         {
-
-            Core::BaseType *resolved =
-                current->resolve_type(std::string(ast_type->value().value));
-            if (resolved == nullptr)
-            {
-                result.error(Diagnostic::create_unknown_type_error(ast_type));
-                return result;
-            }
-
-            Core::TypeResolutionResult t_res = resolved->resolve(*ast_type);
-            result.adapt(t_res.status, std::move(t_res.diagnostics),
-                         t_res.data);
-
-            type = dynamic_cast<Core::StructType *>(result.data->type);
-            if (type == nullptr)
-            {
-                result.error(
-                    ast_type,
-                    Diagnostic::ErrorTypes::Type::InvalidInstantiationType,
-                    std::string("Cannot instantiate type \"") +
-                        Diagnostic::ERR_GEN + result.data->to_string() +
-                        Utils::Styles::Reset + "\".",
-                    "Instantiation with the provided type is not possible");
-
-                return result;
-            }
+            result.error(Diagnostic::create_unknown_type_error(&ast_type));
+            return result;
         }
 
-        auto *members = type == nullptr ? nullptr : &type->members();
+        Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
+        result.adapt(t_res.status, std::move(t_res.diagnostics), t_res.data);
+
+        Core::StructType *type =
+            dynamic_cast<Core::StructType *>(result.data->type);
+        if (type == nullptr)
+        {
+            result.error(
+                &ast_type,
+                Diagnostic::ErrorTypes::Type::InvalidInstantiationType,
+                std::string("Cannot instantiate type \"") +
+                    Diagnostic::ERR_GEN + result.data->to_string() +
+                    Utils::Styles::Reset + "\".",
+                "Instantiation with the provided type is not possible");
+
+            return result;
+        }
+
+        obj->type() = result.data;
+        auto *members = &type->members();
+
         for (auto &[name, field] : node.fields())
         {
             AST::Expr &f_val = field.value();
@@ -59,48 +56,41 @@ namespace Semantic
                 AnalyzerImpl<AST::Expr>::analyze(analyzer, f_val);
             result.adapt(v_res.status, std::move(v_res.diagnostics));
 
-            if (members != nullptr)
+            auto it = members->find(name);
+            if (it == members->end())
             {
-                auto it = members->find(name);
-                if (it == members->end())
-                {
-                    result.error(
-                        &field,
-                        Diagnostic::ErrorTypes::Semantic::UnrecognizedField,
-                        std::string("Unrecognized field \"") +
-                            Diagnostic::ERR_GEN + name + Utils::Styles::Reset +
-                            "\" provided.",
-                        "\"" + name + "\" is not a \"" +
-                            std::string(type->name()) + "\" field");
+                result.error(
+                    &field, Diagnostic::ErrorTypes::Semantic::UnrecognizedField,
+                    std::string("Unrecognized field \"") + Diagnostic::ERR_GEN +
+                        name + Utils::Styles::Reset + "\" provided.",
+                    "\"" + name + "\" is not a \"" + std::string(type->name()) +
+                        "\" field");
 
-                    return result;
-                }
+                return result;
+            }
 
-                auto type = it->second.as<Core::Type>();
-                if (type == nullptr)
-                {
-                    // TODO: Non-field member error
-                    // result.error();
-                    return result;
-                }
+            auto type = it->second.as<Core::Type>();
+            if (type == nullptr)
+            {
+                // TODO: Non-field member error
+                // result.error();
+                return result;
+            }
 
-                if (!(v_res.value && type->assignable(*v_res.value)) &&
-                    !(v_res.data != nullptr &&
-                      type->assignable_with(*v_res.data)))
-                {
-                    result.error(
-                        &f_val, Diagnostic::ErrorTypes::Type::Mismatch,
-                        std::string("Field \"") + Diagnostic::ERR_GEN + name +
-                            Utils::Styles::Reset + "\" has a value of type \"" +
-                            Diagnostic::ERR_GEN + v_res.data->to_string() +
-                            Utils::Styles::Reset +
-                            "\". Expects values of type \"" +
-                            Diagnostic::ERR_GEN + type->to_string() +
-                            Utils::Styles::Reset + "\".",
-                        "Field type mismatch");
+            if (!(v_res.value && type->assignable(*v_res.value)) &&
+                !(v_res.data != nullptr && type->assignable_with(*v_res.data)))
+            {
+                result.error(
+                    &f_val, Diagnostic::ErrorTypes::Type::Mismatch,
+                    std::string("Field \"") + Diagnostic::ERR_GEN + name +
+                        Utils::Styles::Reset + "\" has a value of type \"" +
+                        Diagnostic::ERR_GEN + v_res.data->to_string() +
+                        Utils::Styles::Reset + "\". Expects values of type \"" +
+                        Diagnostic::ERR_GEN + type->to_string() +
+                        Utils::Styles::Reset + "\".",
+                    "Field type mismatch");
 
-                    return result;
-                }
+                return result;
             }
 
             obj->set(name,
