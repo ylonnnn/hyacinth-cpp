@@ -10,7 +10,6 @@
 #include "parser/grammar/common/IdentifierInit.hpp"
 #include "parser/grammar/rules/Function.hpp"
 #include "parser/grammar/rules/Hyacinth.hpp"
-#include "utils/control.hpp"
 #include "utils/style.hpp"
 
 namespace Parser
@@ -77,10 +76,9 @@ namespace Parser
         if (auto diagnostic = parser.expect_or_error(expected, false))
         {
             parser.panic();
-            result.adapt(Core::ResultStatus::Fail,
-                         Diagnostic::DiagnosticList{
-                             std::make_move_iterator(&diagnostic),
-                             std::make_move_iterator(&diagnostic + 1)});
+
+            result.status = Core::ResultStatus::Fail;
+            result.diagnostics.push_back(std::move(diagnostic));
 
             return nullptr;
         }

@@ -130,8 +130,8 @@ namespace Lexer
         }
 
         // EOF
-        result.data.push_back(Token{"", program_.position_at(row_ + 1, 0),
-                                    program_.position_at(row_ + 1, 0),
+        result.data.push_back(Token{"", program_.position_at(row_ - 1, 0),
+                                    program_.position_at(row_ - 1, 0),
                                     TokenTypes::Miscellaneous::EndOfFile});
 
         return result;

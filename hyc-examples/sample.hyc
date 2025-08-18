@@ -7,6 +7,8 @@ fn create_person -> Person (name: str, age: int<7>) {
     return Person { name: name, age: age };
 }
 
+let global_person := create_person("Global Person", -1);
+
 fn main -> void () {
     let people := {
         create_person("Person 1", 21),
@@ -14,5 +16,7 @@ fn main -> void () {
         create_person("Person 3", 23),
     };
 
-    let p1 := people[0];
+    let p1 !:= people[0];
 
+    let global_person_copy := global_person;
+}
