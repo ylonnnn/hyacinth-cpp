@@ -16,29 +16,20 @@ namespace Parser
     }
 
     std::unique_ptr<AST::Expr> parse_idtype_expr(Parser &parser,
-                                                 ExprParseResult &__res)
+                                                 ExprParseResult &)
     {
         auto &lexer = parser.lexer();
 
         lexer.rewind(lexer.position() - 1);
         Lexer::Token *p_token = lexer.peek();
 
-        TypeParseResult result = Common::Type.parse_type(parser);
-        Lexer::Token *n_token = lexer.peek();
-
-        AST::Type *type = result.data.get();
+        TypeParseResult t_res = Common::Type.parse_type(parser);
+        AST::Type *type = t_res.data.get();
 
         if (typeid(*type) == typeid(AST::SimpleType))
             return std::make_unique<AST::IdentifierExpr>(*p_token);
 
-        LedHandler led = get_led(n_token->type);
-        if (led == nullptr)
-            return parse_identifier(parser, __res);
-
-        __res.data = std::make_unique<AST::TypeExpr>(std::move(result.data));
-        lexer.next();
-
-        return led(parser, __res.data, 0, __res);
+        return std::make_unique<AST::TypeExpr>(std::move(t_res.data));
     }
 
     std::unique_ptr<AST::IdentifierExpr> parse_identifier(Parser &parser,

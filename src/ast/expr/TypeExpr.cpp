@@ -7,6 +7,8 @@ namespace AST
         : Node(type->position()), IdentifierExpr(type->value()),
           type_(std::move(type))
     {
+        if (type_ != nullptr)
+            set_end_position(type_->end_position());
     }
 
     Type &TypeExpr::type() { return *type_; }

@@ -4,6 +4,7 @@
 #include "ast/expr/FunctionCallExpr.hpp"
 #include "ast/expr/IdentifierExpr.hpp"
 #include "ast/expr/LiteralExpr.hpp"
+#include "ast/expr/TypeExpr.hpp"
 #include "ast/expr/UnaryExpr.hpp"
 #include "ast/expr/compound/ArrayExpr.hpp"
 #include "ast/expr/compound/InstanceExpr.hpp"
@@ -54,6 +55,11 @@ namespace Semantic
     template <> struct AnalyzerImpl<AST::ArrayExpr>
     {
         static AnalysisResult analyze(Analyzer &analyzer, AST::ArrayExpr &node);
+    };
+
+    template <> struct AnalyzerImpl<AST::TypeExpr>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer, AST::TypeExpr &node);
     };
 
 } // namespace Semantic

@@ -6,6 +6,14 @@ struct Person {
 fn main -> void () {
     let val: int[32] = 123;
 
+    int[32];
+    Person;
+    str;
+    array[array[str]];
+    bool;
+
+    val;
+
     let multd_arr: array[array[int[32]]] = {
         { 1 },
         { 10, },

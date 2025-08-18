@@ -23,17 +23,6 @@ namespace Semantic
                 AnalyzerImpl<AST::Expr>::analyze(analyzer, *element);
             result.adapt(a_res.status, std::move(a_res.diagnostics));
 
-            std::cout << "a_res.value: "
-                      << (a_res.value ? *a_res.value : "nullptr") << "\n";
-            std::cout << "a_res.value[]: "
-                      << (a_res.value
-                              ? Core::Type::from_value(current, *a_res.value)
-                              : nullptr)
-                      << "\n";
-            std::cout << "a_res.data: "
-                      << (a_res.data ? a_res.data->to_string() : "nullptr")
-                      << "\n";
-
             el_type =
                 el_type == nullptr
                     ? a_res.data

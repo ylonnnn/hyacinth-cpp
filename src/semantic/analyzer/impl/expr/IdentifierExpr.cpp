@@ -1,3 +1,4 @@
+#include "ast/type/SimpleType.hpp"
 #include "semantic/analyzer/impl/Expr.hpp"
 
 namespace Semantic
@@ -8,7 +9,7 @@ namespace Semantic
     {
         Core::Environment *current = analyzer.current_env();
         AnalysisResult result = {
-            nullptr, Core::ResultStatus::Fail, nullptr, {}};
+            nullptr, Core::ResultStatus::Success, nullptr, {}};
 
         std::string identifier(node.identifier().value);
         Core::Symbol *symbol = current->resolve_symbol(identifier);
@@ -16,7 +17,6 @@ namespace Semantic
         if (symbol != nullptr)
         {
             result.symbol = symbol;
-            result.status = Core::ResultStatus::Success;
 
             if (auto ptr = dynamic_cast<Core::IdentifierSymbol *>(symbol))
             {
@@ -29,11 +29,25 @@ namespace Semantic
 
         else
         {
-            result.error(
-                &node, Diagnostic::ErrorTypes::Semantic::UnrecognizedSymbol,
-                std::string("Unrecognized symbol \"") + Diagnostic::ERR_GEN +
-                    identifier + Utils::Styles::Reset + "\" provided.",
-                "Used unrecognized symbol here");
+            auto t_node = AST::TypeExpr(
+                std::make_unique<AST::SimpleType>(node.identifier()));
+            AnalysisResult ta_res =
+                AnalyzerImpl<AST::TypeExpr>::analyze(analyzer, t_node);
+            result.adapt(ta_res.status, {}, ta_res.data);
+
+            result.value = ta_res.value;
+            result.symbol = ta_res.symbol;
+
+            std::cout << result.status << "\n";
+            std::cout << ta_res.status << "\n";
+
+            if (result.status == Core::ResultStatus::Fail)
+                result.error(
+                    &node, Diagnostic::ErrorTypes::Semantic::UnrecognizedSymbol,
+                    std::string("Unrecognized symbol \"") +
+                        Diagnostic::ERR_GEN + identifier +
+                        Utils::Styles::Reset + "\" provided.",
+                    "Used unrecognized symbol here");
 
             return result;
         }

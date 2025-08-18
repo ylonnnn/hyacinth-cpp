@@ -13,6 +13,8 @@ namespace Core
         Fail,
     };
 
+    std::ostream &operator<<(std::ostream &os, ResultStatus status);
+
     template <typename T> struct Result
     {
         ResultStatus status;

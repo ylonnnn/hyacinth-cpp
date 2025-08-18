@@ -35,10 +35,6 @@ namespace Core
         if (el_type == nullptr)
             return val.elements().empty();
 
-        std::cout << type->to_string() << " | " << el_type->to_string() << "\n";
-        std::cout << "assignable_with: " << type->assignable_with(*el_type)
-                  << "\n";
-
         if (!type->assignable_with(*el_type))
             return false;
 

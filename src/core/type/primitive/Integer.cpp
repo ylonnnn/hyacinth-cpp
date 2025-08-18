@@ -84,11 +84,7 @@ namespace Core
                                                                 Core::h_int> &&
                                                  std::is_same_v<T_,
                                                                 Core::h_int>)
-                                   {
-                                       std::cout << v.u64() << " | " << v_.u64()
-                                                 << "\n";
                                        return v.u64() <= v_.u64();
-                                   }
 
                                    else
                                        return false;
