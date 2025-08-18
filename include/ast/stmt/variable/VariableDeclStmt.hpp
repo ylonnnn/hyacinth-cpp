@@ -29,6 +29,10 @@ namespace AST
         virtual bool is_definition() const override;
 
         Lexer::Token &name();
+        const Lexer::Token &name() const;
+
+        Type *type();
+        const Type *type() const;
 
         virtual void print(std::ostream &os, uint8_t tab) const override;
     };

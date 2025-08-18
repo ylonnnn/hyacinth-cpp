@@ -25,6 +25,12 @@ namespace AST
 
     Lexer::Token &VariableDeclarationStmt::name() { return name_; }
 
+    const Lexer::Token &VariableDeclarationStmt::name() const { return name_; }
+
+    Type *VariableDeclarationStmt::type() { return type_.get(); }
+
+    const Type *VariableDeclarationStmt::type() const { return type_.get(); }
+
     void VariableDeclarationStmt::print(std::ostream &os, uint8_t tab) const
     {
         std::string indentation = Utils::tab(tab - 1, 4),
@@ -40,7 +46,8 @@ namespace AST
            << "\n"
            << inner_indentation << "type: ";
 
-        type_->print(os, tab + 1);
+        if (type_ != nullptr)
+            type_->print(os, tab + 1);
 
         os << "\n" << indentation << "}";
     }

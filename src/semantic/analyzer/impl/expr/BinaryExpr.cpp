@@ -140,7 +140,6 @@ namespace Semantic
                 result.adapt(al_res.status, std::move(al_res.diagnostics));
 
                 Core::Type *type = al_res.data;
-
                 if (typeid(*type) != typeid(Core::ArrayType::Wrapper))
                 {
                     result.error(

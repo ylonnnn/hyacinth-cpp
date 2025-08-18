@@ -3,17 +3,23 @@ struct Person {
     age: int<32>;
 }
 
-fn random -> int<32> () {
-    return 1;
-}
-
 fn main -> void () {
-    let arr: array<int<32>> = {
-        1, 2, 3, 4, 5
+    let people := {
+        Person { name: "Person 1", age: 21 },
+        Person { name: "Person 2", age: 22 },
+        Person { name: "Person 3", age: 23 },
     };
 
-    let empty: array<bool> = {true};
+    let p1 := people[0];
+    let p2: Person = people[1];
+    let p3 !:= people[2];
 
-    let random_element: int<32> = arr[random()];
-    let boolean: bool = empty[0];
+    let test_person := Person {
+        name: "John Doe",
+        age: 34,
+    };
+
+    let tp_name: str = test_person.name;
+    let tp_age: int<32> = test_person.age;
+    let imp_tp_age := test_person.age;
 }

@@ -83,8 +83,9 @@ namespace Core
             return nullptr;
 
         const array &val = *ptr;
-        return Type::get_or_create(const_cast<ArrayType *>(this),
-                                   {const_cast<Type *>(val.element_type())});
+        return Type::get_or_create<Wrapper>(
+            const_cast<ArrayType *>(this),
+            {const_cast<Type *>(val.element_type())});
     }
 
 } // namespace Core

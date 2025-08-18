@@ -39,7 +39,8 @@ namespace AST
            << "\n"
            << inner_indentation << "type: ";
 
-        type_->print(os, tab + 1);
+        if (type_ != nullptr)
+            type_->print(os, tab + 1);
 
         os << "\n" << inner_indentation << "value: ";
 

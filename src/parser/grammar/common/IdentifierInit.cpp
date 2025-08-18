@@ -55,15 +55,16 @@ namespace Parser
 
         // Mutability Modifier
         auto mut_result = mutability_.parse(parser);
-
         result.adapt(mut_result.status, std::move(mut_result.diagnostics));
 
         bool mut = false;
-        if (auto ptr = dynamic_cast<MutabilityNode *>(mut_result.data.get()))
-            mut = ptr->is_mutable();
+        auto m_node = mut_result.data.get();
+
+        if (typeid(*m_node) == typeid(MutabilityNode))
+            mut = static_cast<MutabilityNode *>(m_node)->is_mutable();
 
         size_t t_initial_pos = lexer.position();
-        TypeParseResult t_result = Common::Type.parse_type(parser);
+        TypeParseResult t_result = Common::Type.parse_type(parser, 0);
 
         if (t_result.status == Core::ResultStatus::Fail)
         {

@@ -7,6 +7,7 @@
 #include "core/value/Value.hpp"
 #include "semantic/analyzer/Analyzer.hpp"
 #include "semantic/analyzer/impl/Stmt.hpp"
+#include <cassert>
 
 namespace Semantic
 {
@@ -81,30 +82,33 @@ namespace Semantic
     {
         Core::Environment *current = analyzer.current_env();
 
-        AST::Type &ast_type = var->node->type();
+        AST::Type *ast_type = var->node->type();
+        if (ast_type == nullptr)
+            return true;
+
         Core::BaseType *resolved =
-            current->resolve_type(std::string(ast_type.value().value));
+            current->resolve_type(std::string(ast_type->value().value));
 
         if (resolved == nullptr)
         {
-            result.error(Diagnostic::create_unknown_type_error(&ast_type));
+            result.error(Diagnostic::create_unknown_type_error(ast_type));
             return false;
         }
 
-        Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
+        Core::TypeResolutionResult t_res = resolved->resolve(*ast_type);
         result.adapt(t_res.status, std::move(t_res.diagnostics));
 
         Core::Type *type = t_res.data;
-        result.data = type;
 
+        result.data = type;
         var->type = t_res.data;
 
         if (typeid(*type->type) == typeid(Core::Void))
         {
-            result.error(&ast_type,
+            result.error(ast_type,
                          Diagnostic::ErrorTypes::Type::InvalidVariableType,
                          std::string("Type \"") + Diagnostic::ERR_GEN +
-                             ast_type.to_string() + Utils::Styles::Reset +
+                             ast_type->to_string() + Utils::Styles::Reset +
                              "\" can only be used as a function return type.",
                          "Only functions can have return types of this type");
 
@@ -121,54 +125,46 @@ namespace Semantic
         if (var->node == nullptr)
             return;
 
-        AST::VariableDeclarationStmt &node = *var->node;
+        auto &stmt = static_cast<AST::VariableDefinitionStmt &>(*var->node);
 
-        if (node.is_definition())
+        AST::Type *ast_type = stmt.type();
+        AST::Expr &value = stmt.value();
+
+        auto error = [&]() -> void
         {
-            auto &stmt = static_cast<AST::VariableDefinitionStmt &>(node);
-            AST::Expr &value = stmt.value();
+            assert(ast_type == nullptr);
 
-            AnalysisResult v_res = analyzer.analyze(stmt.value());
-            result.adapt(v_res.status, std::move(v_res.diagnostics));
+            auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
+                &value, Diagnostic::ErrorTypes::Type::Mismatch,
+                std::string("Expected value of type ") + Diagnostic::ERR_GEN +
+                    ast_type->to_string() + Utils::Styles::Reset + ".",
+                std::string(""));
 
-            auto error = [&]() -> void
-            {
-                auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
-                    &value, Diagnostic::ErrorTypes::Type::Mismatch,
-                    std::string("Expected value of type ") +
-                        Diagnostic::ERR_GEN + node.type().to_string() +
-                        Utils::Styles::Reset + ".",
-                    std::string(""));
+            diagnostic->add_detail(result.data->make_suggestion(&value));
 
-                diagnostic->add_detail(result.data->make_suggestion(&value));
+            result.error(std::move(diagnostic));
+        };
 
-                result.error(std::move(diagnostic));
-            };
+        AnalysisResult v_res = analyzer.analyze(stmt.value());
+        result.adapt(v_res.status, std::move(v_res.diagnostics));
 
-            // Analysis of returned value
-            if (v_res.value)
-            {
-                var->define(const_cast<Core::Position *>(&stmt.position()));
+        // Define
+        var->define(const_cast<Core::Position *>(&stmt.position()));
+        var->value = std::move(v_res.value);
 
-                if (!result.data->assignable(*v_res.value))
-                    error();
+        // If type is not specified, it is inferred
+        // No type validation required
+        if (ast_type == nullptr)
+        {
+            result.data = v_res.data;
+            var->type = v_res.data;
 
-                var->value = std::move(v_res.value);
-            }
-
-            // Analysis of returned type
-            else
-            {
-                if (v_res.data == nullptr)
-                {
-                    error();
-                    return;
-                }
-
-                if (!result.data->assignable_with(*v_res.data))
-                    error();
-            }
+            return;
         }
+
+        if (!result.data->assignable_with(*var->type) ||
+            (var->value != nullptr && !result.data->assignable(*var->value)))
+            error();
     }
 
     AnalysisResult AnalyzerImpl<AST::VariableDeclarationStmt>::analyze(
@@ -190,6 +186,17 @@ namespace Semantic
 
         if (!analyze_type(analyzer, variable, result))
             return result;
+
+        if (!node.is_definition())
+        {
+            result.error(&node,
+                         Diagnostic::ErrorTypes::Type::InvalidVariableType,
+                         std::string("Variables must either have explicit TYPE"
+                                     "or VALUE."),
+                         "No explicit type nor value provided");
+
+            return result;
+        }
 
         analyze_value(analyzer, variable, result);
 

@@ -40,6 +40,7 @@ namespace Parser
         }
 
         auto mut = true;
+        Core::Position *e_pos = nullptr;
 
         // Immutable
         if (parser.expect(token_type_, false))
@@ -47,7 +48,7 @@ namespace Parser
             mut = false;
             result.status = Core::ResultStatus::Success;
 
-            lexer.next();
+            e_pos = &lexer.next()->end_position;
         }
 
         // Mutable
@@ -55,12 +56,15 @@ namespace Parser
                                false))
         {
             lexer.next();
+
             if (parser.expect(token_type_))
+            {
                 result.status = Core::ResultStatus::Success;
+                e_pos = &lexer.current().end_position;
+            }
 
             else
             {
-                // Lexer::Token *token = lexer.peek();
                 Lexer::Token &token = lexer.current();
 
                 auto diagnostic = Diagnostic::create_syntax_error(
@@ -79,13 +83,8 @@ namespace Parser
                 result.force_error(std::move(diagnostic));
             }
         }
-        
-        // test : i = 123;
-        // test  i = 123;
-        // test < i = 123;
-        // test <> i = 123;
 
-        // Other (Throw an Error)
+        // Invalid, throw an error
         else
         {
             result.data = nullptr;
@@ -102,6 +101,7 @@ namespace Parser
         }
 
         result.data = std::make_unique<MutabilityNode>(token->position, mut);
+        result.data->set_end_position(*e_pos);
 
         return result;
     }

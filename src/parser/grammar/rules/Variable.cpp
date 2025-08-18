@@ -34,6 +34,9 @@ namespace Parser
 
     ParseResult VariableDefinition::parse(Parser &parser)
     {
+        using namespace Lexer::TokenTypes;
+        using namespace Operator;
+
         // "let" IDENTIFIER (":" | "!:") TYPE
         auto &lexer = parser.lexer();
         ParseResult result = {parser, Core::ResultStatus::Success, nullptr, {}};
@@ -49,26 +52,35 @@ namespace Parser
             return result;
         }
 
-        // IDENTIFIER (":" | "!:") TYPE
-        ParseResult i_res = Common::IdentifierInitialization.parse(parser);
+        // IDENTIFIER
+        Lexer::Token *identifier = nullptr;
+        if (auto diagnostic =
+                parser.expect_or_error(Primary::Identifier, false))
+            result.force_error(std::move(diagnostic));
+        else
+            identifier = lexer.next();
 
-        result.adapt(i_res.status, std::move(i_res.diagnostics));
+        // ":" | "!:"
+        ParseResult m_res = Common::Mutability.parse(parser);
+        result.adapt(m_res.status, std::move(m_res.diagnostics));
 
-        if (i_res.data == nullptr)
-            return result;
+        auto m_node = m_res.data.get();
+        auto mut_state = AST::IdentifierMutabilityState::Immutable;
+        Core::Position *ms_pos = nullptr;
 
-        Lexer::Token *name = nullptr;
-        AST::IdentifierMutabilityState mut_state =
-            AST::IdentifierMutabilityState::Mutable;
-        std::unique_ptr<AST::Type> type;
+        if (typeid(*m_node) == typeid(MutabilityNode))
+        {
+            auto node = static_cast<MutabilityNode *>(m_node);
 
-        if (i_res.data != nullptr)
-            if (auto ptr = dynamic_cast<IdentifierInitNode *>(i_res.data.get()))
-            {
-                name = &ptr->name();
-                mut_state = ptr->mut_state();
-                type = std::move(ptr->type_ptr());
-            }
+            if (node->is_mutable())
+                mut_state = AST::IdentifierMutabilityState::Mutable;
+
+            ms_pos = &node->end_position();
+        }
+
+        // (Optional) TYPE
+        TypeParseResult t_res = Common::Type.parse_type(parser, 0);
+        std::unique_ptr<AST::Type> type = std::move(t_res.data);
 
         // (Optional) = VALUE
         auto presence_flag = 0;
@@ -95,7 +107,9 @@ namespace Parser
             case 0b00:
             {
                 result.data = std::make_unique<AST::VariableDeclarationStmt>(
-                    *name, mut_state, std::move(type));
+                    *identifier, mut_state, std::move(type));
+
+                result.data->set_end_position(*ms_pos);
 
                 break;
             }
@@ -133,15 +147,17 @@ namespace Parser
                     result.status = v_res.status;
 
                 result.data = std::make_unique<AST::VariableDefinitionStmt>(
-                    *name, mut_state, std::move(type), std::move(value));
+                    *identifier, mut_state, std::move(type), std::move(value));
 
                 break;
             }
         }
 
         // TERMINATOR ::= ";"
-        ParseResult t_res = Common::Terminator.parse(parser);
-        result.adapt(t_res.status, std::move(t_res.diagnostics));
+        ParseResult tp_res = Common::Terminator.parse(parser);
+        result.adapt(tp_res.status, std::move(tp_res.diagnostics));
+
+        std::cout << "result.data.get(): " << result.data.get() << "\n";
 
         if (auto ptr =
                 dynamic_cast<AST::VariableDeclarationStmt *>(result.data.get()))
@@ -149,20 +165,20 @@ namespace Parser
             if (ptr->is_mutable() || ptr->is_definition())
                 return result;
 
-            auto node = AST::IdentifierExpr(*name);
+            auto node = AST::IdentifierExpr(*identifier);
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
                 &node,
                 Diagnostic::ErrorTypes::Uninitialization::
                     UninitializedImmutable,
                 std::string("Illegal uninitialization of immutable \"") +
-                    Diagnostic::ERR_GEN + std::string(name->value) +
+                    Diagnostic::ERR_GEN + std::string(identifier->value) +
                     Utils::Styles::Reset + "\".",
                 "Immutable variables require initial values");
 
             diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
                 result.data.get(), Diagnostic::NoteType::Declaration,
                 std::string("Immutable variable \"") + Diagnostic::NOTE_GEN +
-                    std::string(name->value) + Utils::Styles::Reset +
+                    std::string(identifier->value) + Utils::Styles::Reset +
                     "\" declared here.",
                 "Declared here"));
 
