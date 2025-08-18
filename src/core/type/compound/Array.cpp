@@ -1,8 +1,24 @@
 #include "core/type/compound/Array.hpp"
 #include "core/type/Type.hpp"
+#include <cassert>
 
 namespace Core
 {
+    ArrayType::Wrapper::Wrapper(BaseType *base,
+                                std::vector<TypeArgument> &&arguments)
+        : Type(base, std::move(arguments))
+    {
+        if (!this->arguments.empty())
+            element_type_ = std::get<Type *>(this->arguments[0]);
+    }
+
+    Type *ArrayType::Wrapper::element_type() { return element_type_; }
+
+    const Type *ArrayType::Wrapper::element_type() const
+    {
+        return element_type_;
+    }
+
     ArrayType::ArrayType(Environment *environment)
         : BaseType(environment, "array")
     {
@@ -51,6 +67,13 @@ namespace Core
     bool ArrayType::assignable_with(const BaseType &other) const
     {
         return BaseType::assignable_with(other);
+    }
+
+    Type *
+    ArrayType::construct_wrapper(std::vector<TypeArgument> &&arguments) const
+    {
+        return Type::get_or_create<Wrapper>(const_cast<ArrayType *>(this),
+                                            std::move(arguments));
     }
 
     Type *ArrayType::from_value(const Core::Value &value) const

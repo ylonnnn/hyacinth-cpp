@@ -61,7 +61,7 @@ namespace Core
         std::string signature_;
 
       public:
-        Type(BaseType *type, std::vector<TypeArgument> arguments);
+        Type(BaseType *type, std::vector<TypeArgument> &&arguments);
         virtual ~Type() = default;
 
         Type *base();
@@ -212,7 +212,10 @@ namespace Core
             for (const auto &argument : arguments)
             {
                 if (auto ptr = std::get_if<Type *>(&argument))
-                    str += (*ptr)->to_string();
+                {
+                    auto type = *ptr;
+                    str += type == nullptr ? "" : type->to_string();
+                }
 
                 else if (auto ptr =
                              std::get_if<std::shared_ptr<Value>>(&argument))
@@ -238,7 +241,9 @@ namespace Core
         if (it != pool_.end())
             return it->second.get();
 
-        auto type = std::make_unique<T>(base, std::move(arguments));
+        auto type = std::make_unique<T>(
+            base,
+            const_cast<std::vector<TypeArgument> &&>(std::move(arguments)));
         return pool_.emplace(type->signature_, std::move(type))
             .first->second.get();
     }

@@ -1,3 +1,4 @@
+#include <cassert>
 #include <functional>
 #include <string>
 #include <variant>
@@ -13,7 +14,7 @@ namespace Core
 {
     std::unordered_map<std::string, std::unique_ptr<Type>> Type::pool_{};
 
-    Type::Type(BaseType *type, std::vector<TypeArgument> arguments)
+    Type::Type(BaseType *type, std::vector<TypeArgument> &&arguments)
         : type(type), arguments(std::move(arguments)),
           base_(this->arguments.empty() ? nullptr
                                         : Type::get_or_create(type, {}))
@@ -115,7 +116,10 @@ namespace Core
             }
 
             else if (auto ptr = std::get_if<Type *>(&argument))
-                str += (*ptr)->to_string();
+            {
+                auto type = *ptr;
+                str += type == nullptr ? "" : type->to_string();
+            }
 
             if (&argument != &arguments.back())
                 str += ", ";

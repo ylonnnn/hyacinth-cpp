@@ -3,15 +3,17 @@ struct Person {
     age: int<32>;
 }
 
-fn main -> void () {
-    let test_val: int<3> = 2;
+fn random -> int<32> () {
+    return 1;
+}
 
-    let simple_arr: array<int<32>> = {
-        1, 2, 3, 4, 5,
+fn main -> void () {
+    let arr: array<int<32>> = {
+        1, 2, 3, 4, 5
     };
 
-    let first: int<32> = simple_arr[0];
+    let empty: array<bool> = {true};
 
-    let third: int<32> = simple_arr[test_val];
-    let fourth: int<32> = simple_arr[test_val + 1];
+    let random_element: int<32> = arr[random()];
+    let boolean: bool = empty[0];
 }

@@ -7,6 +7,19 @@ namespace Core
     class ArrayType : public BaseType
     {
       public:
+        class Wrapper : public Type
+        {
+          private:
+            Type *element_type_ = nullptr;
+
+          public:
+            Wrapper(BaseType *base, std::vector<TypeArgument> &&arguments);
+
+            Type *element_type();
+            const Type *element_type() const;
+        };
+
+      public:
         ArrayType(Environment *environment);
 
       protected:
@@ -20,6 +33,9 @@ namespace Core
 
       public:
         bool assignable_with(const BaseType &type) const override;
+
+        Type *
+        construct_wrapper(std::vector<TypeArgument> &&arguments) const override;
 
         Type *from_value(const Core::Value &value) const override;
     };

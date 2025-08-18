@@ -74,7 +74,6 @@ namespace Semantic
 
                     if (m_it == members.end())
                     {
-                        // TODO: Error Unrecognized member
                         result.error(
                             &expr,
                             Diagnostic::ErrorTypes::Semantic::UnrecognizedField,
@@ -104,6 +103,7 @@ namespace Semantic
                         Core::value_data *entry = val->get(m_name);
                         if (entry == nullptr)
                         {
+                            // TODO: No entry error handler
                             // result.error()
                             return;
                         }
@@ -140,9 +140,8 @@ namespace Semantic
                 result.adapt(al_res.status, std::move(al_res.diagnostics));
 
                 Core::Type *type = al_res.data;
-                Core::BaseType *base_type = type->type;
 
-                if (typeid(*base_type) != typeid(Core::ArrayType))
+                if (typeid(*type) != typeid(Core::ArrayType::Wrapper))
                 {
                     result.error(
                         &left,
@@ -157,6 +156,9 @@ namespace Semantic
 
                     return;
                 }
+
+                auto *type_w = static_cast<Core::ArrayType::Wrapper *>(type);
+                result.data = type_w->element_type();
 
                 AnalysisResult ar_res =
                     AnalyzerImpl<AST::Expr>::analyze(analyzer, right);
@@ -186,14 +188,17 @@ namespace Semantic
 
                     if (index < 0 || static_cast<size_t>(index) >= n)
                     {
+                        size_t max = n == 0 ? 0 : n - 1;
+
                         result.error(
                             &right,
                             Diagnostic::ErrorTypes::Semantic::OutOfRange,
                             std::string("Invalid index \"") +
                                 Diagnostic::ERR_GEN + std::to_string(index) +
                                 Utils::Styles::Reset + "\" provided.",
-                            std::string("Valid index range 0-") +
-                                std::to_string(n - 1) + ".");
+                            max ? (std::string("Valid index range 0-") +
+                                   std::to_string(max) + ".")
+                                : "Cannot access an element of an empty array");
 
                         return;
                     }
