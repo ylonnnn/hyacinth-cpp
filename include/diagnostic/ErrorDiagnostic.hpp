@@ -56,6 +56,7 @@ namespace Diagnostic
             IllegalShadowing,
             NoViableOperatorOverload,
             UnrecognizedField,
+            InvalidFieldCount,
             IllegalNonArrayElementAccess,
             OutOfRange,
         };
@@ -102,6 +103,11 @@ namespace Diagnostic
         std::optional<Lexer::TokenType> expected = std::nullopt);
 
     std::unique_ptr<ErrorDiagnostic> create_unknown_type_error(AST::Type *type);
+
+    std::unique_ptr<ErrorDiagnostic>
+    create_invalid_entry_count_error(AST::Node *node, ErrorType error_type,
+                                     const std::string &entry, size_t expected,
+                                     size_t provided);
 
     std::unique_ptr<ErrorDiagnostic>
     create_invalid_arguments_error(AST::Node *node, size_t expected,

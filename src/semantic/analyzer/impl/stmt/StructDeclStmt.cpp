@@ -116,6 +116,8 @@ namespace Semantic
 
             members.try_emplace(std::string(name),
                                 Core::TypeMember{t_res.data});
+
+            struct_->type->field_count()++;
         }
     }
 

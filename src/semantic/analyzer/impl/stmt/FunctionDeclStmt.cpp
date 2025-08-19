@@ -27,8 +27,7 @@ namespace Semantic
         Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
         result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-        fn->return_type = t_res.data;
-        result.data = fn->return_type;
+        fn->return_type = result.data = t_res.data;
     }
 
     static void analyze_parameters(Analyzer &analyzer,

@@ -128,6 +128,8 @@ namespace Core
         return Type::get_or_create(const_cast<StructType *>(this), {});
     }
 
+    size_t &StructType::field_count() { return field_count_; }
+
     size_t StructType::field_count() const { return field_count_; }
 
 } // namespace Core

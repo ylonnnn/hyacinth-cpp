@@ -140,6 +140,9 @@ namespace Semantic
                 result.adapt(al_res.status, std::move(al_res.diagnostics));
 
                 Core::Type *type = al_res.data;
+                if (type == nullptr)
+                    return;
+
                 if (typeid(*type) != typeid(Core::ArrayType::Wrapper))
                 {
                     result.error(
@@ -164,6 +167,9 @@ namespace Semantic
                 result.adapt(ar_res.status, std::move(ar_res.diagnostics));
 
                 Core::Type *idx_type = ar_res.data;
+                if (idx_type == nullptr)
+                    return;
+
                 Core::BaseType *idx_btype = idx_type->type;
 
                 if (typeid(*idx_btype) != typeid(Core::IntegerType))

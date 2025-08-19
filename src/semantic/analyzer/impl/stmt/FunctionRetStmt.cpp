@@ -55,10 +55,6 @@ namespace Semantic
                     return;
                 }
 
-                AnalysisResult v_res =
-                    AnalyzerImpl<AST::Expr>::analyze(analyzer, *ret_val);
-                result.adapt(v_res.status, std::move(v_res.diagnostics));
-
                 auto error = [&]() -> void
                 {
                     auto diagnostic =
@@ -74,6 +70,10 @@ namespace Semantic
 
                     result.error(std::move(diagnostic));
                 };
+
+                AnalysisResult v_res =
+                    AnalyzerImpl<AST::Expr>::analyze(analyzer, *ret_val);
+                result.adapt(v_res.status, std::move(v_res.diagnostics));
 
                 // Analysis of returned value
                 if (v_res.value)

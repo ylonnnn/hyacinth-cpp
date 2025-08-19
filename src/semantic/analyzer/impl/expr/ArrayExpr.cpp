@@ -30,6 +30,8 @@ namespace Semantic
                            ? el_type
                            : (a_res.data->assignable_with(*el_type) ? a_res.data
                                                                     : el_type));
+            if (el_type == nullptr)
+                break;
 
             if ((a_res.value != nullptr && el_type->assignable(*a_res.value)) ||
                 (a_res.data != nullptr &&

@@ -27,6 +27,7 @@ namespace Core
 
         Type *from_value(const Core::Value &value) const override;
 
+        size_t &field_count();
         size_t field_count() const;
     };
 

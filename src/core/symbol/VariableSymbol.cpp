@@ -25,8 +25,8 @@ namespace Core
            << (accessibility == SymbolAccessibility::Public ? "Public"
                                                             : "Private")
            << ", " << (is_mutable ? "Mutable" : "Immutable") << ", "
-           << type->to_string() << ", " << (value != nullptr ? *value : "null")
-           << " }";
+           << (type == nullptr ? "nullptr" : type->to_string()) << ", "
+           << (value != nullptr ? *value : "null") << " }";
     }
 
 } // namespace Core

@@ -20,8 +20,8 @@ namespace Core
 
         os << "(param) " << name << " { "
            << (is_mutable ? "Mutable" : "Immutable") << ", "
-           << type->to_string() << ", " << (value != nullptr ? *value : "null")
-           << " }";
+           << (type == nullptr ? "nullptr" : type->to_string()) << ", "
+           << (value != nullptr ? *value : "null") << " }";
     }
 
     FunctionSymbol::FunctionSymbol(std::string_view name,

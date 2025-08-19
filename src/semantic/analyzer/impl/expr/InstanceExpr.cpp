@@ -45,10 +45,22 @@ namespace Semantic
             return result;
         }
 
+        auto &fields = node.fields();
+        auto expected = type->field_count();
+
+        if (expected != fields.size())
+        {
+            result.error(Diagnostic::create_invalid_entry_count_error(
+                &node, Diagnostic::ErrorTypes::Semantic::InvalidFieldCount,
+                "field", expected, fields.size()));
+
+            return result;
+        }
+
         obj->type() = result.data;
         auto *members = &type->members();
 
-        for (auto &[name, field] : node.fields())
+        for (auto &[name, field] : fields)
         {
             AST::Expr &f_val = field.value();
 

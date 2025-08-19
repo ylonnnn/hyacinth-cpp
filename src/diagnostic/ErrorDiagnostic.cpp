@@ -67,6 +67,8 @@ namespace Diagnostic
             "HYC::SEMANTIC::NO_VIABLE_OPERATOR_OVERLOAD";
         ERROR_CODES[ErrorTypes::Semantic::UnrecognizedField] =
             "HYC::SEMANTIC::UNRECOGNIZED_FIELD";
+        ERROR_CODES[ErrorTypes::Semantic::InvalidFieldCount] =
+            "HYC::SEMANTIC::INVALID_FIELD_COUNT";
         ERROR_CODES[ErrorTypes::Semantic::IllegalNonArrayElementAccess] =
             "HYC::SEMANTIC::ILLEGAL_NONARRAY_ELEMENT_ACCESS";
         ERROR_CODES[ErrorTypes::Semantic::OutOfRange] =
@@ -153,21 +155,31 @@ namespace Diagnostic
     }
 
     std::unique_ptr<ErrorDiagnostic>
-    create_invalid_arguments_error(AST::Node *node, size_t expected,
-                                   size_t provided)
+    create_invalid_entry_count_error(AST::Node *node, ErrorType error_type,
+                                     const std::string &entry, size_t expected,
+                                     size_t provided)
     {
         assert(node != nullptr);
 
-        auto arg__ = [](size_t n) -> std::string
-        { return std::string("argument") + (n > 1 ? "s" : ""); };
+        auto arg__ = [&](size_t n) -> std::string
+        { return entry + (n > 1 ? "s" : ""); };
 
         return std::make_unique<ErrorDiagnostic>(
-            node, ErrorTypes::Semantic::InvalidArgumentCount,
+            node, error_type,
             std::string("Expects ") + ERR_GEN + std::to_string(expected) +
                 Utils::Styles::Reset + " " + arg__(expected) + ". Provided " +
                 ERR_GEN + std::to_string(provided) + Utils::Styles::Reset +
                 " " + arg__(provided) + ".",
             "");
+    }
+
+    std::unique_ptr<ErrorDiagnostic>
+    create_invalid_arguments_error(AST::Node *node, size_t expected,
+                                   size_t provided)
+    {
+        return create_invalid_entry_count_error(
+            node, ErrorTypes::Semantic::InvalidArgumentCount, "argument",
+            expected, provided);
     }
 
 } // namespace Diagnostic

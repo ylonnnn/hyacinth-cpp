@@ -1,22 +1,56 @@
-struct Person {
+struct Citizen;
+
+struct City {
+    name: str;
+    postal_code: int<16>;
+    citizens: array<Citizen>;
+}
+
+struct Address {
+    house_no: int<32>;
+    street_no: int<32>;
+    city: City;
+}
+
+struct Citizen {
     name: str;
     age: int<32>;
+    address: Address;
 }
 
-fn create_person -> Person (name: str, age: int<7>) {
-    return Person { name: name, age: age };
+fn create_city -> City (name: str, postal_code: int<16>) {
+    return City {
+        name: name,
+        postal_code: postal_code,
+        citizens: {},
+    };
 }
 
-let global_person := create_person("Global Person", -1);
+fn create_address -> Address (house_no: int<32>, street_no: int<32>, city: City) {
+    return Address {
+        house_no: house_no,
+        street_no: street_no,
+        city: city,
+    };
+}
 
 fn main -> void () {
+    let cityville := create_city("Cityville", 8834);
+
     let people := {
-        create_person("Person 1", 21),
-        create_person("Person 2", 22),
-        create_person("Person 3", 23),
+        Citizen { name: "CV Citizen 1", age: 25, address: Address { house_no: 6, street_no: 23, city: cityville } },
+        Citizen { name: "CV Citizen 2", age: 26, address: create_address(9, 12, cityville)  },
+        Citizen { name: "CV Citizen 3", age: 27, address: create_address(17, 8, cityville)  },
     };
 
-    let p1 !:= people[0];
+    let cvc1 := people[0];
 
-    let global_person_copy := global_person;
+    let hn := cvc1.address.house_no;
+    let citizen2 := cvc1.address.city.citizens[1];
+    let ct2_name := cvc1.address.city.citizens[1].name;
+    let ct2_city_name := citizen2.address.city.name;
+
+    let random_citizen := citizen2.address.city.citizens[4].address.city.citizens[5].address.city.citizens[6].name;
+
+    // let citizen_name := cvc1.address.city.citizens[1];
 }
