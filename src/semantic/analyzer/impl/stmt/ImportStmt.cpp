@@ -13,9 +13,10 @@ namespace Semantic
 
         Core::ProgramFile &current = analyzer.program(),
                           &program = current.registry()->file(
-                              path.is_relative()
-                                  ? current.path().parent_path() / path
-                                  : path);
+                              (path.is_relative()
+                                   ? current.path().parent_path() / path
+                                   : path)
+                                  .string());
 
         AnalysisResult result = program.lex_parse_analyze();
 

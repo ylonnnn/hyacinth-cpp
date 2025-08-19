@@ -9,8 +9,8 @@ namespace Core
     class BitWidthType : public BaseType
     {
       protected:
-        uint min_;
-        uint max_;
+        uint64_t min_;
+        uint64_t max_;
 
       public:
         BitWidthType();

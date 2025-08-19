@@ -37,7 +37,7 @@ namespace Core
         AST::Node *node,
         [[maybe_unused]] const std::vector<TypeArgument> &arguments) const
     {
-        std::vector<uint> bit_widths = {8, 16, 32, 64};
+        std::vector<uint64_t> bit_widths = {8, 16, 32, 64};
         std::string allowed_bw = "";
 
         for (const auto &bw : bit_widths)
@@ -207,8 +207,8 @@ namespace Core
                  { return a >= b; }, __rel)});
     }
 
-    bool FloatType::can_fit(double value, uint t_exponent,
-                            uint t_mantissa) const
+    bool FloatType::can_fit(double value, uint64_t t_exponent,
+                            uint64_t t_mantissa) const
     {
         uint64_t bits;
         std::memcpy(&bits, &value, sizeof(bits));
@@ -277,7 +277,7 @@ namespace Core
 
                 if constexpr (std::is_same_v<T, double> || is_int)
                 {
-                    std::pair<uint, uint> bit_pairs[] = {
+                    std::pair<uint64_t, uint64_t> bit_pairs[] = {
                         {3, 4}, {5, 10}, {8, 23}, {11, 52}};
 
                     size_t idx = bw == 8 ? 0 : bw == 16 ? 1 : bw == 32 ? 2 : 3;
@@ -319,7 +319,7 @@ namespace Core
 
                 if constexpr (std::is_same_v<T, double>)
                 {
-                    std::array<std::pair<uint, uint>, 4> bit_pairs = {
+                    std::array<std::pair<uint64_t, uint64_t>, 4> bit_pairs = {
                         std::pair{3, 4}, {5, 10}, {8, 23}, {11, 52}};
 
                     for (const auto &[exponent, mantissa] : bit_pairs)

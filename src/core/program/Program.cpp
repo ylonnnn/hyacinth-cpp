@@ -70,12 +70,12 @@ namespace Core
         if (!fs::is_regular_file(path_))
         {
             Utils::terminate(
-                (std::string("Target be a file: ") + path_.c_str()).c_str(),
+                (std::string("Target be a file: ") + path_.string()).c_str(),
                 EXIT_SUCCESS);
         }
         else if (path_.extension() != FILE_EXTENSION)
             Utils::terminate(
-                (std::string("Target be a Hyacinth file: ") + path_.c_str())
+                (std::string("Target be a Hyacinth file: ") + path_.string())
                     .c_str(),
                 EXIT_SUCCESS);
 
@@ -90,7 +90,7 @@ namespace Core
         size_t size = file_size(file);
 
         source_.resize(size);
-        file.read(&source_[0], size);
+        file.read(source_.data(), size);
 
         size_t cursor = 0, line_start = cursor;
         while (cursor < size)
@@ -99,13 +99,17 @@ namespace Core
             if (ch == '\n')
             {
                 lines_.emplace_back(source_.data() + line_start,
-                                    (cursor - line_start));
+                                    cursor - line_start);
 
                 line_start = cursor + 1;
             }
 
             cursor++;
         }
+
+        if (line_start != cursor)
+            lines_.emplace_back(source_.data() + line_start,
+                                cursor - line_start);
 
         file.close();
     }

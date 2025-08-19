@@ -58,9 +58,7 @@ namespace Diagnostic
             size_t idx = i - start;
             std::string_view line = lines[idx];
 
-            auto _start = i == start, _end = i == end - 1,
-                 edge = _start || _end;
-
+            auto _start = i == start, _end = i == end - 1;
             size_t line_start =
                        _start ? position.col : line.find_first_not_of(' ') + 1,
                    line_end = _end ? end_position.col : line.size();

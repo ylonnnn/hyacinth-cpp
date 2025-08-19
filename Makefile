@@ -1,34 +1,57 @@
-CXX = g++
-CXXFLAGS = -g -O0 -Wall -Wextra -std=c++17 -Iinclude -MMD -MP
-# LDFLAGS = -fsanitize=address
+CXX := g++
+WIN_CXX := x86_64-w64-mingw32-g++
 
-BUILD_DIR = $(CURDIR)/build
-SRC_DIR = ./src
-OBJ_DIR = ./obj
+CXXFLAGS := -g -O0 -Wall -Wextra -std=c++17 -Iinclude -MMD -MP
+
+# LDFLAGS = -fsanitize=address
+WIN_LDFLAGS = -static
+
+BUILD_DIR := $(CURDIR)/build
+SRC_DIR := ./src
+OBJ_DIR := ./obj
+WIN_OBJ_DIR := $(OBJ_DIR)/win
 
 SOURCES := $(shell find $(SRC_DIR) -name "*.cpp")
 OBJECTS := $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
-TARGET := $(BUILD_DIR)/hyc
+WIN_OBJECTS := $(SOURCES:$(SRC_DIR)/%.cpp=$(WIN_OBJ_DIR)/%.o)
 
-all: $(TARGET)
+DEPS := $(OBJECTS:.o=.d)
+WIN_DEPS := $(WIN_OBJECTS:.o=.d)
+
+TARGET := $(BUILD_DIR)/hyc
+WIN_TARGET := $(BUILD_DIR)/hyc.exe
+
+.PHONY: all clean run
+
+all: linux windows
+
+linux: $(TARGET)
+
+windows: $(WIN_TARGET)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(WIN_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(WIN_CXX) $(CXXFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJECTS)
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) $(OBJECTS) -o $(TARGET)
 	# $(CXX) $(OBJECTS) $(LDFLAGS) -o $(TARGET)
 
-run: 
-	$(MAKE) all
+$(WIN_TARGET): $(WIN_OBJECTS)
+	@mkdir -p $(BUILD_DIR)
+	$(WIN_CXX) $(WIN_OBJECTS) $(WIN_LDFLAGS) -o $(WIN_TARGET)
+
+run: $(TARGET)
 	$(TARGET)
 
 clean:
 	rm -rf $(BUILD_DIR) $(OBJ_DIR)
 
-.PHONY: all clean
 
-DEPS := $(OBJECTS:.o=.d)
 -include $(DEPS)
+-include $(WIN_DEPS)

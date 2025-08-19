@@ -47,7 +47,7 @@ namespace Core
       protected:
         void default_operations() override;
 
-        bool can_fit(double value, uint bits, uint mantissa) const;
+        bool can_fit(double value, uint64_t bits, uint64_t mantissa) const;
 
         bool
         assignable(const Core::Value &value,

@@ -171,6 +171,7 @@ namespace Lexer
             }
 
             case ' ':
+            case '\0':
             case '\t':
             case '\r':
             case '\v':
@@ -422,6 +423,8 @@ namespace Lexer
 
                 else if (std::isdigit(ch))
                     return scan_numeric(pos);
+
+                std::cout << (ch == '\0') << "\n";
 
                 return create_token({pos, pos}, Invalid::UnknownToken);
             }
