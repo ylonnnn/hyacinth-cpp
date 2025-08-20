@@ -8,6 +8,7 @@
 #include "core/program/DependencyEnvironment.hpp"
 #include "core/program/Program.hpp"
 #include "core/result/Result.hpp"
+#include "interpreter/Interpreter.hpp"
 #include "lexer/Lexer.hpp"
 #include "parser/Parser.hpp"
 #include "semantic/analyzer/Analyzer.hpp"
@@ -122,6 +123,18 @@ namespace Core
 
     std::vector<std::string_view> &ProgramFile::lines() { return lines_; }
 
+    const std::vector<std::string_view> &ProgramFile::lines() const
+    {
+        return lines_;
+    }
+
+    std::unique_ptr<AST::Program> &ProgramFile::node() { return node_; }
+
+    const std::unique_ptr<AST::Program> &ProgramFile::node() const
+    {
+        return node_;
+    }
+
     DependencyEnvironment &ProgramFile::dependencies()
     {
         return *dependencies_;
@@ -225,16 +238,53 @@ namespace Core
 
     Semantic::AnalysisResult ProgramFile::analyze(ProgramResult &result)
     {
-        auto is_analyzed = analyzed_;
         Semantic::AnalysisResult analysis_result = analyze(result.data);
 
-        if (is_analyzed)
+        if (analyzed_)
             return analysis_result;
 
         result.adapt(analysis_result.status,
                      std::move(analysis_result.diagnostics));
 
         return analysis_result;
+    }
+
+    Interpreter::InterpretationResult
+    ProgramFile::interpret(std::unique_ptr<AST::Program> &program)
+    {
+        if (interpreted_)
+            return {Core::ResultStatus::Success, nullptr, {}};
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+        Interpreter::Interpreter interpreter(*this);
+        Interpreter::InterpretationResult interpretation_result =
+            interpreter.interpret(*program);
+
+        interpreted_ = true;
+
+        std::cout << "[Interpretation] "
+                  << std::chrono::duration_cast<std::chrono::microseconds>(
+                         std::chrono::high_resolution_clock::now() - start)
+                         .count()
+                  << "\n";
+
+        return interpretation_result;
+    }
+
+    Interpreter::InterpretationResult
+    ProgramFile::interpret(ProgramResult &result)
+    {
+        Interpreter::InterpretationResult interpretation_result =
+            interpret(result.data);
+
+        if (interpreted_)
+            return interpretation_result;
+
+        result.adapt(interpretation_result.status,
+                     std::move(interpretation_result.diagnostics));
+
+        return interpretation_result;
     }
 
     Semantic::AnalysisResult ProgramFile::lex_parse_analyze()
@@ -261,6 +311,13 @@ namespace Core
                      std::move(analysis_result.diagnostics));
 
         return result;
+    }
+
+    Interpreter::InterpretationResult ProgramFile::lex_parse_analyze_interpret()
+    {
+        lex_parse_analyze();
+
+        return interpret(node_);
     }
 
     void ProgramFile::execute()
@@ -291,6 +348,19 @@ namespace Core
                          std::move(analysis_result.diagnostics));
 
             succeeded = result.status == Core::ResultStatus::Success;
+            analyzed_ = true;
+        }
+
+        // Interpretation
+        if (succeeded)
+        {
+            Interpreter::InterpretationResult interpretation_result =
+                interpret(node_);
+            result.adapt(interpretation_result.status,
+                         std::move(interpretation_result.diagnostics));
+
+            succeeded = result.status == Core::ResultStatus::Success;
+            interpreted_ = true;
         }
 
         // After Execution

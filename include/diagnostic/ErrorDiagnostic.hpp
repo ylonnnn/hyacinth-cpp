@@ -61,6 +61,12 @@ namespace Diagnostic
             OutOfRange,
         };
 
+        enum class Runtime
+        {
+            UnresolvedImport = 1,
+            OutOfRange,
+        };
+
         enum class Modification
         {
             ReadValueModification = 1,
@@ -76,8 +82,8 @@ namespace Diagnostic
 
     using ErrorType =
         std::variant<ErrorTypes::General, ErrorTypes::Syntax, ErrorTypes::Type,
-                     ErrorTypes::Semantic, ErrorTypes::Modification,
-                     ErrorTypes::Uninitialization>;
+                     ErrorTypes::Semantic, ErrorTypes::Runtime,
+                     ErrorTypes::Modification, ErrorTypes::Uninitialization>;
 
     extern std::unordered_map<ErrorType, const char *> ERROR_CODES;
 

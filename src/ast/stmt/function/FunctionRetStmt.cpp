@@ -6,15 +6,18 @@ namespace AST
 {
     FunctionReturnStmt::FunctionReturnStmt(Core::Position &position,
                                            std::unique_ptr<Expr> value)
-        : Node(position), value_(std::move(value))
+        : Node(position), return_value_(std::move(value))
     {
         if (value_ != nullptr)
-            set_end_position(value_->end_position());
+            set_end_position(return_value_->end_position());
     }
 
-    Expr *FunctionReturnStmt::value() { return value_.get(); }
+    Expr *FunctionReturnStmt::return_value() { return return_value_.get(); }
 
-    std::unique_ptr<Expr> &FunctionReturnStmt::value_ptr() { return value_; }
+    std::unique_ptr<Expr> &FunctionReturnStmt::return_value_ptr()
+    {
+        return return_value_;
+    }
 
     void FunctionReturnStmt::print(std::ostream &os, uint8_t tab) const
     {
@@ -23,8 +26,8 @@ namespace AST
 
         os << "FunctionReturnStmt {\n" << inner_indentation << "value: ";
 
-        if (value_ != nullptr)
-            value_->print(os, tab + 1);
+        if (return_value_ != nullptr)
+            return_value_->print(os, tab + 1);
         else
             os << "null";
 

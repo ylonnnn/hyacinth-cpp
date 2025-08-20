@@ -24,8 +24,9 @@ namespace Core
                 using Ty = std::decay_t<decltype(val)>;
                 using Ty_ = std::decay_t<decltype(val_)>;
 
-                if constexpr (std::is_same_v<Ty, Core::Value> &&
-                              std::is_same_v<Ty_, Core::Value>)
+                if constexpr (std::is_same_v<Ty,
+                                             std::shared_ptr<Core::Value>> &&
+                              std::is_same_v<Ty_, std::shared_ptr<Core::Value>>)
 
                     return std::visit(
                         [&](auto &v, auto &v_) -> Type *
@@ -43,7 +44,7 @@ namespace Core
                             else
                                 return nullptr;
                         },
-                        val, val_);
+                        *val, *val_);
 
                 else
                     return nullptr;

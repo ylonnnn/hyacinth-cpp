@@ -7,8 +7,8 @@ namespace Semantic
     {
         AST::Stmt *stmt = &node;
 
-        if (auto ptr = dynamic_cast<AST::DeclarationStmt *>(stmt))
-            return AnalyzerImpl<AST::DeclarationStmt>::analyze(analyzer, *ptr);
+        if (auto ptr = dynamic_cast<AST::GlobalStmt *>(stmt))
+            return AnalyzerImpl<AST::GlobalStmt>::analyze(analyzer, *ptr);
 
         else if (typeid(*stmt) == typeid(AST::FunctionReturnStmt))
             return AnalyzerImpl<AST::FunctionReturnStmt>::analyze(

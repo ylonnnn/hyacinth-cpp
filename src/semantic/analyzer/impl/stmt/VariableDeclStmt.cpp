@@ -152,6 +152,8 @@ namespace Semantic
         var->define(const_cast<Core::Position *>(&stmt.position()));
         var->value = std::move(v_res.value);
 
+        var->node->set_value(var->value);
+
         // If type is not specified, it is inferred
         // No type validation required
         if (ast_type == nullptr)

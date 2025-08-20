@@ -12,12 +12,10 @@ namespace Semantic
 
         for (auto &statement : node.statements())
         {
-            AnalysisResult decl_result =
-                AnalyzerImpl<std::remove_cv_t<std::remove_reference_t<
-                    decltype(*statement)>>>::analyze(analyzer, *statement);
+            AnalysisResult gls_res =
+                AnalyzerImpl<AST::GlobalStmt>::analyze(analyzer, *statement);
 
-            result.adapt(decl_result.status,
-                         std::move(decl_result.diagnostics));
+            result.adapt(gls_res.status, std::move(gls_res.diagnostics));
         }
 
         return result;

@@ -22,6 +22,18 @@ namespace AST
         return arguments_;
     }
 
+    Core::FunctionSymbol *FunctionCallExpr::fn_symbol() { return fn_symbol_; }
+
+    const Core::FunctionSymbol *FunctionCallExpr::fn_symbol() const
+    {
+        return fn_symbol_;
+    }
+
+    void FunctionCallExpr::set_fn_symbol(Core::FunctionSymbol *fn_symbol)
+    {
+        fn_symbol_ = fn_symbol;
+    }
+
     void FunctionCallExpr::print(std::ostream &os, uint8_t tab) const
     {
         std::string indentation = Utils::tab(tab - 1, 4),

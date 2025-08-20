@@ -40,6 +40,8 @@ namespace Semantic
                         result.value = std::move(l_res.value);
                         result.symbol = l_res.symbol;
 
+                        node.set_value(result.value);
+
                         return;
                     }
 
@@ -110,6 +112,8 @@ namespace Semantic
 
                         result.data = entry->type;
                         result.value = entry->value;
+
+                        node.set_value(result.value);
                     }
 
                     else
@@ -212,6 +216,8 @@ namespace Semantic
 
                     result.data = data->type;
                     result.value = data->value;
+
+                    node.set_value(result.value);
                 }
 
                 return;
@@ -301,6 +307,8 @@ namespace Semantic
 
         result.data = res_val->type;
         result.value = res_val->value;
+
+        node.set_value(result.value);
 
         std::cout << "type: "
                   << (result.data != nullptr ? result.data->to_string()

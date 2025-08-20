@@ -16,6 +16,7 @@ namespace AST
         bool is_definition() const override;
 
         BlockStmt &body();
+        const BlockStmt &body() const;
 
         std::unique_ptr<BlockStmt> &body_ptr();
 

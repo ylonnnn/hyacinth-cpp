@@ -24,6 +24,11 @@ namespace Semantic
     struct AnalysisResult;
 }
 
+namespace Interpreter
+{
+    struct InterpretationResult;
+}
+
 namespace Core
 {
     class ProgramFile;
@@ -77,6 +82,10 @@ namespace Core
         const std::string &source() const;
 
         std::vector<std::string_view> &lines();
+        const std::vector<std::string_view> &lines() const;
+
+        std::unique_ptr<AST::Program> &node();
+        const std::unique_ptr<AST::Program> &node() const;
 
         DependencyEnvironment &dependencies();
         Environment &environment();
@@ -96,8 +105,12 @@ namespace Core
         Semantic::AnalysisResult
         analyze(std::unique_ptr<AST::Program> &program);
         Semantic::AnalysisResult analyze(ProgramResult &result);
+        Interpreter::InterpretationResult
+        interpret(std::unique_ptr<AST::Program> &program);
+        Interpreter::InterpretationResult interpret(ProgramResult &result);
 
         Semantic::AnalysisResult lex_parse_analyze();
+        Interpreter::InterpretationResult lex_parse_analyze_interpret();
 
         void execute();
     };

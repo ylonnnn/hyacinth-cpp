@@ -20,6 +20,8 @@ namespace Semantic
             result.data =
                 Core::Type::from_value(&analyzer.environment(), *result.value);
 
+        node.set_value(result.value);
+
         return result;
     }
 

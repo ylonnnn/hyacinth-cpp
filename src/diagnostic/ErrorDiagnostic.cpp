@@ -39,24 +39,24 @@ namespace Diagnostic
 
         ERROR_CODES[ErrorTypes::Type::Mismatch] = "HYC::TYPE:MISMATCH";
         ERROR_CODES[ErrorTypes::Type::UnrecognizedType] =
-            "HYC::TYPE:UNRECOGNIZED_TYPE";
+            "HYC::TYPE::UNRECOGNIZED_TYPE";
         ERROR_CODES[ErrorTypes::Type::InvalidVariableType] =
-            "HYC::TYPE:INVALID_VARIABLE_TYPE";
+            "HYC::TYPE::INVALID_VARIABLE_TYPE";
         ERROR_CODES[ErrorTypes::Type::InvalidArgumentType] =
-            "HYC::TYPE:INVALID_ARGUMENT_TYPE";
+            "HYC::TYPE::INVALID_ARGUMENT_TYPE";
         ERROR_CODES[ErrorTypes::Type::InvalidTypeArgumentType] =
-            "HYC::TYPE:INVALID_TYPE_ARGUMENT_TYPE";
+            "HYC::TYPE::INVALID_TYPE_ARGUMENT_TYPE";
         ERROR_CODES[ErrorTypes::Type::InvalidReturnType] =
-            "HYC::TYPE:INVALID_RETURN_TYPE";
+            "HYC::TYPE::INVALID_RETURN_TYPE";
         ERROR_CODES[ErrorTypes::Type::InvalidInstantiationType] =
-            "HYC::TYPE:INVALID_INSTANTIATION_TYPE";
+            "HYC::TYPE::INVALID_INSTANTIATION_TYPE";
 
         ERROR_CODES[ErrorTypes::Semantic::NonCallableInvocation] =
-            "HYC::SEMANTIC:NONCALLABLE_INVOCATION";
+            "HYC::SEMANTIC::NONCALLABLE_INVOCATION";
         ERROR_CODES[ErrorTypes::Semantic::UnrecognizedSymbol] =
-            "HYC::SEMANTIC:UNRECOGNIZED_SYMBOL";
+            "HYC::SEMANTIC::UNRECOGNIZED_SYMBOL";
         ERROR_CODES[ErrorTypes::Semantic::InvalidArgumentCount] =
-            "HYC::SEMANTIC:INVALID_ARGUMENT_COUNT";
+            "HYC::SEMANTIC::INVALID_ARGUMENT_COUNT";
         ERROR_CODES[ErrorTypes::Semantic::Duplication] =
             "HYC::SEMANTIC::DUPLICATION";
         ERROR_CODES[ErrorTypes::Semantic::InvalidReturnUsage] =
@@ -73,6 +73,11 @@ namespace Diagnostic
             "HYC::SEMANTIC::ILLEGAL_NONARRAY_ELEMENT_ACCESS";
         ERROR_CODES[ErrorTypes::Semantic::OutOfRange] =
             "HYC::SEMANTIC::OUT_OF_RANGE";
+
+        ERROR_CODES[ErrorTypes::Runtime::UnresolvedImport] =
+            "HYC::RUNTIME::UNRESOLVED_IMPORT";
+        ERROR_CODES[ErrorTypes::Runtime::OutOfRange] =
+            "HYC::RUNTIME::OUT_OF_RANGE";
 
         ERROR_CODES[ErrorTypes::Modification::ReadValueModification] =
             "HYC::MODIFICATION:RVALUE_MODIFICATION";

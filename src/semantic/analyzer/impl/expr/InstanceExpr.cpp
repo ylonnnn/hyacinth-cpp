@@ -60,6 +60,8 @@ namespace Semantic
         obj->type() = result.data;
         auto *members = &type->members();
 
+        auto bind = true;
+
         for (auto &[name, field] : fields)
         {
             AST::Expr &f_val = field.value();
@@ -105,11 +107,17 @@ namespace Semantic
                 return result;
             }
 
+            if (v_res.value == nullptr)
+                bind = false;
+
             obj->set(name,
                      Core::value_data{std::move(v_res.value), v_res.data});
         }
 
         result.value = std::make_shared<Core::Value>(*obj);
+
+        if (bind)
+            node.set_value(result.value);
 
         return result;
     }

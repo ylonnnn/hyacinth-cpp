@@ -210,7 +210,6 @@ namespace Semantic
             &node);
 
         auto is_def = node.is_definition();
-        Core::Environment *body_env = nullptr;
 
         // Create function environment if the node is a function definition
         if (is_def)
@@ -219,11 +218,13 @@ namespace Semantic
 
             children.push_back(std::make_unique<Core::FunctionEnvironment>(
                 current, function.get()));
-            body_env = children.back().get();
+            function->environment = children.back().get();
         }
 
+        auto fn_env = function->environment;
+
         analyze_return_type(analyzer, function, result);
-        analyze_parameters(analyzer, function, result, body_env);
+        analyze_parameters(analyzer, function, result, fn_env);
 
         function->construct_signature();
 
@@ -241,12 +242,9 @@ namespace Semantic
             declared->define(static_cast<AST::FunctionDefinitionStmt *>(&node));
 
             // Enter function body environment
-            analyzer.set_current_env(*body_env);
-
+            analyzer.set_current_env(*fn_env);
             analyze_body(analyzer, function, result);
-
-            // Exit function body environment
-            analyzer.set_current_env(*body_env->parent());
+            analyzer.set_current_env(*fn_env->parent());
         }
 
         if (!is_decl)

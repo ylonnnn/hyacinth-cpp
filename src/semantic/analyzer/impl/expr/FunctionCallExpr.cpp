@@ -6,8 +6,8 @@
 
 namespace Semantic
 {
-    bool analyze_callee(Analyzer &analyzer, AST::FunctionCallExpr &node,
-                        AnalysisResult &result)
+    static bool analyze_callee(Analyzer &analyzer, AST::FunctionCallExpr &node,
+                               AnalysisResult &result)
     {
         auto &callee = node.callee();
 
@@ -37,6 +37,8 @@ namespace Semantic
 
         result.symbol = symbol;
         result.data = symbol->return_type;
+
+        node.set_fn_symbol(symbol);
 
         return true;
     }
@@ -74,13 +76,19 @@ namespace Semantic
 
             AnalysisResult a_res =
                 AnalyzerImpl<AST::Expr>::analyze(analyzer, *argument);
-
             result.adapt(a_res.status, std::move(a_res.diagnostics));
 
-            if ((a_res.value && parameter.type->assignable(*a_res.value)) ||
+            auto has_value = a_res.value != nullptr;
+
+            if ((has_value && parameter.type->assignable(*a_res.value)) ||
                 (a_res.data != nullptr &&
                  parameter.type->assignable_with(*a_res.data)))
+            {
+                if (has_value)
+                    argument->set_value(a_res.value);
+
                 continue;
+            }
 
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
                 argument.get(),

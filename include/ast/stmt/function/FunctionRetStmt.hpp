@@ -8,15 +8,15 @@ namespace AST
     class FunctionReturnStmt : public Stmt
     {
       private:
-        std::unique_ptr<Expr> value_;
+        std::unique_ptr<Expr> return_value_;
 
       public:
         FunctionReturnStmt(Core::Position &position,
                            std::unique_ptr<Expr> value);
 
-        Expr *value();
+        Expr *return_value();
 
-        std::unique_ptr<Expr> &value_ptr();
+        std::unique_ptr<Expr> &return_value_ptr();
 
         void print(std::ostream &os, uint8_t tab) const override;
     };

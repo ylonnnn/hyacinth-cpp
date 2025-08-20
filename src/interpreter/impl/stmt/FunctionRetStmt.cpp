@@ -1,9 +1,10 @@
 #include "core/environment/FunctionEnvironment.hpp"
 #include "core/symbol/FunctionSymbol.hpp"
 #include "core/type/primitive/Void.hpp"
-#include "semantic/analyzer/impl/Stmt.hpp"
+#include "interpreter/Interpreter.hpp"
+#include "interpreter/impl/Stmt.hpp"
 
-namespace Semantic
+namespace Interpreter
 {
     static Core::FunctionEnvironment *resolve_fn_env(Core::Environment *current)
     {
@@ -21,9 +22,10 @@ namespace Semantic
         return nullptr;
     }
 
-    static void analyze_value(Analyzer &analyzer, AST::FunctionReturnStmt &node,
-                              AnalysisResult &result,
-                              Core::FunctionEnvironment *fn_env)
+    static void interpret_value(Interpreter &interpreter,
+                                AST::FunctionReturnStmt &node,
+                                InterpretationResult &result,
+                                Core::FunctionEnvironment *fn_env)
     {
         AST::Expr *ret_val = node.return_value();
         auto combination =
@@ -47,55 +49,17 @@ namespace Semantic
             case 0b00:
             case 0b11:
             {
-                result.data = ret_type;
-
                 if (ret_val == nullptr)
                 {
-                    result.value = std::make_shared<Core::Value>(Core::null{});
+                    result.data = std::make_shared<Core::Value>(Core::null{});
                     return;
                 }
 
-                auto error = [&]() -> void
-                {
-                    auto diagnostic =
-                        std::make_unique<Diagnostic::ErrorDiagnostic>(
-                            ret_val, Diagnostic::ErrorTypes::Type::Mismatch,
-                            std::string("Expected value of type ") +
-                                Diagnostic::ERR_GEN + ret_type->to_string() +
-                                Utils::Styles::Reset + ".",
-                            std::string(""));
-
-                    diagnostic->add_detail(
-                        result.data->make_suggestion(ret_val));
-
-                    result.error(std::move(diagnostic));
-                };
-
-                AnalysisResult v_res =
-                    AnalyzerImpl<AST::Expr>::analyze(analyzer, *ret_val);
-                result.adapt(v_res.status, std::move(v_res.diagnostics));
-
-                // Analysis of returned value
-                if (v_res.value)
-                {
-                    if (!result.data->assignable(*v_res.value))
-                        error();
-
-                    result.value = std::move(v_res.value);
-                }
-
-                // Analysis of returned type
-                else
-                {
-                    if (v_res.data == nullptr)
-                    {
-                        error();
-                        return;
-                    }
-
-                    if (!result.data->assignable_with(*v_res.data))
-                        error();
-                }
+                InterpretationResult v_res =
+                    InterpreterImpl<AST::Expr>::interpret(interpreter,
+                                                          *ret_val);
+                result.adapt(v_res.status, std::move(v_res.diagnostics),
+                             v_res.data);
 
                 return;
             }
@@ -131,12 +95,15 @@ namespace Semantic
         }
     }
 
-    AnalysisResult AnalyzerImpl<AST::FunctionReturnStmt>::analyze(
-        Analyzer &analyzer, AST::FunctionReturnStmt &node)
+    InterpretationResult InterpreterImpl<AST::FunctionReturnStmt>::interpret(
+        Interpreter &interpreter, AST::FunctionReturnStmt &node)
     {
-        Core::Environment *current = analyzer.current_env();
-        AnalysisResult result = {
-            nullptr, Core::ResultStatus::Success, nullptr, {}};
+        Core::Environment *current = interpreter.current_env();
+        InterpretationResult result = {
+            Core::ResultStatus::Success, node.value_ptr(), {}};
+
+        if (result.data != nullptr)
+            return result;
 
         result.diagnostics.reserve(8);
 
@@ -153,9 +120,9 @@ namespace Semantic
             return result;
         }
 
-        analyze_value(analyzer, node, result, fn_env);
+        interpret_value(interpreter, node, result, fn_env);
 
         return result;
     }
 
-} // namespace Semantic
+} // namespace Interpreter

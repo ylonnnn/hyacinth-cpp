@@ -20,6 +20,8 @@ namespace AST
 
     BlockStmt &FunctionDefinitionStmt::body() { return *body_; }
 
+    const BlockStmt &FunctionDefinitionStmt::body() const { return *body_; }
+
     std::unique_ptr<BlockStmt> &FunctionDefinitionStmt::body_ptr()
     {
         return body_;

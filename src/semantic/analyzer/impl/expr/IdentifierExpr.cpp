@@ -1,6 +1,5 @@
 #include "ast/type/SimpleType.hpp"
 #include "semantic/analyzer/impl/Expr.hpp"
-#include <array>
 
 namespace Semantic
 {
@@ -23,6 +22,8 @@ namespace Semantic
             {
                 result.value = ptr->value;
                 result.data = ptr->type;
+
+                node.set_value(result.value);
             }
 
             return result;
