@@ -1,0 +1,7 @@
+pub fn print -> void (content: str) {
+
+}
+
+pub fn println -> void (content: str) {
+    print(content + "\n");
+}

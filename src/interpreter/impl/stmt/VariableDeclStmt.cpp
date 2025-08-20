@@ -14,7 +14,6 @@ namespace Interpreter
             return;
 
         auto &stmt = static_cast<AST::VariableDefinitionStmt &>(*var.node);
-        AST::Expr &value = stmt.value();
 
         InterpretationResult i_res = interpreter.interpret(stmt.value());
         result.adapt(i_res.status, std::move(i_res.diagnostics), i_res.data);

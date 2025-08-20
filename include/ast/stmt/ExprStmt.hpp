@@ -1,11 +1,11 @@
 #pragma once
 
 #include "ast/expr/Expr.hpp"
-#include "ast/stmt/GlobalStmt.hpp"
+#include "ast/stmt/Stmt.hpp"
 
 namespace AST
 {
-    class ExprStmt : public GlobalStmt
+    class ExprStmt : public Stmt
     {
       protected:
         std::unique_ptr<AST::Expr> expr_;

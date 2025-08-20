@@ -36,7 +36,7 @@ namespace Interpreter
             return result;
         }
 
-        InterpretationResult i_res = it->second->interpret(current.node());
+        InterpretationResult i_res = it->second->interpret(it->second->node());
         result.adapt(i_res.status, std::move(i_res.diagnostics));
 
         return result;

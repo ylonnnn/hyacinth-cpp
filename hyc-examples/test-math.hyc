@@ -1,8 +1,8 @@
-pub fn add -> int[32] (a: int[32], b: int[32]) {
-    return a + b;
+pub fn add -> int<32> (a: int<32>, b: int<32>) {
+    return a * b;
 }
 
-pub fn subtract -> int[32] (a: int[32], b: int[32]) {
+pub fn subtract -> int<32> (a: int<32>, b: int<32>) {
     return a - b;
 }
 

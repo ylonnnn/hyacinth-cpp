@@ -14,7 +14,6 @@ namespace Semantic
         AnalysisResult c_res =
             AnalyzerImpl<AST::Expr>::analyze(analyzer, callee);
 
-        // Core::Type *callee_type = c_res.data;
         result.adapt(c_res.status, std::move(c_res.diagnostics));
 
         if (c_res.symbol == nullptr)
@@ -68,6 +67,9 @@ namespace Semantic
 
             return;
         }
+
+        if (param_count == 0)
+            return;
 
         for (size_t i = 0; i < param_count; i++)
         {

@@ -7,12 +7,15 @@ namespace Semantic
                                                         AST::ExprStmt &node)
     {
         AST::Expr &expr = node.expr();
-        AnalysisResult result =
-            AnalyzerImpl<AST::Expr>::analyze(analyzer, expr);
+        AnalysisResult result = analyzer.analyze(expr);
+
+        std::cout << "result status: " << result.status << "\n";
 
         if (typeid(expr) != typeid(AST::FunctionCallExpr))
             result.warn(&expr, Diagnostic::WarningType::Unused,
                         "Expression result unused", "Expression unused");
+
+        std::cout << "expr stmt: " << result.status << "\n";
 
         return result;
     }

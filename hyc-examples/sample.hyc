@@ -1,35 +1,12 @@
-struct Person;
-struct Person {
-    name: str;
-    age: int<32>;
-    friends: array<Person>;
-}
-
-fn create_person -> Person (name: str, age: int<7>, friends: array<Person>) {
-    return Person {
-        name: name,
-        age: age,
-        friends: friends,
-    };
-}
-
-fn ager -> int<7> (n: int<6>) {
-    return n * 2;
-}
-
-fn make_people -> array<Person> () {
-    return {
-        create_person("Person 1", 21, {}),
-        create_person("Person 2", 22, {}),
-        create_person("Person 3", 23, {}),
-    };
-}
+import "./test-math.hyc";
+import "./io.hyc";
 
 fn main -> void () {
-    let p := create_person("John Doe", 21, {});
-    let people: array<Person> = make_people();
+    let x := 123;
+    let y := 456;
 
-    let p_at_0 := people[0];
-
-    // let p0_friend := p_at_0.friends[0];
+    let sum := add(x, y);
+    let diff := subtract(x, y);
+    
+    println("Hello, World");
 }
