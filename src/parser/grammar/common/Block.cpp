@@ -1,5 +1,5 @@
 #include "parser/grammar/common/Block.hpp"
-#include "ast/stmt/BlockStmt.hpp"
+#include "ast/block/Block.hpp"
 #include "parser/grammar/GrammarRule.hpp"
 
 namespace Parser
@@ -9,7 +9,9 @@ namespace Parser
     {
     }
 
-    ParseResult Block::parse(Parser &parser)
+    ParseResult Block::parse(Parser &parser) { return parse(parser, false); }
+
+    ParseResult Block::parse(Parser &parser, bool global)
     {
         auto &lexer = parser.lexer();
         ParseResult result = {parser, Core::ResultStatus::Success, nullptr, {}};
@@ -20,15 +22,15 @@ namespace Parser
             return result;
         }
 
-        auto body = std::make_unique<AST::BlockStmt>(
+        auto body = std::make_unique<AST::Block>(
             lexer.peek()->position, std::vector<std::unique_ptr<AST::Stmt>>{});
-        std::vector<std::unique_ptr<AST::Stmt>> &statements =
-            body->statements();
 
-        AST::BlockStmt *block = body.get();
-
-        statements.reserve(32);
+        AST::Block *block = body.get();
         result.data = std::move(body);
+
+        std::vector<std::unique_ptr<AST::Stmt>> &statements =
+            block->statements();
+        statements.reserve(32);
 
         if (parser.expect(pair_.first, false))
         {
@@ -45,7 +47,7 @@ namespace Parser
 
         while (!parser.expect(pair_.second, false))
         {
-            ParseResult p_res = parser.grammar().partial_parse(parser, false);
+            ParseResult p_res = parser.grammar().partial_parse(parser, global);
 
             auto invalid_data = p_res.data == nullptr;
             if (!invalid_data)

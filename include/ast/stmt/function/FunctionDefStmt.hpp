@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ast/stmt/BlockStmt.hpp"
+#include "ast/block/Block.hpp"
 #include "ast/stmt/function/FunctionDeclStmt.hpp"
 
 namespace AST
@@ -11,14 +11,14 @@ namespace AST
         FunctionDefinitionStmt(Lexer::Token &name,
                                std::unique_ptr<Type> return_type,
                                std::vector<FunctionParameter> parameters,
-                               std::unique_ptr<BlockStmt> body);
+                               std::unique_ptr<Block> body);
 
         bool is_definition() const override;
 
-        BlockStmt &body();
-        const BlockStmt &body() const;
+        Block &body();
+        const Block &body() const;
 
-        std::unique_ptr<BlockStmt> &body_ptr();
+        std::unique_ptr<Block> &body_ptr();
 
         void print(std::ostream &os, uint8_t tab) const override;
     };

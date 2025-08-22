@@ -14,7 +14,7 @@ namespace Interpreter
             return;
 
         auto &stmt = static_cast<AST::FunctionDefinitionStmt &>(*fn.node);
-        AST::BlockStmt &body = stmt.body();
+        AST::Block &body = stmt.body();
 
         for (const auto &statement : body.statements())
         {

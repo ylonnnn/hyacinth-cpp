@@ -5,8 +5,7 @@ namespace AST
 {
     FunctionDefinitionStmt::FunctionDefinitionStmt(
         Lexer::Token &name, std::unique_ptr<Type> return_type,
-        std::vector<FunctionParameter> parameters,
-        std::unique_ptr<BlockStmt> body)
+        std::vector<FunctionParameter> parameters, std::unique_ptr<Block> body)
         : Node(name.position),
           FunctionDeclarationStmt(name, std::move(return_type),
                                   std::move(parameters))
@@ -18,14 +17,11 @@ namespace AST
 
     bool FunctionDefinitionStmt::is_definition() const { return true; }
 
-    BlockStmt &FunctionDefinitionStmt::body() { return *body_; }
+    Block &FunctionDefinitionStmt::body() { return *body_; }
 
-    const BlockStmt &FunctionDefinitionStmt::body() const { return *body_; }
+    const Block &FunctionDefinitionStmt::body() const { return *body_; }
 
-    std::unique_ptr<BlockStmt> &FunctionDefinitionStmt::body_ptr()
-    {
-        return body_;
-    }
+    std::unique_ptr<Block> &FunctionDefinitionStmt::body_ptr() { return body_; }
 
     void FunctionDefinitionStmt::print(std::ostream &os, uint8_t tab) const
     {

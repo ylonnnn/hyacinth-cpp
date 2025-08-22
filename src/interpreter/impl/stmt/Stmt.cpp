@@ -9,11 +9,10 @@ namespace Interpreter
     {
         AST::Stmt *stmt = &node;
 
-        if (auto ptr = dynamic_cast<AST::GlobalStmt *>(stmt))
-            return InterpreterImpl<AST::GlobalStmt>::interpret(interpreter,
-                                                               *ptr);
+        if (auto ptr = dynamic_cast<AST::DeclarationStmt *>(stmt))
+            return interpreter.interpret(*ptr);
 
-        else if (typeid(*stmt) == typeid(AST::FunctionReturnStmt))
+        if (typeid(*stmt) == typeid(AST::FunctionReturnStmt))
             return InterpreterImpl<AST::FunctionReturnStmt>::interpret(
                 interpreter, *static_cast<AST::FunctionReturnStmt *>(stmt));
 

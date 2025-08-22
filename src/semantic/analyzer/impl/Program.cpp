@@ -10,10 +10,10 @@ namespace Semantic
             nullptr, Core::ResultStatus::Success, nullptr, {}};
         result.diagnostics.reserve(32);
 
-        for (auto &statement : node.statements())
+        for (auto &node : node.nodes())
         {
             AnalysisResult gls_res =
-                AnalyzerImpl<AST::GlobalStmt>::analyze(analyzer, *statement);
+                AnalyzerImpl<AST::GlobalNode>::analyze(analyzer, *node);
 
             result.adapt(gls_res.status, std::move(gls_res.diagnostics));
         }

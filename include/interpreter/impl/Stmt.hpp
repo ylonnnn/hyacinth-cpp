@@ -2,7 +2,7 @@
 
 #include "ast/stmt/DeclarationStmt.hpp"
 #include "ast/stmt/ExprStmt.hpp"
-#include "ast/stmt/GlobalStmt.hpp"
+#include "ast/GlobalNode.hpp"
 #include "ast/stmt/ImportStmt.hpp"
 #include "ast/stmt/function/FunctionDeclStmt.hpp"
 #include "ast/stmt/function/FunctionRetStmt.hpp"
@@ -23,10 +23,10 @@ namespace Interpreter
                                               AST::ExprStmt &node);
     };
 
-    template <> struct InterpreterImpl<AST::GlobalStmt>
+    template <> struct InterpreterImpl<AST::GlobalNode>
     {
         static InterpretationResult interpret(Interpreter &interpreter,
-                                              AST::GlobalStmt &node);
+                                              AST::GlobalNode &node);
     };
 
     template <> struct InterpreterImpl<AST::ImportStmt>

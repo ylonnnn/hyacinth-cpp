@@ -12,14 +12,14 @@ namespace AST
 
     Program::Program(Core::ProgramFile &program)
         : ProgramNode(program), Node(ProgramNode::position_), program_(program),
-          statements_()
+          nodes_()
     {
-        statements_.reserve(64);
+        nodes_.reserve(64);
     }
 
-    std::vector<std::unique_ptr<GlobalStmt>> &Program::statements()
+    std::vector<std::unique_ptr<GlobalNode>> &Program::nodes()
     {
-        return statements_;
+        return nodes_;
     }
 
     void Program::print(std::ostream &os, uint8_t tab) const
@@ -29,9 +29,9 @@ namespace AST
 
         os << "Program {";
 
-        for (auto &declaration : statements_)
+        for (auto &declaration : nodes_)
         {
-            std::cout << "\n" << inner_indentation;
+            os << "\n" << inner_indentation;
             declaration->print(os, tab + 1);
         }
 

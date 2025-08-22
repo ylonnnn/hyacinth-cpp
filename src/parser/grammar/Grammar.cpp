@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iostream>
 #include <unordered_map>
 
 #include "diagnostic/ErrorDiagnostic.hpp"
@@ -111,9 +112,9 @@ namespace Parser
 
             if (p_res.data)
                 if (auto ptr =
-                        dynamic_cast<AST::GlobalStmt *>(p_res.data.release()))
-                    result.data->statements().push_back(
-                        std::unique_ptr<AST::GlobalStmt>(ptr));
+                        dynamic_cast<AST::GlobalNode *>(p_res.data.release()))
+                    result.data->nodes().push_back(
+                        std::unique_ptr<AST::GlobalNode>(ptr));
 
             result.adapt(p_res.status, std::move(p_res.diagnostics));
         }

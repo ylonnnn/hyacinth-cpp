@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ast/stmt/GlobalStmt.hpp"
+#include "ast/GlobalNode.hpp"
 #include "lexer/Token.hpp"
 
 namespace AST
 {
-    class ImportStmt : public GlobalStmt
+    class ImportStmt : public GlobalNode
     {
       private:
         Lexer::Token &target_;

@@ -123,7 +123,7 @@ namespace Core
         { return higher_bit_width(left, right); };
 
         Operation::overload_binary(
-            {Operation::BinarySignature{ArithmeticUnary::Plus, int_w_, int_w_},
+            {Operation::BinarySignature{Arithmetic::Plus, int_w_, int_w_},
              true,
              overload<h_int, h_int>([](const h_int &a, const h_int &b) -> h_int
                                     { return a.i64() + b.i64(); }, __h_bw)
@@ -131,7 +131,7 @@ namespace Core
             });
 
         Operation::overload_binary(
-            {Operation::BinarySignature{ArithmeticUnary::Minus, int_w_, int_w_},
+            {Operation::BinarySignature{Arithmetic::Minus, int_w_, int_w_},
              true,
              overload<h_int, h_int>([](const h_int &a, const h_int &b) -> h_int
                                     { return a.i64() - b.i64(); }, __h_bw)});

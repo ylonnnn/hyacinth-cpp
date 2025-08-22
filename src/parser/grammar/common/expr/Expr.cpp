@@ -137,7 +137,7 @@ namespace Parser
         // Member Access
         float memaccess_bp = static_cast<int>(BindingPower::MemberAccess);
         for (const auto &type :
-             std::vector<Lexer::TokenType>{Operator::Dot::Single})
+             std::vector<Lexer::TokenType>{Operator::Access::Dot})
         {
             add_led(type, parse_memaccess,
                     std::pair<float, float>{memaccess_bp, memaccess_bp});
@@ -186,8 +186,8 @@ namespace Parser
         // Additive
         float additive_bp = static_cast<int>(BindingPower::Additive);
         for (const auto &type : std::vector<Lexer::TokenType>({
-                 ArithmeticUnary::Plus,
-                 ArithmeticUnary::Minus,
+                 Arithmetic::Plus,
+                 Arithmetic::Minus,
              }))
         {
 

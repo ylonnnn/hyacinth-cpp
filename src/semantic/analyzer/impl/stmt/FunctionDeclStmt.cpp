@@ -175,7 +175,7 @@ namespace Semantic
             return;
 
         auto defptr = static_cast<AST::FunctionDefinitionStmt *>(node);
-        AST::BlockStmt &body = defptr->body();
+        AST::Block &body = defptr->body();
 
         std::vector<std::unique_ptr<AST::Stmt>> &statements = body.statements();
         size_t r_size = statements.size() * 2;
@@ -185,8 +185,7 @@ namespace Semantic
 
         for (auto &stmt : statements)
         {
-            AnalysisResult a_res =
-                AnalyzerImpl<AST::Stmt>::analyze(analyzer, *stmt);
+            AnalysisResult a_res = analyzer.analyze(*stmt);
 
             result.adapt(a_res.status, std::move(a_res.diagnostics));
         }

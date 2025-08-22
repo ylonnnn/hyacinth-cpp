@@ -1,6 +1,7 @@
 #pragma once
 
-#include "ast/stmt/GlobalStmt.hpp"
+#include "ast/GlobalNode.hpp"
+#include "ast/stmt/Stmt.hpp"
 #include "lexer/Token.hpp"
 
 namespace AST
@@ -15,7 +16,7 @@ namespace AST
     std::ostream &operator<<(std::ostream &os,
                              DeclarationAccessibility accessibility);
 
-    class DeclarationStmt : public GlobalStmt
+    class DeclarationStmt : public GlobalNode, public Stmt
     {
       protected:
         Lexer::Token &name_;

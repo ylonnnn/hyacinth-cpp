@@ -3,8 +3,8 @@
 #include <memory>
 #include <vector>
 
+#include "ast/GlobalNode.hpp"
 #include "ast/Node.hpp"
-#include "ast/stmt/GlobalStmt.hpp"
 #include "core/program/Program.hpp"
 
 namespace AST
@@ -24,12 +24,13 @@ namespace AST
     {
       private:
         Core::ProgramFile &program_;
-        std::vector<std::unique_ptr<GlobalStmt>> statements_;
+        std::vector<std::unique_ptr<GlobalNode>> nodes_;
 
       public:
         Program(Core::ProgramFile &program);
 
-        std::vector<std::unique_ptr<GlobalStmt>> &statements();
+        std::vector<std::unique_ptr<GlobalNode>> &nodes();
+        const std::vector<std::unique_ptr<GlobalNode>> &nodes() const;
 
         void print(std::ostream &os, uint8_t tab) const override;
     };

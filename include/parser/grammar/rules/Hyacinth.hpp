@@ -10,6 +10,7 @@ namespace Parser::Hyacinth
     constexpr auto TERMINATOR = Delimeter::Semicolon;
 
     constexpr auto IMPORT = Reserved::Import;
+    constexpr auto LIB = Reserved::Lib;
 
     constexpr auto
         // pub

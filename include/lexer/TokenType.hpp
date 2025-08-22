@@ -7,6 +7,7 @@ namespace Lexer
         enum class Reserved
         {
             Import,
+            Lib,
             Public,
             Private,
             Protected,
@@ -33,11 +34,15 @@ namespace Lexer
 
         namespace Operator
         {
-
-            enum class Dot
+            enum class Access
             {
-                Single,
-                Double,
+                Dot,
+                DoubleColon,
+            };
+
+            enum class Range
+            {
+                DoubleDot,
             };
 
             enum class Arrow
@@ -56,14 +61,10 @@ namespace Lexer
                 Modulo,
             };
 
-            enum class ArithmeticUnary
+            enum class Arithmetic
             {
                 Plus,
                 Minus,
-            };
-
-            enum class Arithmetic
-            {
                 Multiplication,
                 Division,
                 Modulo,
@@ -136,6 +137,8 @@ namespace Lexer
             {
                 case TokenTypes::Reserved::Import:
                     return "Reserved::Import";
+                case TokenTypes::Reserved::Lib:
+                    return "Reserved::Lib";
                 case TokenTypes::Reserved::Public:
                     return "Reserved::Public";
                 case TokenTypes::Reserved::Private:
@@ -186,17 +189,28 @@ namespace Lexer
             return "Primary::Unknown";
         }
 
-        inline const char *to_string(TokenTypes::Operator::Dot value)
+        inline const char *to_string(TokenTypes::Operator::Access value)
         {
             switch (value)
             {
-                case TokenTypes::Operator::Dot::Single:
-                    return "Operator::Dot::Single";
-                case TokenTypes::Operator::Dot::Double:
-                    return "Operator::Dot::Double";
+                case TokenTypes::Operator::Access::Dot:
+                    return "Operator::Access::Dot";
+                case TokenTypes::Operator::Access::DoubleColon:
+                    return "Operator::Access::DoubleColon";
             }
 
             return "Operator::Dot::Unknown";
+        }
+
+        inline const char *to_string(TokenTypes::Operator::Range value)
+        {
+            switch (value)
+            {
+                case TokenTypes::Operator::Range::DoubleDot:
+                    return "Operator::Range::DoubleDot";
+            }
+
+            return "Operator::Range::Unknown";
         }
 
         inline const char *to_string(TokenTypes::Operator::Arrow value)
@@ -233,24 +247,14 @@ namespace Lexer
             return "Operator::Assignment::Unknown";
         }
 
-        inline const char *
-        to_string(TokenTypes::Operator::ArithmeticUnary value)
-        {
-            switch (value)
-            {
-                case TokenTypes::Operator::ArithmeticUnary::Plus:
-                    return "Operator::ArithmeticUnary::Plus";
-                case TokenTypes::Operator::ArithmeticUnary::Minus:
-                    return "Operator::ArithmeticUnary::Minus";
-            }
-
-            return "Operator::ArithmeticUnary::Unknown";
-        }
-
         inline const char *to_string(TokenTypes::Operator::Arithmetic value)
         {
             switch (value)
             {
+                case TokenTypes::Operator::Arithmetic::Plus:
+                    return "Operator::Arithmetic::Plus";
+                case TokenTypes::Operator::Arithmetic::Minus:
+                    return "Operator::Arithmetic::Minus";
                 case TokenTypes::Operator::Arithmetic::Multiplication:
                     return "Operator::Arithmetic::Multiplication";
                 case TokenTypes::Operator::Arithmetic::Division:
@@ -382,7 +386,6 @@ namespace Lexer
                     return "UnknownToken";
 
                 case TokenTypes::Invalid::InvalidCharacter:
-
                     return "InvalidCharacter";
             }
 
@@ -393,15 +396,17 @@ namespace Lexer
 
     using TokenTypeOperator = std::variant<
         TokenTypes::Operator::Arrow, TokenTypes::Operator::Assignment,
-        TokenTypes::Operator::ArithmeticUnary, TokenTypes::Operator::Arithmetic,
-        TokenTypes::Operator::Unary, TokenTypes::Operator::Logical,
-        TokenTypes::Operator::Bitwise, TokenTypes::Operator::Relational>;
+        TokenTypes::Operator::Arithmetic, TokenTypes::Operator::Unary,
+        TokenTypes::Operator::Logical, TokenTypes::Operator::Bitwise,
+        TokenTypes::Operator::Relational>;
 
     using TokenType =
         std::variant<TokenTypes::Reserved, TokenTypes::Primary,
-                     TokenTypes::Operator::Dot, TokenTypeOperator,
-                     TokenTypes::Delimeter, TokenTypes::Miscellaneous,
-                     TokenTypes::Invalid>;
+                     TokenTypes::Operator::Access, TokenTypes::Operator::Range,
+                     TokenTypeOperator, TokenTypes::Delimeter,
+                     TokenTypes::Miscellaneous, TokenTypes::Invalid>;
+
+    bool operator==(TokenType &a, TokenType &b);
 
     inline const char *type_to_string(TokenType type)
     {

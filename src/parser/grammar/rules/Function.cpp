@@ -182,11 +182,10 @@ namespace Parser
         {
             ParseResult b_res = Common::Block.parse(parser);
 
-            std::unique_ptr<AST::BlockStmt> body;
+            std::unique_ptr<AST::Block> body;
             if (b_res.data != nullptr)
-                if (auto ptr =
-                        dynamic_cast<AST::BlockStmt *>(b_res.data.release()))
-                    body = std::unique_ptr<AST::BlockStmt>(ptr);
+                if (auto ptr = dynamic_cast<AST::Block *>(b_res.data.release()))
+                    body = std::unique_ptr<AST::Block>(ptr);
 
             result.adapt(b_res.status, std::move(b_res.diagnostics),
                          std::make_unique<AST::FunctionDefinitionStmt>(

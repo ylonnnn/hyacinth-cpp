@@ -121,7 +121,7 @@ namespace Core
         { return higher_bit_width(left, right); };
 
         Operation::overload_binary(
-            {Operation::BinarySignature{ArithmeticUnary::Plus, float_w_,
+            {Operation::BinarySignature{Arithmetic::Plus, float_w_,
                                         float_w_},
              true,
              overload<double, double>(
@@ -131,7 +131,7 @@ namespace Core
             });
 
         Operation::overload_binary(
-            {Operation::BinarySignature{ArithmeticUnary::Minus, float_w_,
+            {Operation::BinarySignature{Arithmetic::Minus, float_w_,
                                         float_w_},
              true,
              overload<double, double>(

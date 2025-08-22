@@ -1,7 +1,7 @@
 #pragma once
 
+#include "ast/block/Block.hpp"
 #include "ast/common/Identifier.hpp"
-#include "ast/stmt/BlockStmt.hpp"
 #include "ast/stmt/DeclarationStmt.hpp"
 #include "ast/type/Type.hpp"
 
@@ -27,7 +27,7 @@ namespace AST
         std::vector<FunctionParameter> parameters_;
 
         // Empty
-        std::unique_ptr<BlockStmt> body_;
+        std::unique_ptr<Block> body_;
 
       public:
         FunctionDeclarationStmt(Lexer::Token &name,

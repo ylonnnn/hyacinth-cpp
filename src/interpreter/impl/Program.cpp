@@ -9,11 +9,10 @@ namespace Interpreter
         InterpretationResult result = {
             Core::ResultStatus::Success, nullptr, {}};
 
-        for (const auto &statement : node.statements())
+        for (const auto &node : node.nodes())
         {
             InterpretationResult gls_res =
-                InterpreterImpl<AST::GlobalStmt>::interpret(interpreter,
-                                                            *statement);
+                InterpreterImpl<AST::GlobalNode>::interpret(interpreter, *node);
 
             result.adapt(gls_res.status, std::move(gls_res.diagnostics));
         }

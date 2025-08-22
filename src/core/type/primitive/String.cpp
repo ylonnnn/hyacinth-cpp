@@ -27,7 +27,7 @@ namespace Core
         auto __nv_ar = [&](Type *, Type *) -> Type * { return str_w_; };
 
         Operation::overload_binary(
-            {Operation::BinarySignature{ArithmeticUnary::Plus, str_w_, str_w_},
+            {Operation::BinarySignature{Arithmetic::Plus, str_w_, str_w_},
              true,
              overload<std::string, std::string>(
                  [](const std::string &a, const std::string &b) -> std::string

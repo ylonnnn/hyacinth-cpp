@@ -31,6 +31,8 @@ namespace Lexer
 
         // Keywords
         reserved_.insert_or_assign("import"sv, Reserved::Import);
+        reserved_.insert_or_assign("lib"sv, Reserved::Lib);
+
         reserved_.insert_or_assign("pub"sv, Reserved::Public);
         reserved_.insert_or_assign("priv"sv, Reserved::Private);
         reserved_.insert_or_assign("prot"sv, Reserved::Protected);
@@ -212,15 +214,20 @@ namespace Lexer
                 return create_token({pos, pos}, Delimeter::Semicolon);
 
             case ':':
+            {
+                if (match(':'))
+                    return create_token({pos, curr_pos()},
+                                        Operator::Access::DoubleColon);
                 return create_token({pos, pos}, Delimeter::Colon);
+            }
 
             case '.':
             {
                 if (match('.'))
                     return create_token({pos, curr_pos()},
-                                        Operator::Dot::Double);
+                                        Operator::Access::Dot);
 
-                return create_token({pos, pos}, Operator::Dot::Single);
+                return create_token({pos, pos}, Operator::Range::DoubleDot);
             }
 
             case '<':
@@ -287,7 +294,7 @@ namespace Lexer
 
                 // +
                 return create_token({pos, curr_pos()},
-                                    Operator::ArithmeticUnary::Plus);
+                                    Operator::Arithmetic::Plus);
             }
 
             case '-':
@@ -315,7 +322,7 @@ namespace Lexer
 
                 // -
                 return create_token({pos, curr_pos()},
-                                    Operator::ArithmeticUnary::Minus);
+                                    Operator::Arithmetic::Minus);
             }
 
             case '*':

@@ -14,6 +14,7 @@ namespace Parser
         Block(std::pair<Lexer::TokenType, Lexer::TokenType> pair);
 
         ParseResult parse(Parser &parser) override;
+        ParseResult parse(Parser &parser, bool global);
     };
 
 } // namespace Parser

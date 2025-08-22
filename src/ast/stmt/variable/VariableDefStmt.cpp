@@ -41,6 +41,8 @@ namespace AST
 
         if (type_ != nullptr)
             type_->print(os, tab + 1);
+        else
+            os << "<deduced>";
 
         os << "\n" << inner_indentation << "value: ";
 

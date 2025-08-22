@@ -19,7 +19,7 @@ namespace Interpreter
         using namespace Operator;
 
         special_handler.try_emplace(
-            Dot::Single,
+            Access::Dot,
             [&](Interpreter &interpreter, AST::BinaryExpr &node,
                 InterpretationResult &result) -> void
             {
@@ -49,7 +49,7 @@ namespace Interpreter
 
                     if (t_info == typeid(AST::BinaryExpr))
                     {
-                        auto s_it = special_handler.find(Dot::Single);
+                        auto s_it = special_handler.find(Access::Dot);
                         if (s_it == special_handler.end())
                             return;
 

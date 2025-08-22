@@ -20,7 +20,7 @@ namespace Semantic
         using namespace Operator;
 
         special_handler.try_emplace(
-            Dot::Single,
+            Access::Dot,
             [&](Analyzer &analyzer, AST::BinaryExpr &node,
                 AnalysisResult &result) -> void
             {
@@ -49,7 +49,7 @@ namespace Semantic
 
                     if (t_info == typeid(AST::BinaryExpr))
                     {
-                        auto s_it = special_handler.find(Dot::Single);
+                        auto s_it = special_handler.find(Access::Dot);
                         if (s_it == special_handler.end())
                             return;
 
