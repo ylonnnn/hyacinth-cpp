@@ -28,8 +28,7 @@ namespace Interpreter
                                   AST::Expr &expr) -> void
                 {
                     Core::Symbol *basis = result.symbol;
-
-                    if (basis == nullptr)
+                    auto analyze_expr = [&](AST::Expr &expr) -> void
                     {
                         InterpretationResult l_res =
                             interpreter.interpret(expr);
@@ -39,7 +38,11 @@ namespace Interpreter
                         result.symbol = l_res.symbol;
 
                         node.set_value(result.data);
+                    };
 
+                    if (basis == nullptr)
+                    {
+                        analyze_expr(expr);
                         return;
                     }
 
@@ -53,17 +56,7 @@ namespace Interpreter
                             special_handler.find(b_expr.operation().type);
                         if (s_it == special_handler.end())
                         {
-                            InterpretationResult a_res =
-                                interpreter.interpret(b_expr);
-
-                            result.adapt(a_res.status,
-                                         std::move(a_res.diagnostics),
-                                         a_res.data);
-
-                            result.symbol = a_res.symbol;
-
-                            expr.set_value(result.data);
-
+                            analyze_expr(b_expr);
                             return;
                         }
 

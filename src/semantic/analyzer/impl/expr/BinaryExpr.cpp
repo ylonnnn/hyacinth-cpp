@@ -109,6 +109,7 @@ namespace Semantic
                         lib->environment->resolve_symbol(m_name);
 
                     if (resolved == nullptr)
+                    {
                         result.error(
                             &expr,
                             Diagnostic::ErrorTypes::Semantic::
@@ -118,6 +119,16 @@ namespace Semantic
                                 Utils::Styles::Reset + "\" being accessed.",
                             "Accessing an unrecognized symbol from library \"" +
                                 std::string(basis->name) + "\".");
+
+                        return;
+                    }
+
+                    if (auto ptr =
+                            dynamic_cast<Core::IdentifierSymbol *>(resolved))
+                    {
+                        result.data = ptr->type;
+                        result.value = ptr->value;
+                    }
 
                     result.symbol = resolved;
                 };
