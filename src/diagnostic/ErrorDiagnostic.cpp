@@ -36,6 +36,8 @@ namespace Diagnostic
             "HYC::SYNTAX:INVALID_FIELD_SPECIFIER";
         ERROR_CODES[ErrorTypes::Syntax::FieldDuplcation] =
             "HYC::SYNTAX:FIELD_DUPLICATION";
+        ERROR_CODES[ErrorTypes::Syntax::UnexpectedExpression] =
+            "HYC::SYNTAX:UNEXPECTED_EXPRESSION";
 
         ERROR_CODES[ErrorTypes::Type::Mismatch] = "HYC::TYPE:MISMATCH";
         ERROR_CODES[ErrorTypes::Type::UnrecognizedType] =
@@ -73,6 +75,8 @@ namespace Diagnostic
             "HYC::SEMANTIC::ILLEGAL_NONARRAY_ELEMENT_ACCESS";
         ERROR_CODES[ErrorTypes::Semantic::OutOfRange] =
             "HYC::SEMANTIC::OUT_OF_RANGE";
+        ERROR_CODES[ErrorTypes::Semantic::UnknownLib] =
+            "HYC::SEMANTIC::UNKNOWN_LIB";
 
         ERROR_CODES[ErrorTypes::Runtime::UnresolvedImport] =
             "HYC::RUNTIME::UNRESOLVED_IMPORT";

@@ -15,16 +15,22 @@ namespace Core
 
     Environment *Environment::parent() { return parent_; }
 
-    std::vector<std::unique_ptr<Environment>> &Environment::children()
+    const std::string &Environment::name() const { return name_; }
+
+    std::unordered_map<std::string, std::unique_ptr<Environment>> &
+    Environment::children()
     {
         return children_;
     }
 
     Environment &Environment::create_child()
     {
-        children_.emplace_back(std::make_unique<Environment>(this));
+        auto child = std::make_unique<Environment>(this);
+        auto &ref = *child;
 
-        return *children_.back();
+        children_.emplace(ref.name_, std::move(child));
+
+        return ref;
     }
 
     void Environment::display_symbol_table(std::ostream &os, uint8_t tab) const
@@ -40,7 +46,7 @@ namespace Core
             symbol->print(os, tab + 1);
         }
 
-        for (const auto &child : children_)
+        for (const auto &[_, child] : children_)
         {
             os << "\n" << inner_indentation;
             child->display_symbol_table(os, tab + 1);

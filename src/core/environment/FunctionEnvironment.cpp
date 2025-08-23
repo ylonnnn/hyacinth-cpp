@@ -15,4 +15,6 @@ namespace Core
 
     FunctionSymbol *FunctionEnvironment::fn_symbol() { return fn_; }
 
+    const FunctionSymbol *FunctionEnvironment::fn_symbol() const { return fn_; }
+
 } // namespace Core

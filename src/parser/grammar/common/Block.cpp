@@ -1,5 +1,6 @@
 #include "parser/grammar/common/Block.hpp"
 #include "ast/block/Block.hpp"
+#include "ast/stmt/BlockStmt.hpp"
 #include "parser/grammar/GrammarRule.hpp"
 
 namespace Parser
@@ -51,8 +52,26 @@ namespace Parser
 
             auto invalid_data = p_res.data == nullptr;
             if (!invalid_data)
-                if (auto ptr = dynamic_cast<AST::Stmt *>(p_res.data.release()))
+            {
+                if (auto ptr = dynamic_cast<AST::Stmt *>(p_res.data.get()))
+                {
+                    // Store to avoid warnings
+                    auto _ = p_res.data.release();
+                    (void)_;
+
                     statements.push_back(std::unique_ptr<AST::Stmt>(ptr));
+                }
+                else if (auto ptr =
+                             dynamic_cast<AST::Block *>(p_res.data.get()))
+                {
+                    // Store to avoid warnings
+                    auto _ = p_res.data.release();
+                    (void)_;
+
+                    statements.push_back(std::make_unique<AST::BlockStmt>(
+                        std::unique_ptr<AST::Block>(ptr)));
+                }
+            }
 
             result.adapt(p_res.status, std::move(p_res.diagnostics));
 

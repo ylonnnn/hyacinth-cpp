@@ -225,9 +225,9 @@ namespace Lexer
             {
                 if (match('.'))
                     return create_token({pos, curr_pos()},
-                                        Operator::Access::Dot);
+                                        Operator::Range::DoubleDot);
 
-                return create_token({pos, pos}, Operator::Range::DoubleDot);
+                return create_token({pos, pos}, Operator::Access::Dot);
             }
 
             case '<':
@@ -430,8 +430,6 @@ namespace Lexer
 
                 else if (std::isdigit(ch))
                     return scan_numeric(pos);
-
-                std::cout << (ch == '\0') << "\n";
 
                 return create_token({pos, pos}, Invalid::UnknownToken);
             }

@@ -1,16 +1,7 @@
-import "./test-math.hyc";
 import "./io.hyc";
 
-lib std {
-
-}
-
 fn main -> void () {
-    let x := 123;
-    let y := 456;
-
-    let sum := add(x, y);
-    let diff := subtract(x, y);
-
-    println("Hello, World");
+    std::io::print("Hello, World\n");
+    let n := std::test.x;
+    let test := std::test;
 }

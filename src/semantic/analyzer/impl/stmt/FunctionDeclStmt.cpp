@@ -213,11 +213,11 @@ namespace Semantic
         // Create function environment if the node is a function definition
         if (is_def)
         {
-            auto &children = current->children();
+            auto fn_env = std::make_unique<Core::FunctionEnvironment>(
+                current, function.get());
 
-            children.push_back(std::make_unique<Core::FunctionEnvironment>(
-                current, function.get()));
-            function->environment = children.back().get();
+            function->environment = fn_env.get();
+            current->children().emplace(fn_env->name(), std::move(fn_env));
         }
 
         auto fn_env = function->environment;

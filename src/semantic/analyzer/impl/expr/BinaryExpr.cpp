@@ -2,6 +2,7 @@
 
 #include "core/operation/Operation.hpp"
 #include "core/symbol/FunctionSymbol.hpp"
+#include "core/symbol/LibSymbol.hpp"
 #include "core/type/compound/Array.hpp"
 #include "core/type/primitive/Integer.hpp"
 #include "lexer/Token.hpp"
@@ -20,6 +21,115 @@ namespace Semantic
         using namespace Operator;
 
         special_handler.try_emplace(
+            Access::DoubleColon,
+            [&](Analyzer &analyzer, AST::BinaryExpr &node,
+                AnalysisResult &result) -> void
+            {
+                auto __an_f = [&](AnalysisResult &result,
+                                  AST::Expr &expr) -> void
+                {
+                    Core::Symbol *basis = result.symbol;
+                    // std::cout << "expr: " << expr << "\n";
+
+                    if (basis == nullptr)
+                    {
+                        AnalysisResult l_res = analyzer.analyze(expr);
+                        result.adapt(l_res.status, std::move(l_res.diagnostics),
+                                     l_res.data);
+
+                        result.value = std::move(l_res.value);
+                        result.symbol = l_res.symbol;
+
+                        node.set_value(result.value);
+
+                        return;
+                    }
+
+                    if (typeid(*basis) != typeid(Core::LibSymbol))
+                    {
+                        result.error(
+                            basis->node,
+                            Diagnostic::ErrorTypes::Semantic::UnknownLib,
+                            std::string("Unknown library \"") +
+                                Diagnostic::ERR_GEN + std::string(basis->name) +
+                                Utils::Styles::Reset + "\" being accessed.",
+                            "Accessing an unknown library.");
+
+                        return;
+                    }
+
+                    auto lib = static_cast<Core::LibSymbol *>(basis);
+                    auto &t_info = typeid(expr);
+
+                    auto expr_error = [&]() -> void
+                    {
+                        result.error(
+                            &expr,
+                            Diagnostic::ErrorTypes::Syntax::
+                                UnexpectedExpression,
+                            std::string("Unexpected expression provided as "
+                                        "field accessor."),
+                            "Cannot access fields with this kind of "
+                            "expression");
+                    };
+
+                    if (t_info == typeid(AST::BinaryExpr))
+                    {
+                        auto &b_expr = static_cast<AST::BinaryExpr &>(expr);
+
+                        auto s_it =
+                            special_handler.find(b_expr.operation().type);
+                        if (s_it == special_handler.end())
+                        {
+                            expr_error();
+                            return;
+                        }
+
+                        Core::Environment *current = analyzer.current_env();
+                        analyzer.set_current_env(*lib->environment);
+
+                        s_it->second(analyzer, b_expr, result);
+                        analyzer.set_current_env(*current);
+
+                        return;
+                    }
+
+                    if (t_info != typeid(AST::IdentifierExpr))
+                    {
+                        expr_error();
+                        return;
+                    }
+
+                    std::string m_name =
+                        std::string(static_cast<AST::IdentifierExpr &>(expr)
+                                        .identifier()
+                                        .value);
+
+                    Core::Symbol *resolved =
+                        lib->environment->resolve_symbol(m_name);
+
+                    if (resolved == nullptr)
+                        result.error(
+                            &expr,
+                            Diagnostic::ErrorTypes::Semantic::
+                                UnrecognizedSymbol,
+                            std::string("Unrecognized symbol \"") +
+                                Diagnostic::ERR_GEN + std::string(m_name) +
+                                Utils::Styles::Reset + "\" being accessed.",
+                            "Accessing an unrecognized symbol from library \"" +
+                                std::string(basis->name) + "\".");
+
+                    result.symbol = resolved;
+                };
+
+                __an_f(result, node.left());
+                if (result.status == Core::ResultStatus::Fail)
+                    return;
+
+                __an_f(result, node.right());
+            });
+
+        special_handler.try_emplace(
             Access::Dot,
             [&](Analyzer &analyzer, AST::BinaryExpr &node,
                 AnalysisResult &result) -> void
@@ -32,8 +142,7 @@ namespace Semantic
 
                     if (basis == nullptr)
                     {
-                        AnalysisResult l_res =
-                            AnalyzerImpl<AST::Expr>::analyze(analyzer, expr);
+                        AnalysisResult l_res = analyzer.analyze(expr);
                         result.adapt(l_res.status, std::move(l_res.diagnostics),
                                      l_res.data);
 

@@ -33,6 +33,7 @@ namespace Diagnostic
             MissingMutabilityModifier,
             InvalidFieldSpecifier,
             FieldDuplcation,
+            UnexpectedExpression,
         };
 
         enum class Type
@@ -59,6 +60,7 @@ namespace Diagnostic
             InvalidFieldCount,
             IllegalNonArrayElementAccess,
             OutOfRange,
+            UnknownLib,
         };
 
         enum class Runtime

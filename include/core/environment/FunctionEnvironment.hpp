@@ -14,6 +14,7 @@ namespace Core
         ~FunctionEnvironment() = default;
 
         FunctionSymbol *fn_symbol();
+        const FunctionSymbol *fn_symbol() const;
     };
 
 } // namespace Core

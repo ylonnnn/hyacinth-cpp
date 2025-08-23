@@ -136,8 +136,8 @@ namespace Parser
 
         // Member Access
         float memaccess_bp = static_cast<int>(BindingPower::MemberAccess);
-        for (const auto &type :
-             std::vector<Lexer::TokenType>{Operator::Access::Dot})
+        for (const auto &type : std::vector<Lexer::TokenType>{
+                 Operator::Access::Dot, Operator::Access::DoubleColon})
         {
             add_led(type, parse_memaccess,
                     std::pair<float, float>{memaccess_bp, memaccess_bp});

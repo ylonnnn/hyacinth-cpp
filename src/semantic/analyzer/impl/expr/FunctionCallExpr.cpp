@@ -1,5 +1,3 @@
-#include <algorithm>
-
 #include "core/symbol/FunctionSymbol.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "semantic/analyzer/impl/Expr.hpp"
@@ -17,7 +15,13 @@ namespace Semantic
         result.adapt(c_res.status, std::move(c_res.diagnostics));
 
         if (c_res.symbol == nullptr)
+        {
+            result.error(&callee,
+                         Diagnostic::ErrorTypes::Semantic::UnrecognizedSymbol,
+                         "Unrecognized symbol invoked.", "Invoked here");
+
             return false;
+        }
 
         if (typeid(*c_res.symbol) != typeid(Core::FunctionSymbol))
         {

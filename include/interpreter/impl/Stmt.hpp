@@ -1,8 +1,9 @@
 #pragma once
 
+#include "ast/GlobalNode.hpp"
+#include "ast/stmt/BlockStmt.hpp"
 #include "ast/stmt/DeclarationStmt.hpp"
 #include "ast/stmt/ExprStmt.hpp"
-#include "ast/GlobalNode.hpp"
 #include "ast/stmt/ImportStmt.hpp"
 #include "ast/stmt/function/FunctionDeclStmt.hpp"
 #include "ast/stmt/function/FunctionRetStmt.hpp"
@@ -21,6 +22,12 @@ namespace Interpreter
     {
         static InterpretationResult interpret(Interpreter &interpreter,
                                               AST::ExprStmt &node);
+    };
+
+    template <> struct InterpreterImpl<AST::BlockStmt>
+    {
+        static InterpretationResult interpret(Interpreter &interpreter,
+                                              AST::BlockStmt &node);
     };
 
     template <> struct InterpreterImpl<AST::GlobalNode>

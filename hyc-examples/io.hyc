@@ -1,7 +1,18 @@
-pub fn print -> void (content: str) {
+lib std {
+    lib io {
+        fn print -> void (content: str) {
 
+        }
+
+        fn println -> void (content: str) {
+
+        }
+    }
+
+    struct Test {
+        x: int<32>;
+    }
+    
+    pub let test := Test { x: 255 };
 }
 
-pub fn println -> void (content: str) {
-    print(content + "\n");
-}

@@ -7,18 +7,18 @@ namespace Interpreter
     InterpreterImpl<AST::Stmt>::interpret(Interpreter &interpreter,
                                           AST::Stmt &node)
     {
-        AST::Stmt *stmt = &node;
-
-        if (auto ptr = dynamic_cast<AST::DeclarationStmt *>(stmt))
+        if (auto ptr = dynamic_cast<AST::DeclarationStmt *>(&node))
             return interpreter.interpret(*ptr);
 
-        if (typeid(*stmt) == typeid(AST::FunctionReturnStmt))
-            return InterpreterImpl<AST::FunctionReturnStmt>::interpret(
-                interpreter, *static_cast<AST::FunctionReturnStmt *>(stmt));
+        else if (typeid(node) == typeid(AST::FunctionReturnStmt))
+            return interpreter.interpret(
+                static_cast<AST::FunctionReturnStmt &>(node));
 
-        else if (typeid(*stmt) == typeid(AST::ExprStmt))
-            return InterpreterImpl<AST::ExprStmt>::interpret(
-                interpreter, *static_cast<AST::ExprStmt *>(stmt));
+        else if (typeid(node) == typeid(AST::ExprStmt))
+            return interpreter.interpret(static_cast<AST::ExprStmt &>(node));
+
+        else if (typeid(node) == typeid(AST::BlockStmt))
+            return interpreter.interpret(static_cast<AST::BlockStmt &>(node));
 
         return {Core::ResultStatus::Fail, nullptr, {}};
     }

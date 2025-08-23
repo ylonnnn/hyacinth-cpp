@@ -373,6 +373,9 @@ namespace Core
         if (node_ != nullptr)
             std::cout << *node_ << "\n";
 
+        dependencies_->display_symbol_table(std::cout, 1);
+        std::cout << "\n";
+
         environment_->display_symbol_table(std::cout, 1);
         std::cout << "\n";
 

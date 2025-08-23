@@ -2,6 +2,7 @@
 
 #include "core/environment/Environment.hpp"
 #include "core/operation/Operation.hpp"
+#include "core/symbol/LibSymbol.hpp"
 #include "interpreter/Interpreter.hpp"
 #include "interpreter/impl/Expr.hpp"
 #include "lexer/Token.hpp"
@@ -17,6 +18,90 @@ namespace Interpreter
     {
         using namespace Lexer::TokenTypes;
         using namespace Operator;
+
+        special_handler.try_emplace(
+            Access::DoubleColon,
+            [&](Interpreter &interpreter, AST::BinaryExpr &node,
+                InterpretationResult &result) -> void
+            {
+                auto __an_f = [&](InterpretationResult &result,
+                                  AST::Expr &expr) -> void
+                {
+                    Core::Symbol *basis = result.symbol;
+
+                    if (basis == nullptr)
+                    {
+                        InterpretationResult l_res =
+                            interpreter.interpret(expr);
+                        result.adapt(l_res.status, std::move(l_res.diagnostics),
+                                     l_res.data);
+
+                        result.symbol = l_res.symbol;
+
+                        node.set_value(result.data);
+
+                        return;
+                    }
+
+                    auto &t_info = typeid(expr);
+
+                    if (t_info == typeid(AST::BinaryExpr))
+                    {
+                        auto &b_expr = static_cast<AST::BinaryExpr &>(expr);
+
+                        auto s_it =
+                            special_handler.find(b_expr.operation().type);
+                        if (s_it == special_handler.end())
+                        {
+                            InterpretationResult a_res =
+                                interpreter.interpret(b_expr);
+
+                            result.adapt(a_res.status,
+                                         std::move(a_res.diagnostics),
+                                         a_res.data);
+
+                            result.symbol = a_res.symbol;
+
+                            expr.set_value(result.data);
+
+                            return;
+                        }
+
+                        s_it->second(interpreter, b_expr, result);
+
+                        return;
+                    }
+
+                    if (t_info != typeid(AST::IdentifierExpr))
+                    {
+                        interpreter.interpret(expr);
+                        return;
+                    }
+
+                    std::string m_name =
+                        std::string(static_cast<AST::IdentifierExpr &>(expr)
+                                        .identifier()
+                                        .value);
+
+                    if (typeid(*basis) != typeid(Core::LibSymbol))
+                    {
+                        // TODO: Lib Access Error
+                        return;
+                    }
+
+                    auto lib = static_cast<Core::LibSymbol *>(basis);
+                    Core::Symbol *resolved =
+                        lib->environment->resolve_symbol(m_name);
+
+                    result.symbol = resolved;
+                };
+
+                __an_f(result, node.left());
+                if (result.status == Core::ResultStatus::Fail)
+                    return;
+
+                __an_f(result, node.right());
+            });
 
         special_handler.try_emplace(
             Access::Dot,
@@ -77,7 +162,7 @@ namespace Interpreter
                     Core::value_data *entry = obj.get(m_name);
 
                     // Assuming that entry is not a nullptr
-                    // If it was, it would have been caught by the analyzer
+                    // If it was, it would have been caught by theinterpreter
 
                     result.data = entry->value;
 
@@ -238,6 +323,7 @@ namespace Interpreter
 
         auto op = node.operation().type;
         auto s_it = special_handler.find(op);
+
         if (s_it != special_handler.end())
         {
             s_it->second(interpreter, node, result);

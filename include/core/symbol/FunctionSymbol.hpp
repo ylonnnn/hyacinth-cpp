@@ -2,7 +2,7 @@
 
 #include "ast/stmt/function/FunctionDeclStmt.hpp"
 #include "ast/stmt/function/FunctionDefStmt.hpp"
-#include "core/environment/Environment.hpp"
+#include "core/environment/FunctionEnvironment.hpp"
 #include "core/symbol/IdentifierSymbol.hpp"
 #include "core/symbol/Symbol.hpp"
 #include "core/type/Type.hpp"
@@ -34,7 +34,7 @@ namespace Core
         AST::FunctionDeclarationStmt *node = nullptr;
         AST::FunctionDefinitionStmt *definition = nullptr;
 
-        Core::Environment *environment = nullptr;
+        Core::FunctionEnvironment *environment = nullptr;
 
         Type *return_type;
         std::vector<FunctionParameter> parameters;

@@ -1,4 +1,5 @@
 #include "core/program/DependencyEnvironment.hpp"
+#include "utils/style.hpp"
 
 namespace Core
 {
@@ -11,11 +12,29 @@ namespace Core
         return dependencies_;
     }
 
+    void DependencyEnvironment::display_symbol_table(std::ostream &os,
+                                                     uint8_t tab) const
+    {
+        os << "[" << name_ << "] {";
+
+        for (const auto &dependency : dependencies_)
+        {
+            os << "\n" << Utils::tab(tab, 4);
+            dependency->display_symbol_table(os, tab + 1);
+        }
+
+        os << "\n" << Utils::tab(tab - 1, 4) << "}";
+    }
+
     Symbol *DependencyEnvironment::resolve_symbol(const std::string &name,
                                                   size_t depth)
     {
         if (depth == 0)
             return nullptr;
+
+        Symbol *resolved = Environment::resolve_symbol(name, depth - 1);
+        if (resolved != nullptr)
+            return resolved;
 
         for (const auto &dependency : dependencies_)
         {
@@ -37,6 +56,10 @@ namespace Core
     {
         if (depth == 0)
             return nullptr;
+
+        BaseType *resolved = Environment::resolve_type(name, depth - 1);
+        if (resolved != nullptr)
+            return resolved;
 
         for (const auto &dependency : dependencies_)
         {
@@ -60,6 +83,11 @@ namespace Core
     {
         if (depth == 0)
             return nullptr;
+
+        VariableSymbol *resolved =
+            Environment::resolve_variable(name, depth - 1);
+        if (resolved != nullptr)
+            return resolved;
 
         for (const auto &dependency : dependencies_)
         {

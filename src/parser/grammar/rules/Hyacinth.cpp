@@ -14,7 +14,7 @@ namespace Parser::Hyacinth
         grammar.add_rule(IMPORT, std::make_unique<ImportStatement>(),
                          {true, false});
 
-        grammar.add_rule(LIB, std::make_unique<LibBlock>(), {true, true});
+        grammar.add_rule(LIB, std::make_unique<LibBlock>(), {true, false});
 
         // Global Accessibility
         grammar.add_rule(PUBLIC, std::make_unique<GlobalAccessibility>(PUBLIC),
