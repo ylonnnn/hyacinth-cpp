@@ -18,16 +18,8 @@ namespace Semantic
         auto obj = std::get_if<Core::object>(result.value.get());
 
         AST::Type &ast_type = node.type();
-        Core::BaseType *resolved =
-            current->resolve_type(std::string(ast_type.value().value));
 
-        if (resolved == nullptr)
-        {
-            result.error(Diagnostic::create_unknown_type_error(&ast_type));
-            return result;
-        }
-
-        Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
+        Core::TypeResolutionResult t_res = current->resolve_ast_type(ast_type);
         result.adapt(t_res.status, std::move(t_res.diagnostics), t_res.data);
 
         Core::StructType *type =
@@ -39,7 +31,7 @@ namespace Semantic
                 Diagnostic::ErrorTypes::Type::InvalidInstantiationType,
                 std::string("Cannot instantiate type \"") +
                     Diagnostic::ERR_GEN + result.data->to_string() +
-                    Utils::Styles::Reset + "\".",
+                    utils::Styles::Reset + "\".",
                 "Instantiation with the provided type is not possible");
 
             return result;
@@ -76,7 +68,7 @@ namespace Semantic
                 result.error(
                     &field, Diagnostic::ErrorTypes::Semantic::UnrecognizedField,
                     std::string("Unrecognized field \"") + Diagnostic::ERR_GEN +
-                        name + Utils::Styles::Reset + "\" provided.",
+                        name + utils::Styles::Reset + "\" provided.",
                     "\"" + name + "\" is not a \"" + std::string(type->name()) +
                         "\" field");
 
@@ -97,11 +89,11 @@ namespace Semantic
                 result.error(
                     &f_val, Diagnostic::ErrorTypes::Type::Mismatch,
                     std::string("Field \"") + Diagnostic::ERR_GEN + name +
-                        Utils::Styles::Reset + "\" has a value of type \"" +
+                        utils::Styles::Reset + "\" has a value of type \"" +
                         Diagnostic::ERR_GEN + v_res.data->to_string() +
-                        Utils::Styles::Reset + "\". Expects values of type \"" +
+                        utils::Styles::Reset + "\". Expects values of type \"" +
                         Diagnostic::ERR_GEN + type->to_string() +
-                        Utils::Styles::Reset + "\".",
+                        utils::Styles::Reset + "\".",
                     "Field type mismatch");
 
                 return result;

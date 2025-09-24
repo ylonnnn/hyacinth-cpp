@@ -1,6 +1,7 @@
 #include "parser/grammar/common/type/TypeHandlers.hpp"
 #include "diagnostic/ErrorDiagnostic.hpp"
 #include "parser/grammar/common/Common.hpp"
+#include <iostream>
 
 namespace Parser
 {

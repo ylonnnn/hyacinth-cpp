@@ -32,7 +32,7 @@ namespace Semantic
                 defined ? Diagnostic::NoteType::Definition
                         : Diagnostic::NoteType::Declaration,
                 std::string("A symbol identified as \"") +
-                    Diagnostic::NOTE_GEN + identifier + Utils::Styles::Reset +
+                    Diagnostic::NOTE_GEN + identifier + utils::Styles::Reset +
                     "\" is already declared.",
                 "Declared here"));
 
@@ -49,7 +49,7 @@ namespace Semantic
                          Diagnostic::ErrorTypes::Semantic::IllegalShadowing,
                          std::string("Illegal shadowing of built-in type \"") +
                              Diagnostic::ERR_GEN + identifier +
-                             Utils::Styles::Reset + "\".",
+                             utils::Styles::Reset + "\".",
                          "Cannot shadow built-in types");
             return {nullptr, false};
         }
@@ -68,7 +68,7 @@ namespace Semantic
             error(declared,
                   std::string("Cannot provide definition for non-struct"
                               " declaration of \"") +
-                      Diagnostic::ERR_GEN + identifier + Utils::Styles::Reset +
+                      Diagnostic::ERR_GEN + identifier + utils::Styles::Reset +
                       "\".");
 
             return {nullptr, false};
@@ -83,7 +83,7 @@ namespace Semantic
         {
             error(declared, std::string("Cannot re-declare symbol \"") +
                                 Diagnostic::ERR_GEN + identifier +
-                                Utils::Styles::Reset + "\".");
+                                utils::Styles::Reset + "\".");
 
             return {declptr, false};
         }
@@ -103,15 +103,8 @@ namespace Semantic
         {
             AST::Type &ast_type = field.type();
 
-            Core::BaseType *resolved =
-                current->resolve_type(std::string(ast_type.value().value));
-            if (resolved == nullptr)
-            {
-                result.error(Diagnostic::create_unknown_type_error(&ast_type));
-                continue;
-            }
-
-            Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
+            Core::TypeResolutionResult t_res =
+                current->resolve_ast_type(ast_type);
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
             members.try_emplace(std::string(name),

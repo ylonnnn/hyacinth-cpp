@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace Utils
+namespace utils
 {
     using TextStyle = const char *;
 
@@ -59,4 +59,4 @@ namespace Utils
 
     size_t visible_size(const std::string &str);
 
-} // namespace Utils
+} // namespace utils

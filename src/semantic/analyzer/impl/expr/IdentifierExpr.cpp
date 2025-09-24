@@ -31,6 +31,7 @@ namespace Semantic
 
         else
         {
+            std::cout << "no sym\n";
             auto t_node = AST::TypeExpr(
                 std::make_unique<AST::SimpleType>(node.identifier()));
             AnalysisResult ta_res =
@@ -45,7 +46,7 @@ namespace Semantic
                     &node, Diagnostic::ErrorTypes::Semantic::UnrecognizedSymbol,
                     std::string("Unrecognized symbol \"") +
                         Diagnostic::ERR_GEN + identifier +
-                        Utils::Styles::Reset + "\" provided.",
+                        utils::Styles::Reset + "\" provided.",
                     "Used unrecognized symbol here");
 
             return result;

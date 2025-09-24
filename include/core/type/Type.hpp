@@ -138,8 +138,8 @@ namespace Core
                        -> std::optional<Operation::Assignee>
             {
                 auto l_val = left_op.value, r_val = right_op.value;
-                auto left = l_val ? Utils::as<L>(*l_val) : nullptr,
-                     right = r_val ? Utils::as<R>(*r_val) : nullptr;
+                auto left = l_val ? utils::as<L>(*l_val) : nullptr,
+                     right = r_val ? utils::as<R>(*r_val) : nullptr;
 
                 if (left == nullptr || right == nullptr)
                     return Operation::Assignee{

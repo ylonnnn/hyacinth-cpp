@@ -50,7 +50,7 @@ namespace Semantic
             result.error(element.get(), Diagnostic::ErrorTypes::Type::Mismatch,
                          std::string("Expected value assignable to type \"") +
                              Diagnostic::ERR_GEN + el_type->to_string() +
-                             Utils::Styles::Reset + "\".",
+                             utils::Styles::Reset + "\".",
                          "");
         }
 

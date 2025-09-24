@@ -75,7 +75,7 @@ namespace Parser
                     std::make_unique<Diagnostic::NoteDiagnostic>(
                         &node, Diagnostic::NoteType::Suggestion,
                         std::string("Did you mean to put a \"") +
-                            Diagnostic::NOTE_GEN + ":" + Utils::Styles::Reset +
+                            Diagnostic::NOTE_GEN + ":" + utils::Styles::Reset +
                             "\"?",
                         "Replace this with (or Insert) a \":\" to make the "
                         "value mutable."));
@@ -94,9 +94,9 @@ namespace Parser
                 &node,
                 Diagnostic::ErrorTypes::Syntax::MissingMutabilityModifier,
                 std::string("Missing mutability modifier. Use \"") +
-                    Diagnostic::ERR_GEN + ":" + Utils::Styles::Reset +
+                    Diagnostic::ERR_GEN + ":" + utils::Styles::Reset +
                     "\" for immutability, and \"" + Diagnostic::ERR_GEN +
-                    "!:" + Utils::Styles::Reset + "\" for mutability.",
+                    "!:" + utils::Styles::Reset + "\" for mutability.",
                 "Use here");
         }
 

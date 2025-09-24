@@ -16,7 +16,7 @@ namespace Diagnostic
 
         if (start > line_count || end > line_count)
         {
-            Utils::terminate("Invalid line range provided!", EXIT_FAILURE);
+            utils::terminate("Invalid line range provided!", EXIT_FAILURE);
             return lines_;
         }
 
@@ -63,36 +63,36 @@ namespace Diagnostic
                        _start ? position.col : line.find_first_not_of(' ') + 1,
                    line_end = _end ? end_position.col : line.size();
 
-            std::string tab = Utils::tab(tab_size, 1),
+            std::string tab = utils::tab(tab_size, 1),
                         row = std::to_string(i + 1),
                         prefix = tab + row + "  | " + tab;
 
             size_t prefix_len = prefix.size();
             auto display = (prefix + std::string(line) + "\n");
 
-            display.insert(prefix_len + line_end, Utils::Styles::Reset);
+            display.insert(prefix_len + line_end, utils::Styles::Reset);
             display.insert(prefix_len + line_start - 1, emphasis);
 
-            display.insert(tab_size + row.size(), Utils::Styles::Reset);
-            display.insert(tab_size, Utils::Colors::Yellow);
+            display.insert(tab_size + row.size(), utils::Styles::Reset);
+            display.insert(tab_size, utils::Colors::Yellow);
 
             constructed_ += display;
 
             // Pointer
-            offset = Utils::tab((prefix.size() + line_start) - 1, 1);
+            offset = utils::tab((prefix.size() + line_start) - 1, 1);
             constructed_ += (offset + pointer + "^" +
                              std::string(line_end - line_start, '^') +
-                             Utils::Styles::Reset + "\n");
+                             utils::Styles::Reset + "\n");
         }
 
         if (!message.empty())
             constructed_ += (offset + pointer + "| " + std::string(message) +
-                             Utils::Styles::Reset + "\n");
+                             utils::Styles::Reset + "\n");
 
         constructed_ +=
             (std::string("\n\t\t") + trace + "at " + program.path().string() +
              ":" + std::to_string(row) + ":" + std::to_string(col) +
-             Utils::Styles::Reset + "\n");
+             utils::Styles::Reset + "\n");
     }
 
     void Diagnostic::report() const

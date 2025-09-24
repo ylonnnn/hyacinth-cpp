@@ -14,7 +14,7 @@ namespace Interpreter
             return result;
 
         result.data =
-            std::make_shared<Core::Value>(Utils::parse_val(node.value()));
+            std::make_shared<Core::Value>(utils::parse_val(node.value()));
 
         return result;
     }

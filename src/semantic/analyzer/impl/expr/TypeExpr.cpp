@@ -1,3 +1,5 @@
+#include "ast/type/ScopedType.hpp"
+#include "core/symbol/LibSymbol.hpp"
 #include "semantic/analyzer/impl/Expr.hpp"
 
 namespace Semantic
@@ -12,23 +14,11 @@ namespace Semantic
         // TODO: TypeExpr Analysis (Generally for Static Member Access)
 
         AST::Type &ast_type = node.type();
-        std::string name(ast_type.value().value);
 
-        Core::BaseType *resolved = current->resolve_type(name);
-
-        if (resolved == nullptr)
-        {
-            result.error(
-                &ast_type, Diagnostic::ErrorTypes::Type::UnrecognizedType,
-                std::string("Unrecognized type \"") + Diagnostic::ERR_GEN +
-                    name + Utils::Styles::Reset + "\".",
-                "Used unrecognized type here");
-
-            return result;
-        }
-
-        Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
+        Core::TypeResolutionResult t_res = current->resolve_ast_type(ast_type);
         result.adapt(t_res.status, std::move(t_res.diagnostics), t_res.data);
+
+        analyzer.set_current_env(*current);
 
         return result;
     }

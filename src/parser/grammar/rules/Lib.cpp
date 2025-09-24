@@ -43,7 +43,7 @@ namespace Parser
                 result.force_error(
                     &node, Diagnostic::ErrorTypes::Syntax::MissingImportTarget,
                     std::string("Missing ") + Diagnostic::ERR_GEN +
-                        "LIBRARY NAME" + Utils::Styles::Reset + ".",
+                        "LIBRARY NAME" + utils::Styles::Reset + ".",
                     "Missing library name here");
             }
 

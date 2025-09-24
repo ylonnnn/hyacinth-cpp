@@ -28,8 +28,8 @@ namespace AST
       public:
         virtual void print(std::ostream &os, uint8_t tab) const override
         {
-            std::string indentation = Utils::tab(tab - 1),
-                        tabs = Utils::tab(tab);
+            std::string indentation = utils::tab(tab - 1),
+                        tabs = utils::tab(tab);
             os << indentation << "NodeCollection {";
 
             for (const auto &node : collection_)

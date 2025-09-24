@@ -33,7 +33,7 @@ namespace Parser
             result.force_error(
                 &node, Diagnostic::ErrorTypes::Syntax::MissingImportTarget,
                 std::string("Missing ") + Diagnostic::ERR_GEN +
-                    "IMPORT TARGET" + Utils::Styles::Reset + ".",
+                    "IMPORT TARGET" + utils::Styles::Reset + ".",
                 "Missing import target here");
         }
 

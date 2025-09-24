@@ -34,7 +34,7 @@ namespace Interpreter
         //             Diagnostic::ErrorTypes::Semantic::UnrecognizedSymbol,
         //             std::string("Unrecognized symbol \"") +
         //                 Diagnostic::ERR_GEN + identifier +
-        //                 Utils::Styles::Reset + "\" provided.",
+        //                 utils::Styles::Reset + "\" provided.",
         //             "Used unrecognized symbol here");
 
         //     return result;

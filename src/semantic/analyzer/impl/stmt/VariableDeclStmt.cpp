@@ -1,6 +1,7 @@
 #include "ast/stmt/variable/VariableDeclStmt.hpp"
 #include "ast/expr/LiteralExpr.hpp"
 #include "ast/stmt/variable/VariableDefStmt.hpp"
+#include "ast/type/ScopedType.hpp"
 #include "core/symbol/VariableSymbol.hpp"
 #include "core/type/Type.hpp"
 #include "core/type/primitive/Void.hpp"
@@ -36,7 +37,7 @@ namespace Semantic
                     &n_node, Diagnostic::ErrorTypes::Semantic::IllegalShadowing,
                     std::string("Illegal shadowing of built-in type \"") +
                         Diagnostic::ERR_GEN + identifier +
-                        Utils::Styles::Reset + "\".",
+                        utils::Styles::Reset + "\".",
                     "Cannot shadow built-in types");
             }
 
@@ -60,7 +61,7 @@ namespace Semantic
                 defined ? Diagnostic::NoteType::Definition
                         : Diagnostic::NoteType::Declaration,
                 std::string("A symbol identified as \"") +
-                    Diagnostic::NOTE_GEN + name + Utils::Styles::Reset +
+                    Diagnostic::NOTE_GEN + name + utils::Styles::Reset +
                     "\" is already declared.",
                 "Declared here"));
 
@@ -70,7 +71,7 @@ namespace Semantic
         if (defined || is_def)
         {
             error(std::string("Cannot re-declare symbol \"") +
-                  Diagnostic::ERR_GEN + name + Utils::Styles::Reset + "\".");
+                  Diagnostic::ERR_GEN + name + utils::Styles::Reset + "\".");
 
             return;
         }
@@ -86,16 +87,14 @@ namespace Semantic
         if (ast_type == nullptr)
             return true;
 
-        Core::BaseType *resolved =
-            current->resolve_type(std::string(ast_type->value().value));
-
-        if (resolved == nullptr)
+        std::cout << *ast_type << "\n";
+        std::cout << typeid(*ast_type).name() << "\n";
+        if (typeid(*ast_type) == typeid(AST::ScopedType))
         {
-            result.error(Diagnostic::create_unknown_type_error(ast_type));
-            return false;
+            std::cout << "scoped\n";
         }
 
-        Core::TypeResolutionResult t_res = resolved->resolve(*ast_type);
+        Core::TypeResolutionResult t_res = current->resolve_ast_type(*ast_type);
         result.adapt(t_res.status, std::move(t_res.diagnostics));
 
         Core::Type *type = t_res.data;
@@ -108,7 +107,7 @@ namespace Semantic
             result.error(ast_type,
                          Diagnostic::ErrorTypes::Type::InvalidVariableType,
                          std::string("Type \"") + Diagnostic::ERR_GEN +
-                             ast_type->to_string() + Utils::Styles::Reset +
+                             ast_type->to_string() + utils::Styles::Reset +
                              "\" can only be used as a function return type.",
                          "Only functions can have return types of this type");
 
@@ -137,7 +136,7 @@ namespace Semantic
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
                 &value, Diagnostic::ErrorTypes::Type::Mismatch,
                 std::string("Expected value of type ") + Diagnostic::ERR_GEN +
-                    ast_type->to_string() + Utils::Styles::Reset + ".",
+                    ast_type->to_string() + utils::Styles::Reset + ".",
                 std::string(""));
 
             diagnostic->add_detail(result.data->make_suggestion(&value));
@@ -197,9 +196,9 @@ namespace Semantic
                 result.error(
                     &node, Diagnostic::ErrorTypes::Type::InvalidVariableType,
                     std::string("Variables must either have explicit ") +
-                        Diagnostic::ERR_GEN + "TYPE" + Utils::Styles::Reset +
+                        Diagnostic::ERR_GEN + "TYPE" + utils::Styles::Reset +
                         " or " + Diagnostic::ERR_GEN + "VALUE" +
-                        Utils::Styles::Reset + ".",
+                        utils::Styles::Reset + ".",
                     "No explicit type nor value provided");
 
             return result;

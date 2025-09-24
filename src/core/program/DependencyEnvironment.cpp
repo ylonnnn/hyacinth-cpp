@@ -19,11 +19,11 @@ namespace Core
 
         for (const auto &dependency : dependencies_)
         {
-            os << "\n" << Utils::tab(tab, 4);
+            os << "\n" << utils::tab(tab, 4);
             dependency->display_symbol_table(os, tab + 1);
         }
 
-        os << "\n" << Utils::tab(tab - 1, 4) << "}";
+        os << "\n" << utils::tab(tab - 1, 4) << "}";
     }
 
     Symbol *DependencyEnvironment::resolve_symbol(const std::string &name,

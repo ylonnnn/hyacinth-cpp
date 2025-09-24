@@ -30,7 +30,7 @@ namespace Interpreter
             result.error(
                 &node, Diagnostic::ErrorTypes::Runtime::UnresolvedImport,
                 std::string("Unresolved import for \"") + Diagnostic::ERR_GEN +
-                    target_program + Utils::Styles::Reset + "\".",
+                    target_program + utils::Styles::Reset + "\".",
                 "");
 
             return result;

@@ -160,7 +160,7 @@ namespace Core
 
             case Core::TypeParameterType::Constant:
             {
-                Core::Value parsed = Utils::parse_val(type.value());
+                Core::Value parsed = utils::parse_val(type.value());
                 if (this->type == nullptr)
                     return std::make_shared<Core::Value>(Core::null{});
 
@@ -330,17 +330,17 @@ namespace Core
             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
                 &type, Diagnostic::ErrorTypes::Type::InvalidTypeArgumentType,
                 std::string("Invalid type argument \"") + Diagnostic::ERR_GEN +
-                    type.to_string() + Utils::Styles::Reset +
+                    type.to_string() + utils::Styles::Reset +
                     "\" for type parameter \"" + Diagnostic::ERR_GEN +
-                    std::string(param.name) + Utils::Styles::Reset +
+                    std::string(param.name) + utils::Styles::Reset +
                     "\". Expected a " + Diagnostic::ERR_GEN +
                     (param.param_type == TypeParameterType::Type ? "TYPE"
                                                                  : "VALUE") +
-                    Utils::Styles::Reset +
+                    utils::Styles::Reset +
                     (param.type ? std::string(" assignable to ") +
                                       Diagnostic::ERR_GEN +
                                       std::string(param.type->type->name_) +
-                                      Utils::Styles::Reset
+                                      utils::Styles::Reset
                                 : "") +
                     ".",
                 "Provided type argument here");

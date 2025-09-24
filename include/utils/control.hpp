@@ -2,12 +2,12 @@
 
 #include <iostream>
 
-namespace Utils
+namespace utils
 {
-    inline void terminate(const char *message, int code)
+    inline void terminate(const std::string &message)
     {
-        std::cerr << message << std::endl;
-        exit(code);
+        std::cerr << "[Hyacinth::Termination] " << message << std::endl;
+        exit(EXIT_SUCCESS);
     }
 
-} // namespace Utils
+} // namespace utils

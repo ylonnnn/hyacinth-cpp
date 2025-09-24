@@ -47,9 +47,9 @@ namespace Core
         return std::make_unique<Diagnostic::NoteDiagnostic>(
             node, Diagnostic::NoteType::Suggestion,
             std::string("Only values within ") + Diagnostic::NOTE_GEN +
-                std::to_string(min_) + Utils::Styles::Reset + " to " +
+                std::to_string(min_) + utils::Styles::Reset + " to " +
                 Diagnostic::NOTE_GEN + std::to_string(max_) +
-                Utils::Styles::Reset + " are accepted.",
+                utils::Styles::Reset + " are accepted.",
             "Implement suggestion here");
     }
 
@@ -334,9 +334,9 @@ namespace Core
         return std::make_unique<Diagnostic::NoteDiagnostic>(
             node, Diagnostic::NoteType::Suggestion,
             std::string("Only values within ") + Diagnostic::NOTE_GEN +
-                std::to_string(min) + Utils::Styles::Reset + " to " +
+                std::to_string(min) + utils::Styles::Reset + " to " +
                 Diagnostic::NOTE_GEN + std::to_string(max) +
-                Utils::Styles::Reset + " are accepted.",
+                utils::Styles::Reset + " are accepted.",
             "Implement suggestion here");
     }
 } // namespace Core

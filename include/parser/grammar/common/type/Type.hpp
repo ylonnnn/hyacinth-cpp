@@ -17,7 +17,6 @@ namespace Parser
     {
         Default = 0,
         Union,
-        FunctionReturn,
         Separator,
         Generic,
         Primary,

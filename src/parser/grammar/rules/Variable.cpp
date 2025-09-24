@@ -124,7 +124,7 @@ namespace Parser
                         value.get(),
                         Diagnostic::ErrorTypes::Syntax::MissingOperator,
                         std::string("Missing ") + Diagnostic::ERR_GEN + "=" +
-                            Utils::Styles::Reset + " operator.",
+                            utils::Styles::Reset + " operator.",
                         "Missing operator before this value");
 
                 else
@@ -134,7 +134,7 @@ namespace Parser
                     result.force_error(
                         &node, Diagnostic::ErrorTypes::Syntax::MissingValue,
                         std::string("Missing ") + Diagnostic::ERR_GEN +
-                            "VALUE" + Utils::Styles::Reset + ".",
+                            "VALUE" + utils::Styles::Reset + ".",
                         "Missing value after this operator");
                 }
 
@@ -170,13 +170,13 @@ namespace Parser
                     UninitializedImmutable,
                 std::string("Illegal uninitialization of immutable \"") +
                     Diagnostic::ERR_GEN + std::string(identifier->value) +
-                    Utils::Styles::Reset + "\".",
+                    utils::Styles::Reset + "\".",
                 "Immutable variables require initial values");
 
             diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
                 result.data.get(), Diagnostic::NoteType::Declaration,
                 std::string("Immutable variable \"") + Diagnostic::NOTE_GEN +
-                    std::string(identifier->value) + Utils::Styles::Reset +
+                    std::string(identifier->value) + utils::Styles::Reset +
                     "\" declared here.",
                 "Declared here"));
 

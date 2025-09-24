@@ -62,7 +62,7 @@ namespace Semantic
                             ret_val, Diagnostic::ErrorTypes::Type::Mismatch,
                             std::string("Expected value of type ") +
                                 Diagnostic::ERR_GEN + ret_type->to_string() +
-                                Utils::Styles::Reset + ".",
+                                utils::Styles::Reset + ".",
                             std::string(""));
 
                     diagnostic->add_detail(
@@ -105,7 +105,7 @@ namespace Semantic
             {
                 auto type_display = Diagnostic::ERR_GEN +
                                     ret_type->to_string() +
-                                    Utils::Styles::Reset;
+                                    utils::Styles::Reset;
 
                 result.error(
                     &node, Diagnostic::ErrorTypes::Type::InvalidReturnType,
@@ -122,7 +122,7 @@ namespace Semantic
                 result.error(ret_val,
                              Diagnostic::ErrorTypes::Type::InvalidReturnType,
                              std::string("\"") + Diagnostic::ERR_GEN + "void" +
-                                 Utils::Styles::Reset +
+                                 utils::Styles::Reset +
                                  "\" functions must not return a value.",
                              "Returns a value here");
 
@@ -146,7 +146,7 @@ namespace Semantic
             result.error(
                 &node, Diagnostic::ErrorTypes::Semantic::InvalidReturnUsage,
                 std::string("\"") + Diagnostic::ERR_GEN + "return" +
-                    Utils::Styles::Reset +
+                    utils::Styles::Reset +
                     "\" can only be used inside of functions.",
                 "Used \"return\" keyword outside of a function context.");
 

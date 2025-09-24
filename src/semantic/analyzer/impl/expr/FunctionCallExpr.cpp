@@ -30,7 +30,7 @@ namespace Semantic
                 Diagnostic::ErrorTypes::Semantic::NonCallableInvocation,
                 std::string("Cannot invoke non-callable symbol \"") +
                     Diagnostic::ERR_GEN + std::string(c_res.symbol->name) +
-                    Utils::Styles::Reset + "\".",
+                    utils::Styles::Reset + "\".",
                 "Invoked here");
 
             return false;
@@ -102,7 +102,7 @@ namespace Semantic
                 std::string(
                     "Invalid argument provided. Expected value of type ") +
                     Diagnostic::ERR_GEN + parameter.type->to_string() +
-                    Utils::Styles::Reset + ".",
+                    utils::Styles::Reset + ".",
                 std::string(""));
 
             diagnostic->add_detail(

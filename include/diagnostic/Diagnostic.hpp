@@ -16,24 +16,24 @@ namespace Diagnostic
         Core::Position &position;
         Core::Position &end_position;
 
-        Utils::TextStyle emphasis;
-        Utils::TextStyle trace;
-        Utils::TextStyle pointer;
+        utils::TextStyle emphasis;
+        utils::TextStyle trace;
+        utils::TextStyle pointer;
     };
 
     class Diagnostic
     {
       protected:
         AST::Node *node_ = nullptr;
-        const std::string & message_;
-        const std::string & submessage_;
+        const std::string &message_;
+        const std::string &submessage_;
 
         std::vector<std::unique_ptr<Diagnostic>> details_;
 
         std::string constructed_;
 
       public:
-        Diagnostic(AST::Node *node,const std::string &message,
+        Diagnostic(AST::Node *node, const std::string &message,
                    const std::string &submessage);
 
       public:

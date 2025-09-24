@@ -52,7 +52,7 @@ namespace Semantic
                             Diagnostic::ErrorTypes::Semantic::UnknownLib,
                             std::string("Unknown library \"") +
                                 Diagnostic::ERR_GEN + std::string(basis->name) +
-                                Utils::Styles::Reset + "\" being accessed.",
+                                utils::Styles::Reset + "\" being accessed.",
                             "Accessing an unknown library.");
 
                         return;
@@ -116,7 +116,7 @@ namespace Semantic
                                 UnrecognizedSymbol,
                             std::string("Unrecognized symbol \"") +
                                 Diagnostic::ERR_GEN + std::string(m_name) +
-                                Utils::Styles::Reset + "\" being accessed.",
+                                utils::Styles::Reset + "\" being accessed.",
                             "Accessing an unrecognized symbol from library \"" +
                                 std::string(basis->name) + "\".");
 
@@ -201,9 +201,9 @@ namespace Semantic
                             Diagnostic::ErrorTypes::Semantic::UnrecognizedField,
                             std::string("Unrecognized field \"") +
                                 Diagnostic::ERR_GEN + m_name +
-                                Utils::Styles::Reset + "\" of type \"" +
+                                utils::Styles::Reset + "\" of type \"" +
                                 Diagnostic::ERR_GEN + basis->to_string() +
-                                Utils::Styles::Reset + "\".",
+                                utils::Styles::Reset + "\".",
                             "Unrecognized field provided");
 
                         return;
@@ -276,7 +276,7 @@ namespace Semantic
                         std::string(
                             "Illegal element access on non-array type \"") +
                             Diagnostic::ERR_GEN + type->to_string() +
-                            Utils::Styles::Reset + "\".",
+                            utils::Styles::Reset + "\".",
                         "Value must be an array type to perform an element "
                         "access");
 
@@ -324,7 +324,7 @@ namespace Semantic
                             Diagnostic::ErrorTypes::Semantic::OutOfRange,
                             std::string("Invalid index \"") +
                                 Diagnostic::ERR_GEN + std::to_string(index) +
-                                Utils::Styles::Reset + "\" provided.",
+                                utils::Styles::Reset + "\" provided.",
                             max ? (std::string("Valid index range 0-") +
                                    std::to_string(max) + ".")
                                 : "Cannot access an element of an empty array");
@@ -406,7 +406,7 @@ namespace Semantic
                 std::string("No viable operator overload for ") +
                     Diagnostic::ERR_GEN + l_res.data->to_string() + " " +
                     std::string(node.operation().value) + " " +
-                    r_res.data->to_string() + Utils::Styles::Reset + ".",
+                    r_res.data->to_string() + utils::Styles::Reset + ".",
                 "");
 
             return result;

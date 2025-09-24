@@ -5,6 +5,7 @@
 
 #include "ast/GlobalNode.hpp"
 #include "ast/Node.hpp"
+#include "core/position/Position.hpp"
 #include "core/program/Program.hpp"
 
 namespace AST

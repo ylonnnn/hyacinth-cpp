@@ -36,8 +36,8 @@ namespace AST
 
     void StructDefinitionStmt::print(std::ostream &os, uint8_t tab) const
     {
-        std::string indentation = Utils::tab(tab - 1, 4),
-                    inner_indentation = Utils::tab(tab, 4);
+        std::string indentation = utils::tab(tab - 1, 4),
+                    inner_indentation = utils::tab(tab, 4);
 
         os << "StructDefinitionStmt {\n"
            << inner_indentation << "accessibility: " << accessibility_ << "\n"
@@ -49,7 +49,7 @@ namespace AST
             std::string_view name = field_.first;
             StructField &field = const_cast<StructField &>(field_.second);
 
-            std::string inner_indentation = Utils::tab(tab + 1, 4);
+            std::string inner_indentation = utils::tab(tab + 1, 4);
             os << "\n"
                << inner_indentation << name << ": " << field.type().to_string();
         }

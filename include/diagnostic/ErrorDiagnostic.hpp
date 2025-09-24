@@ -11,8 +11,8 @@
 
 namespace Diagnostic
 {
-    constexpr auto ERR_GEN = Utils::Colors::Red,
-                   ERR_EMPH = Utils::Colors::BrightRed;
+    constexpr auto ERR_GEN = utils::Colors::Red,
+                   ERR_EMPH = utils::Colors::BrightRed;
 
     namespace ErrorTypes
     {

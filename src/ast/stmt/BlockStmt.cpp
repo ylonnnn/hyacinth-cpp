@@ -21,11 +21,11 @@ namespace AST
 
     void BlockStmt::print(std::ostream &os, uint8_t tab) const
     {
-        os << "BlockStmt {\n" << Utils::tab(tab, 4) << "block: ";
+        os << "BlockStmt {\n" << utils::tab(tab, 4) << "block: ";
 
         block_->print(os, tab + 1);
 
-        os << "\n" << Utils::tab(tab - 1, 4) << "}";
+        os << "\n" << utils::tab(tab - 1, 4) << "}";
     }
 
 } // namespace AST

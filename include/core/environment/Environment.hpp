@@ -47,6 +47,10 @@ namespace Core
 
         void update_variable(const std::string &name, Value value);
 
+        TypeResolutionResult resolve_ast_type(
+            AST::Type &ast_type,
+            size_t depth = static_cast<size_t>(ResolutionType::Root));
+
         virtual BaseType *
         resolve_type(const std::string &name,
                      size_t depth = static_cast<size_t>(ResolutionType::Root));

@@ -125,7 +125,7 @@ namespace Parser
             result.force_error(
                 &node, Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
                 std::string("Missing function ") + Diagnostic::ERR_GEN +
-                    "IDENTIFIER" + Utils::Styles::Reset + ".",
+                    "IDENTIFIER" + utils::Styles::Reset + ".",
                 "Missing identifier here");
         }
 
@@ -138,7 +138,7 @@ namespace Parser
             result.force_error(&node,
                                Diagnostic::ErrorTypes::Syntax::MissingOperator,
                                std::string("Missing ") + Diagnostic::ERR_GEN +
-                                   "->" + Utils::Styles::Reset + ".",
+                                   "->" + utils::Styles::Reset + ".",
                                "Missing arrow operator here");
         }
 
@@ -159,7 +159,7 @@ namespace Parser
                 result.force_error(
                     &node, Diagnostic::ErrorTypes::Syntax::MissingReturnType,
                     std::string("Missing function ") + Diagnostic::ERR_GEN +
-                        "RETURN TYPE" + Utils::Styles::Reset + ".",
+                        "RETURN TYPE" + utils::Styles::Reset + ".",
                     "Missing return type here");
             }
         }

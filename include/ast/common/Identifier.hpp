@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ast/Node.hpp"
-#include "ast/type/Type.hpp"
 #include "lexer/Token.hpp"
 
 namespace AST

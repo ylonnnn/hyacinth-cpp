@@ -69,7 +69,7 @@ namespace Interpreter
             {
                 auto type_display = Diagnostic::ERR_GEN +
                                     ret_type->to_string() +
-                                    Utils::Styles::Reset;
+                                    utils::Styles::Reset;
 
                 result.error(
                     &node, Diagnostic::ErrorTypes::Type::InvalidReturnType,
@@ -86,7 +86,7 @@ namespace Interpreter
                 result.error(ret_val,
                              Diagnostic::ErrorTypes::Type::InvalidReturnType,
                              std::string("\"") + Diagnostic::ERR_GEN + "void" +
-                                 Utils::Styles::Reset +
+                                 utils::Styles::Reset +
                                  "\" functions must not return a value.",
                              "Returns a value here");
 
@@ -113,7 +113,7 @@ namespace Interpreter
             result.error(
                 &node, Diagnostic::ErrorTypes::Semantic::InvalidReturnUsage,
                 std::string("\"") + Diagnostic::ERR_GEN + "return" +
-                    Utils::Styles::Reset +
+                    utils::Styles::Reset +
                     "\" can only be used inside of functions.",
                 "Used \"return\" keyword outside of a function context.");
 

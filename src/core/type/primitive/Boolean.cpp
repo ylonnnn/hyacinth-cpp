@@ -56,7 +56,7 @@ namespace Core
         return std::make_unique<Diagnostic::NoteDiagnostic>(
             node, Diagnostic::NoteType::Suggestion,
             std::string("Only values of type \"") + Diagnostic::NOTE_GEN +
-                "boolean" + Utils::Styles::Reset + "\" are accepted.",
+                "boolean" + utils::Styles::Reset + "\" are accepted.",
             "Use either \"true\" or \"false\".\n\t\t- Or a Locator Value "
             "(L-value) that holds a boolean.");
     }

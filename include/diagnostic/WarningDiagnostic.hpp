@@ -7,8 +7,8 @@
 
 namespace Diagnostic
 {
-    constexpr auto WARN_GEN = Utils::Colors::Yellow,
-                   WARN_EMPH = Utils::Colors::BrightYellow;
+    constexpr auto WARN_GEN = utils::Colors::Yellow,
+                   WARN_EMPH = utils::Colors::BrightYellow;
 
     enum class WarningType
     {

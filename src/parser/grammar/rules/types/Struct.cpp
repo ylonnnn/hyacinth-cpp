@@ -21,7 +21,7 @@ namespace Parser
             result.force_error(
                 &node, Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
                 std::string("Missing struct") + Diagnostic::ERR_GEN +
-                    "IDENTIFIER" + Utils::Styles::Reset +
+                    "IDENTIFIER" + utils::Styles::Reset +
                     " after function keyword.",
                 "Missing identifier here");
 
@@ -71,7 +71,7 @@ namespace Parser
                             ptr,
                             Diagnostic::ErrorTypes::Syntax::FieldDuplcation,
                             std::string("Field \"") + Diagnostic::ERR_GEN +
-                                std::string(name.value) + Utils::Styles::Reset +
+                                std::string(name.value) + utils::Styles::Reset +
                                 "\" has already been defined.",
                             "Field is being duplicated");
 

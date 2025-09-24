@@ -32,7 +32,7 @@ namespace Diagnostic
     {
         auto it = NOTE_CODES.find(type);
         if (it == NOTE_CODES.end())
-            Utils::terminate("Unknown note type provided!", EXIT_FAILURE);
+            utils::terminate("Unknown note type provided!", EXIT_FAILURE);
 
         return it->second;
     }
@@ -41,7 +41,7 @@ namespace Diagnostic
     {
         constructed_ += std::string("\n\n") + NOTE_GEN + "Note <" +
                         note_type_to_string(note_type_) + "> " +
-                        Utils::Styles::Reset + message_ + "\n\n";
+                        utils::Styles::Reset + message_ + "\n\n";
 
         construct_emphasis((DiagnosticEmphasis){
             .message = submessage_,

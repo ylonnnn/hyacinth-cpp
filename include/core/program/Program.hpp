@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/program/ProgramState.hpp"
+#include <bitset>
 #include <filesystem>
 #include <vector>
 
@@ -38,37 +40,30 @@ namespace Core
     class DependencyEnvironment;
 
     struct ProgramResult;
-    struct Position
-    {
-        size_t row, col;
-        ProgramFile &program;
-    };
+    struct Position;
 
-    class ProgramFile
+    struct ProgramFile
     {
         friend ProgramRegistry;
 
       private:
         ProgramRegistry *registry_ = nullptr;
 
-        bool is_main_ = true;
+        std::filesystem::path path;
+        ProgramStateFlags state;
 
-        std::filesystem::path path_;
-        bool is_valid_ = false,
-             // Phase States
-            analyzed_ = false, interpreted_ = false;
+        std::string source;
+        std::vector<std::string_view> source_lines;
 
-        std::string source_;
-        std::vector<std::string_view> lines_;
+        // Lexer::Lexer *lexer = nullptr;
+        // std::unique_ptr<AST::Program> node;
 
-        Lexer::Lexer *lexer_ = nullptr;
-        std::unique_ptr<AST::Program> node_;
-
-        std::unique_ptr<DependencyEnvironment> dependencies_;
-        std::unique_ptr<Environment> environment_;
+        // std::unique_ptr<DependencyEnvironment> dependencies;
+        // std::unique_ptr<Environment> environment;
 
       public:
-        ProgramFile(const char *path, bool is_main = true);
+        ProgramFile(const std::string &path,
+                    ProgramStateFlags state = PFS_MAIN);
         ~ProgramFile();
 
       protected:
@@ -76,41 +71,27 @@ namespace Core
         void read();
 
       public:
-        ProgramRegistry *registry();
-
-        const std::filesystem::path &path() const;
-        const std::string &source() const;
-
-        std::vector<std::string_view> &lines();
-        const std::vector<std::string_view> &lines() const;
-
-        std::unique_ptr<AST::Program> &node();
-        const std::unique_ptr<AST::Program> &node() const;
-
-        DependencyEnvironment &dependencies();
-        Environment &environment();
-
         bool valid() const;
         bool analyzed() const;
         bool interpreted() const;
 
-        Position position_at(size_t row, size_t col);
+        Position position_at(size_t row, size_t col, size_t offset);
 
-        void depend(Environment &dependency);
+        // void depend(Environment &dependency);
 
-        Lexer::LexerResult lex();
-        Lexer::LexerResult lex(ProgramResult &result);
-        Parser::ProgramParseResult parse(Lexer::Lexer *lexer);
-        Parser::ProgramParseResult parse(ProgramResult &result);
-        Semantic::AnalysisResult
-        analyze(std::unique_ptr<AST::Program> &program);
-        Semantic::AnalysisResult analyze(ProgramResult &result);
-        Interpreter::InterpretationResult
-        interpret(std::unique_ptr<AST::Program> &program);
-        Interpreter::InterpretationResult interpret(ProgramResult &result);
+        // Lexer::LexerResult lex();
+        // Lexer::LexerResult lex(ProgramResult &result);
+        // Parser::ProgramParseResult parse(Lexer::Lexer *lexer);
+        // Parser::ProgramParseResult parse(ProgramResult &result);
+        // Semantic::AnalysisResult
+        // analyze(std::unique_ptr<AST::Program> &program);
+        // Semantic::AnalysisResult analyze(ProgramResult &result);
+        // Interpreter::InterpretationResult
+        // interpret(std::unique_ptr<AST::Program> &program);
+        // Interpreter::InterpretationResult interpret(ProgramResult &result);
 
-        Semantic::AnalysisResult lex_parse_analyze();
-        Interpreter::InterpretationResult lex_parse_analyze_interpret();
+        // Semantic::AnalysisResult lex_parse_analyze();
+        // Interpreter::InterpretationResult lex_parse_analyze_interpret();
 
         void execute();
     };

@@ -110,7 +110,7 @@ namespace Diagnostic
     {
         auto it = ERROR_CODES.find(type);
         if (it == ERROR_CODES.end())
-            Utils::terminate("Unknown error type provided!", EXIT_FAILURE);
+            utils::terminate("Unknown error type provided!", EXIT_FAILURE);
 
         return it->second;
     }
@@ -119,7 +119,7 @@ namespace Diagnostic
     {
         constructed_ += std::string("\n\n") + ERR_GEN + "Error <" +
                         error_type_to_string(error_type_) + "> " +
-                        Utils::Styles::Reset + message_ + "\n\n";
+                        utils::Styles::Reset + message_ + "\n\n";
 
         construct_emphasis((DiagnosticEmphasis){
             .message = submessage_,
@@ -143,10 +143,10 @@ namespace Diagnostic
         return std::make_unique<ErrorDiagnostic>(
             &node, ErrorTypes::Syntax::UnexpectedToken,
             std::string("Unexpected \"") + ERR_GEN + std::string(token->value) +
-                Utils::Styles::Reset + "\"." +
+                utils::Styles::Reset + "\"." +
                 (expects ? std::string(" Expected \"") + ERR_GEN +
                                Lexer::type_to_string(*expected) +
-                               Utils::Styles::Reset + "."
+                               utils::Styles::Reset + "."
                          : ""),
             std::string("Received ") + Lexer::type_to_string(token->type) +
                 (expects ? " instead" : "") + ".");
@@ -159,7 +159,7 @@ namespace Diagnostic
         return std::make_unique<ErrorDiagnostic>(
             type, ErrorTypes::Type::UnrecognizedType,
             std::string("Unknown type \"") + ERR_GEN + type->to_string() +
-                Utils::Styles::Reset + "\" received.",
+                utils::Styles::Reset + "\" received.",
             "Type received here");
     }
 
@@ -176,8 +176,8 @@ namespace Diagnostic
         return std::make_unique<ErrorDiagnostic>(
             node, error_type,
             std::string("Expects ") + ERR_GEN + std::to_string(expected) +
-                Utils::Styles::Reset + " " + arg__(expected) + ". Provided " +
-                ERR_GEN + std::to_string(provided) + Utils::Styles::Reset +
+                utils::Styles::Reset + " " + arg__(expected) + ". Provided " +
+                ERR_GEN + std::to_string(provided) + utils::Styles::Reset +
                 " " + arg__(provided) + ".",
             "");
     }

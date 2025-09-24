@@ -58,7 +58,7 @@ namespace Parser
             result.force_error(&node,
                                Diagnostic::ErrorTypes::Syntax::MissingValue,
                                std::string("Missing ") + Diagnostic::ERR_GEN +
-                                   "VALUE" + Utils::Styles::Reset +
+                                   "VALUE" + utils::Styles::Reset +
                                    " for the right-side of the expression",
                                "Missing here");
         }
@@ -103,7 +103,7 @@ namespace Parser
             result.force_error(&node,
                                Diagnostic::ErrorTypes::Syntax::MissingValue,
                                std::string("Missing ") + Diagnostic::ERR_GEN +
-                                   "ACCESSOR" + Utils::Styles::Reset +
+                                   "ACCESSOR" + utils::Styles::Reset +
                                    " for the the member access expression",
                                "Accessing nothing after the dot operator");
         }
@@ -130,7 +130,7 @@ namespace Parser
             result.force_error(&node,
                                Diagnostic::ErrorTypes::Syntax::MissingValue,
                                std::string("Missing ") + Diagnostic::ERR_GEN +
-                                   "INDEX" + Utils::Styles::Reset +
+                                   "INDEX" + utils::Styles::Reset +
                                    " for the the element access expression",
                                "No specified element index to be accessed");
         }
@@ -351,7 +351,7 @@ namespace Parser
                     result.error(
                         &node, Diagnostic::ErrorTypes::Syntax::FieldDuplcation,
                         std::string("Field \"") + Diagnostic::ERR_GEN +
-                            field_name + Utils::Styles::Reset +
+                            field_name + utils::Styles::Reset +
                             "\" has already been defined.",
                         "Field is being duplicated");
 

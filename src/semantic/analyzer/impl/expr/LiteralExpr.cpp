@@ -15,7 +15,7 @@ namespace Semantic
             nullptr, Core::ResultStatus::Success, nullptr, {}};
 
         result.value =
-            std::make_shared<Core::Value>(Utils::parse_val(node.value()));
+            std::make_shared<Core::Value>(utils::parse_val(node.value()));
         if (result.value)
             result.data =
                 Core::Type::from_value(&analyzer.environment(), *result.value);

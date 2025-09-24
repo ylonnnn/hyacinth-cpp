@@ -16,8 +16,8 @@ namespace AST
 
     void TypeExpr::print(std::ostream &os, uint8_t tab) const
     {
-        std::string indentation = Utils::tab(tab - 1, 4),
-                    inner_indentation = Utils::tab(tab, 4);
+        std::string indentation = utils::tab(tab - 1, 4),
+                    inner_indentation = utils::tab(tab, 4);
 
         os << "TypeExpr {\n" << inner_indentation << "type: ";
         type_->print(os, tab + 1);

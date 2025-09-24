@@ -7,8 +7,8 @@
 
 namespace Diagnostic
 {
-    constexpr auto NOTE_GEN = Utils::Colors::Blue,
-                   NOTE_EMPH = Utils::Colors::BrightBlue;
+    constexpr auto NOTE_GEN = utils::Colors::Blue,
+                   NOTE_EMPH = utils::Colors::BrightBlue;
 
     enum class NoteType
     {

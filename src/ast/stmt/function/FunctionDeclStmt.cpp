@@ -12,8 +12,8 @@ namespace AST
 
     void FunctionParameter::print(std::ostream &os, uint8_t tab) const
     {
-        std::string indentation = Utils::tab(tab - 1, 4),
-                    inner_indentation = Utils::tab(tab, 4);
+        std::string indentation = utils::tab(tab - 1, 4),
+                    inner_indentation = utils::tab(tab, 4);
 
         os << "FunctionParameter {"
            << "\n"
@@ -58,8 +58,8 @@ namespace AST
 
     void FunctionDeclarationStmt::print(std::ostream &os, uint8_t tab) const
     {
-        std::string indentation = Utils::tab(tab - 1, 4),
-                    inner_indentation = Utils::tab(tab, 4);
+        std::string indentation = utils::tab(tab - 1, 4),
+                    inner_indentation = utils::tab(tab, 4);
 
         os << "FunctionDeclarationStmt {\n"
            << inner_indentation << "accessibility: " << accessibility_ << "\n"
@@ -75,7 +75,7 @@ namespace AST
 
         for (const auto &param : parameters_)
         {
-            std::string inner_indentation = Utils::tab(tab + 1, 4);
+            std::string inner_indentation = utils::tab(tab + 1, 4);
 
             os << "\n" << inner_indentation;
             param.print(os, tab + 2);

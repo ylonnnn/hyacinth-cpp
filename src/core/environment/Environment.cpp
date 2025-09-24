@@ -1,5 +1,8 @@
 #include "core/environment/Environment.hpp"
+#include "ast/type/ScopedType.hpp"
+#include "diagnostic/ErrorDiagnostic.hpp"
 #include "utils/style.hpp"
+#include <cassert>
 
 namespace Core
 {
@@ -35,8 +38,8 @@ namespace Core
 
     void Environment::display_symbol_table(std::ostream &os, uint8_t tab) const
     {
-        std::string indentation = Utils::tab(tab - 1, 4),
-                    inner_indentation = Utils::tab(tab, 4);
+        std::string indentation = utils::tab(tab - 1, 4),
+                    inner_indentation = utils::tab(tab, 4);
 
         os << "[" << name_ << "] {";
 
@@ -83,6 +86,41 @@ namespace Core
     void Environment::update_variable(const std::string &name, Value value)
     {
         variables_.insert_or_assign(name, value);
+    }
+
+    TypeResolutionResult Environment::resolve_ast_type(AST::Type &ast_type,
+                                                       size_t depth)
+    {
+        assert(typeid(ast_type) != typeid(AST::ScopedType));
+        TypeResolutionResult result = {
+            Core::ResultStatus::Success, nullptr, {}};
+
+        if (depth == 0)
+        {
+            result.error(Diagnostic::create_unknown_type_error(&ast_type));
+            return result;
+        }
+
+        auto name = ast_type.value().value;
+        auto it = types_.find(name);
+
+        if (it == types_.end())
+        {
+            if (parent_ != nullptr)
+                return parent_->resolve_ast_type(ast_type, depth - 1);
+
+            result.error(Diagnostic::create_unknown_type_error(&ast_type));
+            return result;
+        }
+
+        BaseType *resolved = it->second.get();
+        if (resolved == nullptr)
+        {
+            result.error(Diagnostic::create_unknown_type_error(&ast_type));
+            return result;
+        }
+
+        return resolved->resolve(ast_type);
     }
 
     BaseType *Environment::resolve_type(const std::string &name, size_t depth)

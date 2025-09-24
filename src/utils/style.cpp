@@ -3,7 +3,7 @@
 
 #include "utils/style.hpp"
 
-namespace Utils
+namespace utils
 {
     std::string tab(uint8_t tab_count, uint8_t size)
     {
@@ -33,4 +33,4 @@ namespace Utils
         return stripped.size();
     }
 
-} // namespace Utils
+} // namespace utils

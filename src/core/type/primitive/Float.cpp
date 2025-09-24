@@ -47,12 +47,12 @@ namespace Core
                 allowed_bw += "and ";
 
             allowed_bw += Diagnostic::NOTE_GEN + std::to_string(bw) +
-                          Utils::Styles::Reset + (last ? "" : ", ");
+                          utils::Styles::Reset + (last ? "" : ", ");
         }
 
         return std::make_unique<Diagnostic::NoteDiagnostic>(
             node, Diagnostic::NoteType::Suggestion,
-            "Only the values " + allowed_bw + Utils::Styles::Reset +
+            "Only the values " + allowed_bw + utils::Styles::Reset +
                 " are accepted.",
             "Implement suggestion here");
     }

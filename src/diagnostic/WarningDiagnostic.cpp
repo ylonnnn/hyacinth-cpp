@@ -29,7 +29,7 @@ namespace Diagnostic
     {
         auto it = WARN_CODES.find(type);
         if (it == WARN_CODES.end())
-            Utils::terminate("Unknown warning type provided!", EXIT_FAILURE);
+            utils::terminate("Unknown warning type provided!", EXIT_FAILURE);
 
         return it->second;
     }
@@ -38,7 +38,7 @@ namespace Diagnostic
     {
         constructed_ += std::string("\n\n") + WARN_GEN + "Warning <" +
                         warn_type_to_string(warn_type_) + "> " +
-                        Utils::Styles::Reset + message_ + "\n\n";
+                        utils::Styles::Reset + message_ + "\n\n";
 
         construct_emphasis((DiagnosticEmphasis){
             .message = submessage_,

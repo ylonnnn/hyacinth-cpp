@@ -21,14 +21,14 @@ namespace AST
 
     void Block::print(std::ostream &os, uint8_t tab) const
     {
-        std::string indentation = Utils::tab(tab - 1, 4),
-                    inner_indentation = Utils::tab(tab, 4);
+        std::string indentation = utils::tab(tab - 1, 4),
+                    inner_indentation = utils::tab(tab, 4);
 
         os << "Block {\n" << inner_indentation << "statements: {\n";
 
         for (const auto &statement : statements_)
         {
-            std::string inner_indentation = Utils::tab(tab + 1, 4);
+            std::string inner_indentation = utils::tab(tab + 1, 4);
 
             os << "\n" << inner_indentation;
             statement->print(os, tab + 1);

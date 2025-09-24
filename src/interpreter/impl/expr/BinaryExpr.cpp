@@ -240,7 +240,7 @@ namespace Interpreter
                 //         std::string(
                 //             "Illegal element access on non-array type \"") +
                 //             Diagnostic::ERR_GEN + type->to_string() +
-                //             Utils::Styles::Reset + "\".",
+                //             utils::Styles::Reset + "\".",
                 //         "Value must be an array type to perform an element "
                 //         "access");
 
@@ -273,7 +273,7 @@ namespace Interpreter
                     result.error(
                         &right, Diagnostic::ErrorTypes::Runtime::OutOfRange,
                         std::string("Invalid index \"") + Diagnostic::ERR_GEN +
-                            std::to_string(index) + Utils::Styles::Reset +
+                            std::to_string(index) + utils::Styles::Reset +
                             "\" provided.",
                         max ? (std::string("Valid index range 0-") +
                                std::to_string(max) + ".")
@@ -361,7 +361,7 @@ namespace Interpreter
                 std::string("No viable operator overload for ") +
                     Diagnostic::ERR_GEN + left->to_string() + " " +
                     std::string(node.operation().value) + " " +
-                    right->to_string() + Utils::Styles::Reset + ".",
+                    right->to_string() + utils::Styles::Reset + ".",
                 "");
 
             return result;

@@ -6,7 +6,7 @@
 #include "lexer/Token.hpp"
 #include "utils/value.hpp"
 
-namespace Utils
+namespace utils
 {
     Core::Value parse_val(Lexer::Token &token)
     {
@@ -59,4 +59,4 @@ namespace Utils
         }
     }
 
-} // namespace Utils
+} // namespace utils

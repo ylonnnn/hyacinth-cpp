@@ -44,7 +44,7 @@ namespace Parser
             result.force_error(
                 &node, Diagnostic::ErrorTypes::Syntax::MissingIdentifier,
                 std::string("Missing ") + Diagnostic::ERR_GEN + "IDENTIFIER" +
-                    Utils::Styles::Reset + " before the mutability modifier.",
+                    utils::Styles::Reset + " before the mutability modifier.",
                 "Missing identifier here");
         }
 
@@ -78,7 +78,7 @@ namespace Parser
                 result.force_error(
                     &node, Diagnostic::ErrorTypes::Syntax::MissingType,
                     std::string("Missing identifier ") + Diagnostic::ERR_GEN +
-                        "TYPE" + Utils::Styles::Reset +
+                        "TYPE" + utils::Styles::Reset +
                         " after the mutability modifier.",
                     "Missing type here");
             }

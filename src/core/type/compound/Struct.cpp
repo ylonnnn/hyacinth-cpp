@@ -94,7 +94,7 @@ namespace Core
         auto diagnostic = std::make_unique<Diagnostic::NoteDiagnostic>(
             node, Diagnostic::NoteType::Suggestion,
             std::string("Only instances of \"") + Diagnostic::NOTE_GEN + name +
-                Utils::Styles::Reset + "\" are accepted.",
+                utils::Styles::Reset + "\" are accepted.",
             "Use an instance of struct \"" + name +
                 "\" or an object with the same structure.");
 
@@ -109,7 +109,7 @@ namespace Core
                                                : _struct->node,
                 Diagnostic::NoteType::Definition,
                 "Struct \"" + (Diagnostic::NOTE_GEN + name) +
-                    Utils::Styles::Reset +
+                    utils::Styles::Reset +
                     "\" is defined with the structure below.",
                 "Use this definition as a guide"));
         }

@@ -15,16 +15,8 @@ namespace Semantic
         AST::FunctionDeclarationStmt *node = fn->node;
 
         auto &ast_type = node->return_type();
-        Core::BaseType *resolved =
-            current->resolve_type(std::string(ast_type.value().value));
 
-        if (resolved == nullptr)
-        {
-            result.error(Diagnostic::create_unknown_type_error(&ast_type));
-            return;
-        }
-
-        Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
+        Core::TypeResolutionResult t_res = current->resolve_ast_type(ast_type);
         result.adapt(t_res.status, std::move(t_res.diagnostics));
 
         fn->return_type = result.data = t_res.data;
@@ -43,16 +35,9 @@ namespace Semantic
         for (auto &param : node->parameters())
         {
             auto &ast_type = param.type();
-            Core::BaseType *resolved =
-                current->resolve_type(std::string(ast_type.value().value));
 
-            if (resolved == nullptr)
-            {
-                result.error(Diagnostic::create_unknown_type_error(&ast_type));
-                continue;
-            }
-
-            Core::TypeResolutionResult t_res = resolved->resolve(ast_type);
+            Core::TypeResolutionResult t_res =
+                current->resolve_ast_type(ast_type);
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
             Core::FunctionParameter parameter{param.name().value,
@@ -94,7 +79,7 @@ namespace Semantic
                          Diagnostic::ErrorTypes::Semantic::IllegalShadowing,
                          std::string("Illegal shadowing of built-in type \"") +
                              Diagnostic::ERR_GEN + identifier +
-                             Utils::Styles::Reset + "\".",
+                             utils::Styles::Reset + "\".",
                          "Cannot shadow built-in types");
 
             return {nullptr, false};
@@ -123,7 +108,7 @@ namespace Semantic
                 defined ? Diagnostic::NoteType::Definition
                         : Diagnostic::NoteType::Declaration,
                 std::string("A symbol identified as \"") +
-                    Diagnostic::NOTE_GEN + name + Utils::Styles::Reset +
+                    Diagnostic::NOTE_GEN + name + utils::Styles::Reset +
                     "\" is already declared.",
                 "Declared here"));
 
@@ -135,7 +120,7 @@ namespace Semantic
         {
             error(std::string("Cannot provide definition for non-function "
                               "declaration of \"") +
-                  Diagnostic::ERR_GEN + name + Utils::Styles::Reset + "\".");
+                  Diagnostic::ERR_GEN + name + utils::Styles::Reset + "\".");
 
             return {nullptr, false};
         }
@@ -145,14 +130,14 @@ namespace Semantic
         if (defined || !is_def)
         {
             error(std::string("Cannot re-declare symbol \"") +
-                  Diagnostic::ERR_GEN + name + Utils::Styles::Reset + "\".");
+                  Diagnostic::ERR_GEN + name + utils::Styles::Reset + "\".");
 
             return {declptr, false};
         }
 
         // Check for parameter list difference
         auto err_message = std::string("Cannot define function \"") +
-                           Diagnostic::ERR_GEN + name + Utils::Styles::Reset +
+                           Diagnostic::ERR_GEN + name + utils::Styles::Reset +
                            "\". Function signature mismatch.";
 
         // Function Signatures
