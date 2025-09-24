@@ -1,9 +1,9 @@
 #pragma once
 
 #include "diagnostic/Diagnostic.hpp"
-#include "diagnostic/ErrorDiagnostic.hpp"
-#include "diagnostic/NoteDiagnostic.hpp"
-#include "diagnostic/WarningDiagnostic.hpp"
+#include "diagnostic/ErrorType.hpp"
+#include "diagnostic/NoteType.hpp"
+#include "diagnostic/WarningType.hpp"
 
 namespace Core
 {
@@ -74,51 +74,48 @@ namespace Core
         //     this->data = data;
         // }
 
-        virtual void
-        error(std::unique_ptr<Diagnostic::ErrorDiagnostic> diagnostic)
+        virtual void error(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
         {
             status = ResultStatus::Fail;
             diagnostics.push_back(std::move(diagnostic));
         }
 
-        virtual void error(AST::Node *node, Diagnostic::ErrorType error_type,
-                           const std::string &message,
-                           const std::string &submessage)
+        virtual void error(Core::PositionRange &&range,
+                           Diagnostic::ErrorType type,
+                           const std::string &message)
         {
             status = ResultStatus::Fail;
-            diagnostics.push_back(std::make_unique<Diagnostic::ErrorDiagnostic>(
-                node, error_type, message, submessage));
+            diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
+                Diagnostic::DiagnosticSeverity::Error, type, std::move(range),
+                std::move(message)));
         }
 
-        virtual void
-        warn(std::unique_ptr<Diagnostic::WarningDiagnostic> diagnostic)
+        virtual void warn(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
+        {
+            diagnostics.push_back(std::move(diagnostic));
+        }
+
+        virtual void warn(Core::PositionRange &&range,
+                          Diagnostic::WarningType type,
+                          const std::string &message)
+        {
+            diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
+                Diagnostic::DiagnosticSeverity::Warning, type, std::move(range),
+                std::move(message)));
+        }
+
+        virtual void note(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
         {
 
             diagnostics.push_back(std::move(diagnostic));
         }
 
-        virtual void warn(AST::Node *node, Diagnostic::WarningType warn_type,
-                          const std::string &message,
-                          const std::string &submessage)
+        virtual void note(Core::PositionRange &&range,
+                          Diagnostic::NoteType type, const std::string &message)
         {
-            diagnostics.push_back(
-                std::make_unique<Diagnostic::WarningDiagnostic>(
-                    node, warn_type, message, submessage));
-        }
-
-        virtual void
-        note(std::unique_ptr<Diagnostic::NoteDiagnostic> diagnostic)
-        {
-
-            diagnostics.push_back(std::move(diagnostic));
-        }
-
-        virtual void note(AST::Node *node, Diagnostic::NoteType note_type,
-                          const std::string &message,
-                          const std::string &submessage)
-        {
-            diagnostics.push_back(std::make_unique<Diagnostic::NoteDiagnostic>(
-                node, note_type, message, submessage));
+            diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
+                Diagnostic::DiagnosticSeverity::Note, type, std::move(range),
+                std::move(message)));
         }
     };
 

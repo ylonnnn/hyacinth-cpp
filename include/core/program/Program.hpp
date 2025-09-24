@@ -46,7 +46,6 @@ namespace Core
     {
         friend ProgramRegistry;
 
-      private:
         ProgramRegistry *registry_ = nullptr;
 
         std::filesystem::path path;
@@ -61,16 +60,13 @@ namespace Core
         // std::unique_ptr<DependencyEnvironment> dependencies;
         // std::unique_ptr<Environment> environment;
 
-      public:
         ProgramFile(const std::string &path,
                     ProgramStateFlags state = PFS_MAIN);
         ~ProgramFile();
 
-      protected:
         size_t file_size(std::ifstream &file);
         void read();
 
-      public:
         bool valid() const;
         bool analyzed() const;
         bool interpreted() const;

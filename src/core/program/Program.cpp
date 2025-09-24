@@ -24,8 +24,6 @@ namespace Core
 
     struct ProgramResult : Result<std::unique_ptr<AST::Program>>
     {
-        Lexer::Lexer *lexer = nullptr;
-
         using Result<std::unique_ptr<AST::Program>>::Result;
     };
 
@@ -294,7 +292,7 @@ namespace Core
         auto start = std::chrono::high_resolution_clock::now();
         auto succeeded = true;
 
-        ProgramResult result = {ResultStatus::Success, nullptr, {}};
+        ProgramResult result{ResultStatus::Success, nullptr, {}};
         // result.diagnostics.reserve(32);
 
         // Lexical Analysis

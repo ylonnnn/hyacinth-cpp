@@ -4,49 +4,33 @@
 #include <string>
 #include <vector>
 
-#include "ast/Node.hpp"
-#include "utils/style.hpp"
+#include "core/position/Position.hpp"
 
 namespace Diagnostic
 {
-    struct DiagnosticEmphasis
+    enum class DiagnosticSeverity
     {
-        const std::string &message;
-
-        Core::Position &position;
-        Core::Position &end_position;
-
-        utils::TextStyle emphasis;
-        utils::TextStyle trace;
-        utils::TextStyle pointer;
+        Note,
+        Warning,
+        Error,
     };
 
-    class Diagnostic
+    struct Diagnostic
     {
-      protected:
-        AST::Node *node_ = nullptr;
-        const std::string &message_;
-        const std::string &submessage_;
+        using DiagnosticList = std::vector<std::unique_ptr<Diagnostic>>;
 
-        std::vector<std::unique_ptr<Diagnostic>> details_;
+        DiagnosticSeverity severity;
+        uint32_t code;
+        std::string message;
+        Core::PositionRange range;
+        DiagnosticList details;
 
-        std::string constructed_;
+        Diagnostic(DiagnosticSeverity severity, uint32_t code,
+                   Core::PositionRange &&range, std::string &&message);
 
-      public:
-        Diagnostic(AST::Node *node, const std::string &message,
-                   const std::string &submessage);
-
-      public:
-        AST::Node &node();
-
-        void add_detail(std::unique_ptr<Diagnostic> detail);
-
-        void construct_emphasis(DiagnosticEmphasis options);
-        void report() const;
-
-        virtual void construct() = 0;
+        Diagnostic &add_detail(std::unique_ptr<Diagnostic> &&detail);
     };
 
-    using DiagnosticList = std::vector<std::unique_ptr<Diagnostic>>;
+    using DiagnosticList = Diagnostic::DiagnosticList;
 
 } // namespace Diagnostic
