@@ -1,6 +1,7 @@
 # Folder Ignorance
 /build
 /obj
+/temp
 
 # File Ignorance
 /massif.out.*

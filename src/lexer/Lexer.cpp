@@ -7,11 +7,9 @@
 
 namespace Lexer
 {
-    LexerResult::LexerResult(Core::ResultStatus status,
-                             std::vector<Token> &&data,
-                             Diagnostic::DiagnosticList diagnostics)
-        : Core::Result<std::vector<Token>>(status, std::move(data),
-                                           std::move(diagnostics))
+    LexerResult::LexerResult(Core::ResultStatus status, void *data,
+                             Diagnostic::DiagnosticList &&diagnostics)
+        : Core::Result<void *>(status, data, std::move(diagnostics))
     {
     }
 
@@ -25,14 +23,7 @@ namespace Lexer
     Lexer::~Lexer() = default;
     // Lexer::~Lexer() { std::cout << "destroyed\n"; }
 
-    LexerResult Lexer::tokenize()
-    {
-        // LexerResult result = tokenizer_.scan();
-
-        // tokens_ = std::move(result.data);
-
-        // return result;
-    }
+    LexerResult Lexer::tokenize() { return tokenizer.scan(); }
 
     bool Lexer::bsof() const { return position == 0; }
 
@@ -55,10 +46,10 @@ namespace Lexer
 
     Token &Lexer::current()
     {
-        auto max_idx = static_cast<ssize_t>(tokens.size() - 1);
+        ssize_t max_idx = static_cast<ssize_t>(tokens.size() - 1);
 
-        return tokens.at(
-            std::clamp(static_cast<ssize_t>(position) - 1, 0l, max_idx));
+        return tokens.at(std::clamp(static_cast<ssize_t>(position) - 1,
+                                    static_cast<ssize_t>(0), max_idx));
     }
 
 } // namespace Lexer

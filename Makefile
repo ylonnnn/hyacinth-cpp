@@ -1,7 +1,7 @@
 LINUX_CXX := g++
 WIN_CXX := x86_64-w64-mingw32-g++
 
-CXXFLAGS := -g -O0 -Wall -Wextra -std=c++17 -Iinclude -MMD -MP
+CXXFLAGS := -ggdb -O0 -Wall -Wextra -std=c++17 -Iinclude -MMD -MP
 LDFLAGS = -fsanitize=address
 
 WIN_LDFLAGS = -static
@@ -17,7 +17,7 @@ SOURCES := $(shell find $(SRC_DIR) -name "*.cpp")
 LINUX_OBJECTS := $(SOURCES:$(SRC_DIR)/%.cpp=$(LINUX_OBJ_DIR)/%.o)
 WIN_OBJECTS := $(SOURCES:$(SRC_DIR)/%.cpp=$(WIN_OBJ_DIR)/%.o)
 
-LINUX_DEPS := $(OBJECTS:.o=.d)
+LINUX_DEPS := $(LINUX_OBJECTS:.o=.d)
 WIN_DEPS := $(WIN_OBJECTS:.o=.d)
 
 LINUX_TARGET := $(BUILD_DIR)/hyc
@@ -27,7 +27,7 @@ WIN_TARGET := $(BUILD_DIR)/hyc.exe
 
 all: linux windows
 
-linux: $(TARGET)
+linux: $(LINUX_TARGET)
 
 windows: $(WIN_TARGET)
 
@@ -53,7 +53,7 @@ lr: linux
 	$(LINUX_TARGET)
 
 wr: windows
-	$(WINDOWS_TARGET)
+	$(WIN_TARGET)
 
 vars:
 	@echo "Sources: $(SOURCES)"

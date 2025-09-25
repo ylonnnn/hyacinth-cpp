@@ -2,6 +2,7 @@
 
 #include "diagnostic/reporter/CLIReporter.hpp"
 #include "diagnostic/reporter/DiagnosticReporter.hpp"
+#include "utils/dev.hpp"
 #include "utils/style.hpp"
 
 namespace Diagnostic
@@ -23,7 +24,7 @@ namespace Diagnostic
     CLIReporter::severity_to_string(DiagnosticSeverity severity) const
     {
         return ((std::string[]){"note", "warning",
-                                "color"})[static_cast<size_t>(severity)];
+                                "error"})[static_cast<size_t>(severity)];
     }
 
     std::string CLIReporter::format_code(DiagnosticSeverity severity,
@@ -44,18 +45,18 @@ namespace Diagnostic
         auto &lines_ = program.source_lines;
 
         std::vector<std::string_view> lines;
-        lines.reserve((end.row - start.row) + 1);
 
+        lines.reserve((end.row - start.row) + 1);
         lines.insert(lines.end(), lines_.begin() + (start.row - 1),
                      lines_.begin() + end.row);
 
-        size_t tab_size = 4;
+        size_t tab_size = 4, l_size = lines.size();
         std::string formatted, tab = utils::tab(1, tab_size),
                                color = color_of(severity);
 
-        for (auto i = start.row - 1; i < end.row; i++)
+        for (size_t i = 0; i < l_size; ++i)
         {
-            std::string line(lines_[i]), l_no = std::to_string(i + 1);
+            std::string line(lines[i]), l_no = std::to_string(start.row + i);
 
             size_t prefix_len = (tab_size * 3) + 1 + l_no.size();
             formatted += tab + utils::Colors::Cyan + l_no + tab +
@@ -63,16 +64,18 @@ namespace Diagnostic
                          utils::Styles::Reset + tab;
 
             // Apply color to the specific range
-            auto l_start = i == start.row - 1 ? start.col - 1 : 0,
-                 l_end = (i == end.row - 1 ? end.col : line.size()) - 1;
+            auto l_start = i == 0 ? start.col - 1 : 0,
+                 l_end = i == l_size - 1 ? end.col - 1
+                                         : line.size() - (line.size() != 0);
 
-            line.insert(l_end + 1, utils::Styles::Reset);
-            line.insert(l_start, color);
+            if (line.size())
+            {
+                line.insert(l_end + 1, utils::Styles::Reset);
+                line.insert(l_start, color);
+            }
 
-            formatted += line + "\n";
-
-            formatted += utils::tab(prefix_len + l_start, 1) + color +
-                         std::string((l_end - l_start) + 1, '^') + "\n";
+            formatted += line + "\n" + utils::tab(prefix_len + l_start, 1) +
+                         color + std::string((l_end - l_start) + 1, '^') + "\n";
         }
 
         return formatted;
@@ -90,6 +93,8 @@ namespace Diagnostic
                     cwp = current.string().substr(parent.string().size()),
                     location = p_path.substr(p_path.find(cwp)) + ":" +
                                std::to_string(row) + ":" + std::to_string(col);
+
+        utils::todo("implement: format for diagnostic.details");
 
         std::string formatted =
             utils::Colors::BrightBlack + location + ": " + color_of(severity) +

@@ -9,6 +9,7 @@ namespace Diagnostic
         : severity(severity), code(code), range(std::move(range)),
           message(std::move(message))
     {
+        details.reserve(4);
     }
 
     Diagnostic &Diagnostic::add_detail(std::unique_ptr<Diagnostic> &&detail)

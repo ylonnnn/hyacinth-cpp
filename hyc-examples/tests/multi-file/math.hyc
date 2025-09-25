@@ -1,9 +1,0 @@
-pub fn add -> float[64] (a: float[64], b: float[64]);
-
-pub fn subtract -> float[64] (a: float[64], b: float[64]);
-
-pub fn multiply -> float[64] (a: float[64], b: float[64]);
-
-pub fn divide -> float[64] (a: float[64], b: float[64]);
-
-pub fn modulo -> float[64] (a: float[64], b: float[64]);

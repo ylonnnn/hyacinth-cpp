@@ -1,9 +1,0 @@
-import "./io.hyc";
-
-fn main -> void () {
-    std::io::print("Hello, World\n");
-    let n := std::test.x;
-    let test := std::test;
-
-    let test2: std::Test = std::test;
-}

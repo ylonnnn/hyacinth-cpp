@@ -13,7 +13,7 @@ namespace Diagnostic
         virtual std::string
         format_diagnostic(const Diagnostic &diagnostic) const = 0;
 
-        virtual void report() const;
+        virtual void report() const = 0;
     };
 
 } // namespace Diagnostic

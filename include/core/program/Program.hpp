@@ -54,7 +54,7 @@ namespace Core
         std::string source;
         std::vector<std::string_view> source_lines;
 
-        // Lexer::Lexer *lexer = nullptr;
+        Lexer::Lexer *lexer = nullptr;
         // std::unique_ptr<AST::Program> node;
 
         // std::unique_ptr<DependencyEnvironment> dependencies;
@@ -75,8 +75,8 @@ namespace Core
 
         // void depend(Environment &dependency);
 
-        // Lexer::LexerResult lex();
-        // Lexer::LexerResult lex(ProgramResult &result);
+        Lexer::LexerResult lex();
+        Lexer::LexerResult lex(ProgramResult &result);
         // Parser::ProgramParseResult parse(Lexer::Lexer *lexer);
         // Parser::ProgramParseResult parse(ProgramResult &result);
         // Semantic::AnalysisResult

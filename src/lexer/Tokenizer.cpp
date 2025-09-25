@@ -6,11 +6,25 @@
 #include "lexer/Lexer.hpp"
 #include "lexer/Token.hpp"
 #include "lexer/Tokenizer.hpp"
-#include "utils/dev.hpp"
 #include "utils/numeric.hpp"
 
 namespace Lexer
 {
+    Core::PositionRange range_to_curr(Lexer &lexer, size_t row, size_t col,
+                                      size_t offset)
+    {
+        Core::ProgramFile &program = lexer.program;
+        Tokenizer tokenizer = lexer.tokenizer;
+
+        Core::PositionRange range{
+            program.position_at(row, col, offset),
+            program.position_at(tokenizer.row, tokenizer.col - 1,
+                                tokenizer.offset),
+        };
+
+        return range;
+    }
+
     Tokenizer::Tokenizer(Lexer &lexer)
         : lexer(lexer), program(lexer.program), source(program.source)
     {
@@ -64,17 +78,25 @@ namespace Lexer
 
     size_t Tokenizer::curr_offset() const
     {
-        return std::clamp(offset - 1, 0ul, source.size() - 1);
+        return std::clamp(offset - 1, static_cast<size_t>(0ul),
+                          source.size() - 1);
     }
 
-    char Tokenizer::next() { return eof() ? '\0' : source[offset++]; }
+    char Tokenizer::next()
+    {
+        if (eof())
+            return '\0';
 
-    char Tokenizer::peek() const { return eof() ? '\0' : source[offset]; }
+        if ((offset + 1) <= (source.size() - 1))
+            ++col;
 
-    char Tokenizer::peekn(size_t offset) const
+        return source[offset++];
+    }
+
+    char Tokenizer::peek(size_t offset) const
     {
         size_t pos = this->offset + offset;
-        return pos >= source.size() ? '\0' : source[offset];
+        return pos >= source.size() ? '\0' : source[pos];
     }
 
     bool Tokenizer::match(char expect)
@@ -90,12 +112,12 @@ namespace Lexer
         if (eof())
             return;
 
-        offset++;
-        p_col = col++;
+        if (++offset <= (source.size() - 1))
+            ++col;
     }
 
     void Tokenizer::create_token(const std::pair<size_t, size_t> &range,
-                                 TokenType type, bool advance)
+                                 TokenType type)
     {
         auto &[start, end] = range;
         size_t len = (end - start) + 1;
@@ -105,9 +127,6 @@ namespace Lexer
             Core::PositionRange{program.position_at(row, col, start),
                                 program.position_at(row, col + (len - 1), end)},
             type);
-
-        if (advance)
-            col += len;
     }
 
     void Tokenizer::ignore_whitespaces()
@@ -118,17 +137,17 @@ namespace Lexer
 
             if (c == '\n')
             {
-                p_row = row++;
-                p_col = col;
+                ++row;
                 col = 1;
             }
         }
     }
 
-    void Tokenizer::read_digit_seq(uint32_t base)
+    void Tokenizer::read_digit_seq(LexerResult &result, uint32_t base)
     {
         bool allow_sep = false;
-        auto pos = [&]() -> void {};
+        auto pos = [&]() -> Core::Position
+        { return program.position_at(row, col, offset); };
 
         for (char c = peek(); !eof(); c = peek())
         {
@@ -136,13 +155,10 @@ namespace Lexer
             {
                 if (!utils::is_digit_of(base, c))
                 {
-                    utils::todo("throw error: invalid numeric literal digit");
-                    // diagnostic_t diagnostic = diagnostic_from(
-                    //     DIAG_ERROR, INVALID_NUMLIT_DIGIT,
-                    //     string_from("invalid numeric literal digit."),
-                    //     (position_range_t){pos(lexer), pos(lexer)});
-
-                    // result_error(&lexer->result, &diagnostic);
+                    result.error(
+                        Core::PositionRange{pos(), pos()},
+                        Diagnostic::ErrorType::InvalidNumericLiteralDigit,
+                        "invalid numeric literal digit.");
                 }
 
                 allow_sep = true;
@@ -155,18 +171,15 @@ namespace Lexer
             {
                 // If the next character is not a digit, a separator is not
                 // allowed as it is the end of the digit sequence
-                char n = peekn(1);
+                char n = peek(1);
                 if (n == '\0' || !std::isdigit(n))
                     allow_sep = false;
 
                 if (!allow_sep)
                 {
-                    // diagnostic_t diagnostic = diagnostic_from(
-                    //     DIAG_ERROR, UNEXPECTED_SEP,
-                    //     string_from("unexpected numeric literal separator."),
-                    //     (position_range_t){pos(lexer), pos(lexer)});
-
-                    // result_error(&lexer->result, &diagnostic);
+                    result.error(Core::PositionRange{pos(), pos()},
+                                 Diagnostic::ErrorType::UnexpectedSeparator,
+                                 "unexpected numeric literal separator.");
                 }
 
                 allow_sep = false;
@@ -179,7 +192,7 @@ namespace Lexer
         }
     }
 
-    void Tokenizer::read_num()
+    void Tokenizer::read_num(LexerResult &result)
     {
         //
         char c = peek();
@@ -193,15 +206,11 @@ namespace Lexer
             base = c == 'b' ? 2 : c == 'o' ? 8 : c == 'x' ? 16 : UINT32_MAX;
 
             consume();
-            if (eof())
+            if (eof() || !utils::is_digit_of(base, peek()))
             {
-                utils::todo("throw error: malformed numeric literal");
-                // diagnostic_t diagnostic = diagnostic_from(
-                //     DIAG_ERROR, MALFORMED_LITERAL,
-                //     string_from("malformed numeric literal."),
-                //     POSRNG_SWTOCURR((*lexer), s_offset, s_row, s_col));
-
-                // result_error(&lexer->result, &diagnostic);
+                result.error(range_to_curr(lexer, s_row, s_col, s_offset),
+                             Diagnostic::ErrorType::MalformedLiteral,
+                             "malformed numeric literal.");
 
                 return;
             }
@@ -209,22 +218,18 @@ namespace Lexer
 
         if (base == UINT32_MAX)
         {
-            utils::todo("throw error: invalid numeric literal prefix");
-            // diagnostic_t diagnostic = diagnostic_from(
-            //     DIAG_ERROR, INVALID_NUMLIT_PREF,
-            //     string_from("invalid numeric literal prefix"),
-            //     POSRNG_SWTOCURR((*lexer), s_offset, s_row, s_col));
-
-            // result_error(&lexer->result, &diagnostic);
+            result.error(range_to_curr(lexer, s_row, s_col, s_offset),
+                         Diagnostic::ErrorType::InvalidNumericLiteralPrefix,
+                         "invalid numeric literal prefix.");
 
             return;
         }
 
-        read_digit_seq(base);
+        read_digit_seq(result, base);
 
         if (match('.'))
         {
-            read_digit_seq(base);
+            read_digit_seq(result, base);
             create_token({s_offset, offset - 1}, TokenType::Float);
 
             return;
@@ -233,22 +238,21 @@ namespace Lexer
         create_token({s_offset, offset - 1}, TokenType::Int);
     }
 
-    size_t Tokenizer::read_char_seq(char terminator)
+    size_t Tokenizer::read_char_seq(LexerResult &result, char terminator)
     {
-        size_t len = 0, s_offset = offset - 1, s_row = p_row, s_col = p_col;
+        size_t len = 0, s_offset = offset - 1, s_row = row, s_col = col;
+
+        consume();
 
         for (char c = peek(); !match(terminator); c = peek())
         {
             // Unterminated Literal
             if (eof())
             {
-                utils::todo("throw error: unterminated character sequence");
-                // diagnostic_t diagnostic = diagnostic_from(
-                //     DIAG_ERROR, UNTERMINATED_CHAR_SEQ,
-                //     string_from("unterminated character sequence."),
-                //     POSRNG_SWTOCURR((*lexer), s_offset, s_row, s_col));
-
-                // result_error(&lexer->result, &diagnostic);
+                result.error(
+                    range_to_curr(lexer, s_row, s_col, s_offset),
+                    Diagnostic::ErrorType::UnterminatedCharacterSequence,
+                    "unterminated character sequence.");
 
                 return SIZE_MAX;
             }
@@ -263,38 +267,36 @@ namespace Lexer
         return len;
     }
 
-    void Tokenizer::read_char()
+    void Tokenizer::read_char(LexerResult &result)
     {
         char quot_mark = peek();
-        size_t s_offset = offset, s_row = row, s_col = col;
-
-        consume();
-
-        size_t seq_len = read_char_seq(quot_mark);
+        size_t s_offset = offset, s_row = row, s_col = col,
+               seq_len = read_char_seq(result, quot_mark);
         if (seq_len == 1)
         {
             create_token({s_offset, offset - 1}, TokenType::Char);
             return;
         }
 
-        utils::todo("throw error: invalid character literal");
-        // diagnostic_t diagnostic =
-        //     diagnostic_from(DIAG_ERROR, INVALID_LITERAL,
-        //                     string_from("invalid character literal."),
-        //                     POSRNG_SWTOCURR((*lexer), s_offset, s_row,
-        //                     s_col));
-
-        // result_error(&lexer->result, &diagnostic);
+        result
+            .error(range_to_curr(lexer, s_row, s_col, s_offset),
+                   Diagnostic::ErrorType::InvalidLiteral,
+                   "invalid character literal.")
+            .add_detail(std::make_unique<Diagnostic::Diagnostic>(
+                Diagnostic::DiagnosticSeverity::Note,
+                static_cast<uint32_t>(Diagnostic::NoteType::Suggestion),
+                range_to_curr(lexer, s_row, s_col, s_offset),
+                "use double quotes for strings."));
     }
 
-    void Tokenizer::read_str()
+    void Tokenizer::read_str(LexerResult &result)
     {
         char quot_mark = peek();
         size_t s_offset = offset;
 
         consume();
 
-        if (read_char_seq(quot_mark) != SIZE_MAX)
+        if (read_char_seq(result, quot_mark) != SIZE_MAX)
             create_token({s_offset, offset - 1}, TokenType::String);
     }
 
@@ -330,7 +332,7 @@ namespace Lexer
 
             if (std::isdigit(c))
             {
-                read_num();
+                read_num(result);
                 continue;
             }
 
@@ -342,7 +344,7 @@ namespace Lexer
 
             if (c == '\'' || c == '"')
             {
-                c == '\'' ? read_char() : read_str();
+                c == '\'' ? read_char(result) : read_str(result);
                 continue;
             }
 
@@ -486,7 +488,7 @@ namespace Lexer
 
                     if (std::isdigit(p))
                     {
-                        read_num();
+                        read_num(result);
                         continue;
                     }
 
@@ -535,8 +537,7 @@ namespace Lexer
                         while (!match('\n'))
                             continue;
 
-                        p_row = row++;
-                        p_col = col;
+                        ++row;
                         col = 1;
                         continue;
                     }
@@ -633,6 +634,8 @@ namespace Lexer
                     create_token({ofs, offset - 1}, TokenType::Illegal);
                 }
             }
+
+            break;
         }
 
         return result;

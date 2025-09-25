@@ -10,7 +10,8 @@
 #include "core/program/Program.hpp"
 #include "core/result/Result.hpp"
 // #include "interpreter/Interpreter.hpp"
-// #include "lexer/Lexer.hpp"
+#include "diagnostic/reporter/CLIReporter.hpp"
+#include "lexer/Lexer.hpp"
 // #include "parser/Parser.hpp"
 // #include "semantic/analyzer/Analyzer.hpp"
 #include "utils/control.hpp"
@@ -22,9 +23,14 @@ namespace Core
 
     constexpr auto FILE_EXT = ".hyc";
 
-    struct ProgramResult : Result<std::unique_ptr<AST::Program>>
+    // struct ProgramResult : Result<std::unique_ptr<AST::Program>>
+    // {
+    //     using Result<std::unique_ptr<AST::Program>>::Result;
+    // };
+
+    struct ProgramResult : Result<std::unique_ptr<int>>
     {
-        using Result<std::unique_ptr<AST::Program>>::Result;
+        using Result<std::unique_ptr<int>>::Result;
     };
 
     ProgramFile::ProgramFile(const std::string &path, ProgramStateFlags state)
@@ -41,15 +47,9 @@ namespace Core
         source_lines.reserve(64);
 
         read();
-
-        // lexer_ = new Lexer::Lexer(*this);
     }
 
-    ProgramFile::~ProgramFile()
-    {
-        //
-        // delete lexer_;
-    }
+    ProgramFile::~ProgramFile() { delete lexer; }
 
     size_t ProgramFile::file_size(std::ifstream &file)
     {
@@ -122,31 +122,30 @@ namespace Core
     //     dependencies_->dependencies().push_back(&dependency);
     // }
 
-    // Lexer::LexerResult ProgramFile::lex()
-    // {
-    //     auto lexer_start = std::chrono::high_resolution_clock::now();
+    Lexer::LexerResult ProgramFile::lex()
+    {
+        auto lexer_start = std::chrono::high_resolution_clock::now();
 
-    //     Lexer::LexerResult lex_result = lexer_->tokenize();
+        lexer = new Lexer::Lexer(*this);
+        Lexer::LexerResult lex_result = lexer->tokenize();
 
-    //     std::cout << "[Lexer] "
-    //               << std::chrono::duration_cast<std::chrono::microseconds>(
-    //                      std::chrono::high_resolution_clock::now() -
-    //                      lexer_start)
-    //                      .count()
-    //               << "\n";
+        std::cout << "[Lexer] "
+                  << std::chrono::duration_cast<std::chrono::microseconds>(
+                         std::chrono::high_resolution_clock::now() -
+                         lexer_start)
+                         .count()
+                  << "\n";
 
-    //     return lex_result;
-    // }
+        return lex_result;
+    }
 
-    // Lexer::LexerResult ProgramFile::lex(ProgramResult &result)
-    // {
-    //     Lexer::LexerResult lex_result = lex();
+    Lexer::LexerResult ProgramFile::lex(ProgramResult &result)
+    {
+        Lexer::LexerResult lex_result = lex();
+        result.adapt(lex_result.status, std::move(lex_result.diagnostics));
 
-    //     result.lexer = lex_result.lexer;
-    //     result.adapt(lex_result.status, std::move(lex_result.diagnostics));
-
-    //     return lex_result;
-    // }
+        return lex_result;
+    }
 
     // Parser::ProgramParseResult ProgramFile::parse(Lexer::Lexer *lexer)
     // {
@@ -296,7 +295,7 @@ namespace Core
         // result.diagnostics.reserve(32);
 
         // Lexical Analysis
-        // succeeded = lex(result).status == Core::ResultStatus::Success;
+        succeeded = lex(result).status == Core::ResultStatus::Success;
 
         // // Parsing
         // if (succeeded)
@@ -344,8 +343,9 @@ namespace Core
         // std::cout << "\n";
 
         // Diagnostics
-        // for (auto &diagnostic : result.diagnostics)
-        //     diagnostic->report();
+
+        Diagnostic::CLIReporter reporter(std::move(result.diagnostics));
+        reporter.report();
 
         if (!state.has(PFS_MAIN))
             return;
@@ -353,8 +353,7 @@ namespace Core
         utils::TextStyle color =
             succeeded ? utils::Colors::Green : utils::Colors::Red;
 
-        std::cout << "\n\n"
-                  << utils::tab(3) << color << "[" << (succeeded ? "/" : "X")
+        std::cout << utils::tab(3) << color << "[" << (succeeded ? "/" : "X")
                   << "]" << utils::Styles::Reset << " Program Executed ("
                   << color << static_cast<double>(microseconds.count()) / 1'000
                   << "ms" << utils::Styles::Reset << ")\n\n";

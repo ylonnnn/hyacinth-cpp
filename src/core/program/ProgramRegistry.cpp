@@ -17,7 +17,7 @@ namespace Core
     ProgramFile &ProgramRegistry::file(const std::string &path)
     {
 
-        auto program = std::make_unique<ProgramFile>(path.c_str(), false);
+        auto program = std::make_unique<ProgramFile>(path, PFS_NONE);
         program->registry_ = this;
 
         auto [it, _] = programs_.emplace(path, std::move(program));

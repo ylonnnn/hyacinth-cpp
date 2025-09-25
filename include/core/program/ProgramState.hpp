@@ -7,6 +7,7 @@ namespace Core
 {
     enum ProgramState : uint8_t
     {
+        PFS_NONE = 0,
         PFS_MAIN = (1 << 0),
         PFS_VALID = (1 << 1),
         PFS_ANALYZED = (1 << 2),
@@ -19,15 +20,15 @@ namespace Core
         std::bitset<8> bits_;
 
       public:
-        constexpr inline ProgramStateFlags(ProgramState state) { with(state); }
+        inline ProgramStateFlags(ProgramState state) { with(state); }
 
-        constexpr inline ProgramStateFlags &with(ProgramState state)
+        inline ProgramStateFlags &with(ProgramState state)
         {
             bits_.set(static_cast<uint8_t>(state));
             return *this;
         }
 
-        constexpr inline bool has(ProgramState state) const
+        inline bool has(ProgramState state) const
         {
             return bits_.test(static_cast<uint8_t>(state));
         }

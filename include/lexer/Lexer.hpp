@@ -14,7 +14,7 @@ namespace Lexer
     struct LexerResult : public Core::Result<void *>
     {
         LexerResult(Core::ResultStatus status, void *data,
-                    Diagnostic::DiagnosticList diagnostics);
+                    Diagnostic::DiagnosticList &&diagnostics);
     };
 
     struct Lexer

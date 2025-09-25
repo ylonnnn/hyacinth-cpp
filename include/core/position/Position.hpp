@@ -20,4 +20,11 @@ namespace Core
         Position start, end;
     };
 
+    static inline std::ostream &operator<<(std::ostream &os,
+                                           const Position &position)
+    {
+        return os << "[" << position.row << ":" << position.col << ":"
+                  << position.offset << "]";
+    }
+
 } // namespace Core

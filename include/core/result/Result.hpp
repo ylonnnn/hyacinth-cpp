@@ -4,6 +4,7 @@
 #include "diagnostic/ErrorType.hpp"
 #include "diagnostic/NoteType.hpp"
 #include "diagnostic/WarningType.hpp"
+#include <iostream>
 
 namespace Core
 {
@@ -22,13 +23,13 @@ namespace Core
         Diagnostic::DiagnosticList diagnostics;
 
         Result(ResultStatus status, const T &data,
-               Diagnostic::DiagnosticList diagnostics)
+               Diagnostic::DiagnosticList &&diagnostics)
             : status(status), data(data), diagnostics(std::move(diagnostics))
         {
         }
 
         Result(ResultStatus status, T &&data,
-               Diagnostic::DiagnosticList diagnostics)
+               Diagnostic::DiagnosticList &&diagnostics)
             : status(status), data(std::move(data)),
               diagnostics(std::move(diagnostics))
         {
@@ -74,48 +75,64 @@ namespace Core
         //     this->data = data;
         // }
 
-        virtual void error(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
+        virtual Diagnostic::Diagnostic &
+        error(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
         {
             status = ResultStatus::Fail;
             diagnostics.push_back(std::move(diagnostic));
+
+            return *diagnostics.back();
         }
 
-        virtual void error(Core::PositionRange &&range,
-                           Diagnostic::ErrorType type,
-                           const std::string &message)
+        virtual Diagnostic::Diagnostic &error(Core::PositionRange &&range,
+                                              Diagnostic::ErrorType type,
+                                              std::string &&message)
         {
             status = ResultStatus::Fail;
             diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
-                Diagnostic::DiagnosticSeverity::Error, type, std::move(range),
+                Diagnostic::DiagnosticSeverity::Error,
+                static_cast<uint32_t>(type), std::move(range),
                 std::move(message)));
+
+            return *diagnostics.back();
         }
 
-        virtual void warn(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
+        virtual Diagnostic::Diagnostic &
+        warn(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
         {
             diagnostics.push_back(std::move(diagnostic));
+            return *diagnostics.back();
         }
 
-        virtual void warn(Core::PositionRange &&range,
-                          Diagnostic::WarningType type,
-                          const std::string &message)
+        virtual Diagnostic::Diagnostic &warn(Core::PositionRange &&range,
+                                             Diagnostic::WarningType type,
+                                             std::string &&message)
         {
             diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
-                Diagnostic::DiagnosticSeverity::Warning, type, std::move(range),
+                Diagnostic::DiagnosticSeverity::Warning,
+                static_cast<uint32_t>(type), std::move(range),
                 std::move(message)));
+
+            return *diagnostics.back();
         }
 
-        virtual void note(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
+        virtual Diagnostic::Diagnostic &
+        note(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
         {
-
             diagnostics.push_back(std::move(diagnostic));
+            return *diagnostics.back();
         }
 
-        virtual void note(Core::PositionRange &&range,
-                          Diagnostic::NoteType type, const std::string &message)
+        virtual Diagnostic::Diagnostic &note(Core::PositionRange &&range,
+                                             Diagnostic::NoteType type,
+                                             std::string &&message)
         {
             diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
-                Diagnostic::DiagnosticSeverity::Note, type, std::move(range),
+                Diagnostic::DiagnosticSeverity::Note,
+                static_cast<uint32_t>(type), std::move(range),
                 std::move(message)));
+
+            return *diagnostics.back();
         }
     };
 
