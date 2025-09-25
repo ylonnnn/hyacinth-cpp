@@ -2,7 +2,7 @@
 
 #include <ostream>
 
-#include "core/program/Program.hpp"
+#include "core/position/Position.hpp"
 #include "lexer/TokenType.hpp"
 
 namespace Lexer
@@ -10,8 +10,11 @@ namespace Lexer
     struct Token
     {
         std::string_view value;
-        Core::Position position, end_position;
+        Core::PositionRange range;
         TokenType type;
+
+        Token(std::string_view value, Core::PositionRange &&range,
+              TokenType type);
 
         friend std::ostream &operator<<(std::ostream &os, const Token &token);
     };

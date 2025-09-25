@@ -1,51 +1,58 @@
 #pragma once
 
-#include "lexer/Token.hpp"
 #include <unordered_map>
+
+#include "lexer/Token.hpp"
 
 namespace Lexer
 {
-    class Lexer;
+    struct Lexer;
     struct LexerResult;
 
-    class Tokenizer
+    struct Tokenizer
     {
-      private:
-        Lexer &lexer_;
-        Core::ProgramFile &program_;
-        std::string_view source_;
+        Lexer &lexer;
+        Core::ProgramFile &program;
 
-        std::unordered_map<std::string_view, TokenType> reserved_;
+        std::string_view source;
 
-        size_t position_ = 0;
-        size_t row_ = 1, col_ = 1;
+        std::unordered_map<std::string_view, TokenType> reserved;
 
-      public:
+        size_t offset = 0, row = 1, col = 1, p_row = 1, p_col = 1;
+
         Tokenizer(Lexer &lexer);
-
-      protected:
         void initialize();
 
-      public:
+        bool bsof() const;
         bool eof() const;
 
         char at(size_t pos) const;
 
-        char current() const;
-        size_t curr_pos() const;
+        size_t curr_offset() const;
 
         char next();
-        char peek();
+        char peek() const;
+        char peekn(size_t offset) const;
+        char current() const;
 
         bool match(char expect);
+        void consume();
 
-        Token create_token(const std::pair<size_t, size_t> &range,
-                           TokenType type, bool advance = true);
+        void create_token(const std::pair<size_t, size_t> &range,
+                          TokenType type, bool advance = true);
+
+        void ignore_whitespaces();
+
+        void read_digit_seq(uint32_t base);
+        void read_num();
+
+        size_t read_char_seq(char terminator);
+        void read_char();
+        void read_str();
+
+        void read_ident();
 
         LexerResult scan();
-        Token scan(char ch);
-
-        Token scan_numeric(size_t start);
     };
 
 } // namespace Lexer

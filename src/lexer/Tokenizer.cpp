@@ -1,87 +1,80 @@
 #include <algorithm>
 #include <cctype>
 #include <cwctype>
-#include <iostream>
 #include <string_view>
-#include <variant>
 
-#include "diagnostic/ErrorDiagnostic.hpp"
 #include "lexer/Lexer.hpp"
 #include "lexer/Token.hpp"
 #include "lexer/Tokenizer.hpp"
+#include "utils/dev.hpp"
+#include "utils/numeric.hpp"
 
 namespace Lexer
 {
     Tokenizer::Tokenizer(Lexer &lexer)
-        : lexer_(lexer), program_(lexer.program()), source_(program_.source())
+        : lexer(lexer), program(lexer.program), source(program.source)
     {
         initialize();
     }
 
     void Tokenizer::initialize()
     {
-        reserved_.reserve(32);
+        reserved.reserve(32);
 
         using namespace std::string_view_literals;
-        using namespace TokenTypes;
 
         // Primary
-        reserved_.insert_or_assign("true"sv, Primary::Boolean);
-        reserved_.insert_or_assign("false"sv, Primary::Boolean);
+        reserved.insert_or_assign("true"sv, TokenType::Bool);
+        reserved.insert_or_assign("false"sv, TokenType::Bool);
 
         // Keywords
-        reserved_.insert_or_assign("import"sv, Reserved::Import);
-        reserved_.insert_or_assign("lib"sv, Reserved::Lib);
+        reserved.insert_or_assign("import"sv, TokenType::Import);
+        // reserved.insert_or_assign("lib"sv, Reserved::Lib);
 
-        reserved_.insert_or_assign("pub"sv, Reserved::Public);
-        reserved_.insert_or_assign("priv"sv, Reserved::Private);
-        reserved_.insert_or_assign("prot"sv, Reserved::Protected);
+        reserved.insert_or_assign("pub"sv, TokenType::Pub);
+        reserved.insert_or_assign("priv"sv, TokenType::Priv);
+        reserved.insert_or_assign("prot"sv, TokenType::Prot);
 
-        // Types
-        reserved_.insert_or_assign("struct"sv, Reserved::Struct);
+        reserved.insert_or_assign("struct"sv, TokenType::Struct);
 
-        // Function-Related
-        reserved_.insert_or_assign("fn"sv, Reserved::Function);
-        reserved_.insert_or_assign("return"sv, Reserved::Return);
+        reserved.insert_or_assign("fn"sv, TokenType::Fn);
+        reserved.insert_or_assign("return"sv, TokenType::Return);
 
-        // Variable-Related
-        reserved_.insert_or_assign("let"sv, Reserved::Declaration);
+        reserved.insert_or_assign("let"sv, TokenType::Let);
+        reserved.insert_or_assign("var"sv, TokenType::Var);
     }
 
-    bool Tokenizer::eof() const { return position_ >= source_.size(); }
+    bool Tokenizer::eof() const { return offset >= source.size(); }
 
     char Tokenizer::at(size_t pos) const
     {
-        return pos >= source_.size() ? source_.back() : source_[pos];
+        return pos >= source.size() ? source.back() : source[pos];
     }
 
     char Tokenizer::current() const
     {
-        if (position_ == 0)
-            return source_.front();
+        if (offset == 0)
+            return source.front();
 
         else if (eof())
-            return source_.back();
+            return source.back();
 
-        return source_[position_ - 1];
+        return source[offset - 1];
     }
 
-    size_t Tokenizer::curr_pos() const
+    size_t Tokenizer::curr_offset() const
     {
-        size_t s_size = source_.size();
-        return position_ == 0        ? 0
-               : position_ >= s_size ? s_size - 1
-                                     : position_ - 1;
+        return std::clamp(offset - 1, 0ul, source.size() - 1);
     }
 
-    char Tokenizer::next()
-    {
-        return eof() ? source_.back() : source_[position_++];
-    }
+    char Tokenizer::next() { return eof() ? '\0' : source[offset++]; }
 
-    char Tokenizer::peek()
+    char Tokenizer::peek() const { return eof() ? '\0' : source[offset]; }
+
+    char Tokenizer::peekn(size_t offset) const
     {
-        return eof() ? source_.back() : source_[position_];
+        size_t pos = this->offset + offset;
+        return pos >= source.size() ? '\0' : source[offset];
     }
 
     bool Tokenizer::match(char expect)
@@ -89,379 +82,560 @@ namespace Lexer
         if (eof())
             return false;
 
-        return source_[position_] == expect ? (next(), true) : false;
+        return source[offset] == expect ? (next(), true) : false;
     }
 
-    Token Tokenizer::create_token(const std::pair<size_t, size_t> &range,
-                                  TokenType type, bool advance)
+    void Tokenizer::consume()
+    {
+        if (eof())
+            return;
+
+        offset++;
+        p_col = col++;
+    }
+
+    void Tokenizer::create_token(const std::pair<size_t, size_t> &range,
+                                 TokenType type, bool advance)
     {
         auto &[start, end] = range;
         size_t len = (end - start) + 1;
 
-        auto token =
-            Token{source_.substr(start, len), program_.position_at(row_, col_),
-                  program_.position_at(row_, col_ + (len - 1)), type};
+        lexer.tokens.emplace_back(
+            source.substr(start, len),
+            Core::PositionRange{program.position_at(row, col, start),
+                                program.position_at(row, col + (len - 1), end)},
+            type);
 
         if (advance)
-            col_ += len;
+            col += len;
+    }
 
-        return token;
+    void Tokenizer::ignore_whitespaces()
+    {
+        for (char c = peek(); !eof() && std::isspace(c); c = peek())
+        {
+            consume();
+
+            if (c == '\n')
+            {
+                p_row = row++;
+                p_col = col;
+                col = 1;
+            }
+        }
+    }
+
+    void Tokenizer::read_digit_seq(uint32_t base)
+    {
+        bool allow_sep = false;
+        auto pos = [&]() -> void {};
+
+        for (char c = peek(); !eof(); c = peek())
+        {
+            if (std::isalnum(c))
+            {
+                if (!utils::is_digit_of(base, c))
+                {
+                    utils::todo("throw error: invalid numeric literal digit");
+                    // diagnostic_t diagnostic = diagnostic_from(
+                    //     DIAG_ERROR, INVALID_NUMLIT_DIGIT,
+                    //     string_from("invalid numeric literal digit."),
+                    //     (position_range_t){pos(lexer), pos(lexer)});
+
+                    // result_error(&lexer->result, &diagnostic);
+                }
+
+                allow_sep = true;
+                consume();
+
+                continue;
+            }
+
+            else if (c == '_')
+            {
+                // If the next character is not a digit, a separator is not
+                // allowed as it is the end of the digit sequence
+                char n = peekn(1);
+                if (n == '\0' || !std::isdigit(n))
+                    allow_sep = false;
+
+                if (!allow_sep)
+                {
+                    // diagnostic_t diagnostic = diagnostic_from(
+                    //     DIAG_ERROR, UNEXPECTED_SEP,
+                    //     string_from("unexpected numeric literal separator."),
+                    //     (position_range_t){pos(lexer), pos(lexer)});
+
+                    // result_error(&lexer->result, &diagnostic);
+                }
+
+                allow_sep = false;
+                consume();
+
+                continue;
+            }
+
+            return;
+        }
+    }
+
+    void Tokenizer::read_num()
+    {
+        //
+        char c = peek();
+        uint32_t base = 10, s_row = row, s_col = col;
+        size_t s_offset = offset;
+
+        // Prefix-ed (0b, 0o, 0x)
+        if (c == '0')
+        {
+            consume(), c = peek();
+            base = c == 'b' ? 2 : c == 'o' ? 8 : c == 'x' ? 16 : UINT32_MAX;
+
+            consume();
+            if (eof())
+            {
+                utils::todo("throw error: malformed numeric literal");
+                // diagnostic_t diagnostic = diagnostic_from(
+                //     DIAG_ERROR, MALFORMED_LITERAL,
+                //     string_from("malformed numeric literal."),
+                //     POSRNG_SWTOCURR((*lexer), s_offset, s_row, s_col));
+
+                // result_error(&lexer->result, &diagnostic);
+
+                return;
+            }
+        }
+
+        if (base == UINT32_MAX)
+        {
+            utils::todo("throw error: invalid numeric literal prefix");
+            // diagnostic_t diagnostic = diagnostic_from(
+            //     DIAG_ERROR, INVALID_NUMLIT_PREF,
+            //     string_from("invalid numeric literal prefix"),
+            //     POSRNG_SWTOCURR((*lexer), s_offset, s_row, s_col));
+
+            // result_error(&lexer->result, &diagnostic);
+
+            return;
+        }
+
+        read_digit_seq(base);
+
+        if (match('.'))
+        {
+            read_digit_seq(base);
+            create_token({s_offset, offset - 1}, TokenType::Float);
+
+            return;
+        }
+
+        create_token({s_offset, offset - 1}, TokenType::Int);
+    }
+
+    size_t Tokenizer::read_char_seq(char terminator)
+    {
+        size_t len = 0, s_offset = offset - 1, s_row = p_row, s_col = p_col;
+
+        for (char c = peek(); !match(terminator); c = peek())
+        {
+            // Unterminated Literal
+            if (eof())
+            {
+                utils::todo("throw error: unterminated character sequence");
+                // diagnostic_t diagnostic = diagnostic_from(
+                //     DIAG_ERROR, UNTERMINATED_CHAR_SEQ,
+                //     string_from("unterminated character sequence."),
+                //     POSRNG_SWTOCURR((*lexer), s_offset, s_row, s_col));
+
+                // result_error(&lexer->result, &diagnostic);
+
+                return SIZE_MAX;
+            }
+
+            if (c == '\\')
+                consume();
+
+            consume();
+            ++len;
+        }
+
+        return len;
+    }
+
+    void Tokenizer::read_char()
+    {
+        char quot_mark = peek();
+        size_t s_offset = offset, s_row = row, s_col = col;
+
+        consume();
+
+        size_t seq_len = read_char_seq(quot_mark);
+        if (seq_len == 1)
+        {
+            create_token({s_offset, offset - 1}, TokenType::Char);
+            return;
+        }
+
+        utils::todo("throw error: invalid character literal");
+        // diagnostic_t diagnostic =
+        //     diagnostic_from(DIAG_ERROR, INVALID_LITERAL,
+        //                     string_from("invalid character literal."),
+        //                     POSRNG_SWTOCURR((*lexer), s_offset, s_row,
+        //                     s_col));
+
+        // result_error(&lexer->result, &diagnostic);
+    }
+
+    void Tokenizer::read_str()
+    {
+        char quot_mark = peek();
+        size_t s_offset = offset;
+
+        consume();
+
+        if (read_char_seq(quot_mark) != SIZE_MAX)
+            create_token({s_offset, offset - 1}, TokenType::String);
+    }
+
+    void Tokenizer::read_ident()
+    {
+        size_t s_offset = offset;
+
+        for (char c = peek(); !eof() && (std::isalpha(c) || c == '_');
+             c = peek())
+            consume();
+
+        std::string_view ident = source.substr(s_offset, offset - s_offset);
+
+        auto it = reserved.find(ident);
+        create_token({s_offset, offset - 1},
+                     it == reserved.end() ? TokenType::Identifier : it->second);
     }
 
     LexerResult Tokenizer::scan()
     {
-        LexerResult result = {Core::ResultStatus::Success, {}, {}};
-        result.lexer = &lexer_;
-
-        result.data.reserve(
-            std::max(static_cast<size_t>(128), source_.size() / 8));
+        LexerResult result{Core::ResultStatus::Success, nullptr, {}};
 
         while (!eof())
         {
-            Token token = scan(next());
-            if (std::holds_alternative<TokenTypes::Miscellaneous>(token.type))
+            char c = peek();
+            size_t ofs = offset;
+
+            if (std::isspace(c))
+            {
+                ignore_whitespaces();
+                ofs = offset, c = peek();
+            }
+
+            if (std::isdigit(c))
+            {
+                read_num();
                 continue;
+            }
 
-            if (std::holds_alternative<TokenTypes::Invalid>(token.type))
+            if (std::isalpha(c) || c == '_')
             {
-                result.error(Diagnostic::create_syntax_error(&token));
+                read_ident();
                 continue;
             }
 
-            result.data.push_back(std::move(token));
-        }
-
-        // EOF
-        result.data.push_back(Token{"", program_.position_at(row_ - 1, 0),
-                                    program_.position_at(row_ - 1, 0),
-                                    TokenTypes::Miscellaneous::EndOfFile});
-
-        return result;
-    }
-
-    Token Tokenizer::scan(char ch)
-    {
-        using namespace TokenTypes;
-
-        size_t pos = curr_pos();
-
-        switch (ch)
-        {
-            case '"':
+            if (c == '\'' || c == '"')
             {
-                do
+                c == '\'' ? read_char() : read_str();
+                continue;
+            }
+
+            consume();
+
+            switch (c)
+            {
+                case '{':
+                    create_token({ofs, offset - 1}, TokenType::LeftBrace);
+                    continue;
+                case '}':
+                    create_token({ofs, offset - 1}, TokenType::RightBrace);
+                    continue;
+                case '[':
+                    create_token({ofs, offset - 1}, TokenType::LeftBracket);
+                    continue;
+                case ']':
+                    create_token({ofs, offset - 1}, TokenType::RightBracket);
+                    continue;
+                case '(':
+                    create_token({ofs, offset - 1}, TokenType::LeftParen);
+                    continue;
+                case ')':
+                    create_token({ofs, offset - 1}, TokenType::RightParen);
+                    continue;
+                case ',':
+                    create_token({ofs, offset - 1}, TokenType::Comma);
+                    continue;
+                case ';':
+                    create_token({ofs, offset - 1}, TokenType::Semicolon);
+                    continue;
+
+                case ':':
                 {
-                    next();
-                } while (!match('"'));
-
-                return create_token({pos, curr_pos()}, Primary::String);
-            }
-
-            case '\'':
-            {
-                do
-                {
-                    next();
-                } while (!match('\''));
-
-                size_t c_pos = curr_pos();
-
-                return (c_pos - 1) - pos > 1
-                           ? create_token({pos, c_pos},
-                                          Invalid::InvalidCharacter)
-                           : create_token({pos, c_pos}, Primary::Character);
-            }
-
-            case ' ':
-            case '\0':
-            case '\t':
-            case '\r':
-            case '\v':
-            case '\f':
-                return create_token({pos, pos}, Miscellaneous::Whitespace);
-
-            case '\n':
-            {
-                Token token =
-                    create_token({pos, pos}, Miscellaneous::LineBreak);
-                row_++, col_ = 1;
-
-                return token;
-            }
-
-            case '{':
-                return create_token({pos, pos}, Delimeter::BraceOpen);
-
-            case '}':
-                return create_token({pos, pos}, Delimeter::BraceClose);
-
-            case '[':
-                return create_token({pos, pos}, Delimeter::BracketOpen);
-
-            case ']':
-                return create_token({pos, pos}, Delimeter::BracketClose);
-
-            case '(':
-                return create_token({pos, pos}, Delimeter::ParenthesisOpen);
-
-            case ')':
-                return create_token({pos, pos}, Delimeter::ParenthesisClose);
-
-            case ',':
-                return create_token({pos, pos}, Delimeter::Comma);
-
-            case ';':
-                return create_token({pos, pos}, Delimeter::Semicolon);
-
-            case ':':
-            {
-                if (match(':'))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Access::DoubleColon);
-                return create_token({pos, pos}, Delimeter::Colon);
-            }
-
-            case '.':
-            {
-                if (match('.'))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Range::DoubleDot);
-
-                return create_token({pos, pos}, Operator::Access::Dot);
-            }
-
-            case '<':
-            {
-                // <-
-                if (match('-'))
-                {
-                    if (std::isdigit(peek()))
+                    if (match(':'))
                     {
-                        position_--;
-                        return create_token({pos, pos},
-                                            Operator::Relational::LessThan);
+                        create_token({ofs, offset - 1}, TokenType::DoubleColon);
+                        continue;
                     }
 
-                    return create_token({pos, curr_pos()},
-                                        Operator::Arrow::Left);
+                    create_token({ofs, offset - 1}, TokenType::Colon);
+                    continue;
                 }
 
-                // <=
-                else if (match('='))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Relational::LessThanEqual);
-
-                // <
-                return create_token({pos, curr_pos()},
-                                    Operator::Relational::LessThan);
-            }
-
-            case '>':
-            {
-                // >=
-                if (match('='))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Relational::GreaterThanEqual);
-
-                // >
-                return create_token({pos, curr_pos()},
-                                    Operator::Relational::GreaterThan);
-            }
-
-            case '=':
-            {
-                // ==
-                if (match('='))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Relational::Equal);
-
-                // =
-                return create_token({pos, curr_pos()},
-                                    Operator::Assignment::Direct);
-            }
-
-            case '+':
-            {
-                // +=
-                if (match('='))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Assignment::Addition);
-
-                // ++
-                else if (match('+'))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Unary::Increment);
-
-                // +
-                return create_token({pos, curr_pos()},
-                                    Operator::Arithmetic::Plus);
-            }
-
-            case '-':
-            {
-                if (std::isdigit(peek()))
+                case '.':
                 {
-                    next();
-                    return scan_numeric(pos);
+                    if (match('.'))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::DoubleDot);
+                        continue;
+                    }
+
+                    create_token({ofs, offset - 1}, TokenType::Dot);
+                    continue;
                 }
 
-                // -=
-                else if (match('='))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Assignment::Subtraction);
-
-                // --
-                else if (match('-'))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Unary::Decrement);
-
-                // ->
-                else if (match('>'))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Arrow::Right);
-
-                // -
-                return create_token({pos, curr_pos()},
-                                    Operator::Arithmetic::Minus);
-            }
-
-            case '*':
-            {
-                // *=
-                if (match('='))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Assignment::Multiplication);
-                // *
-                return create_token({pos, curr_pos()},
-                                    Operator::Arithmetic::Multiplication);
-            }
-
-            case '/':
-            {
-                // //
-                if (match('/'))
+                case '<':
                 {
-                    while (!match('\n'))
-                        next();
+                    // <-
+                    if (match('-'))
+                    {
+                        char p = peek();
+                        if (p == '\0')
+                            break;
 
-                    Token token = create_token({pos, curr_pos()},
-                                               Miscellaneous::CommentSingle);
+                        if (std::isdigit(p))
+                        {
+                            create_token({ofs, offset - 1}, TokenType::Less);
+                            continue;
+                        }
 
-                    row_++, col_ = 1;
+                        create_token({ofs, offset - 1}, TokenType::LessMinus);
+                        continue;
+                    }
 
-                    return token;
+                    // <=
+                    else if (match('='))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::LessEqual);
+                        continue;
+                    }
+
+                    // <
+                    create_token({ofs, offset - 1}, TokenType::Less);
+                    continue;
                 }
 
-                // /=
-                else if (match('='))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Assignment::Division);
-                // /
-                return create_token({pos, curr_pos()},
-                                    Operator::Arithmetic::Division);
-            }
-
-            case '%':
-            {
-                // %=
-                if (match('='))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Assignment::Modulo);
-
-                // %
-                return create_token({pos, curr_pos()},
-                                    Operator::Arithmetic::Modulo);
-            }
-
-            case '!':
-            {
-                // !=
-                if (match('='))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Relational::NotEqual);
-                // !
-                return create_token({pos, curr_pos()}, Operator::Logical::Not);
-            }
-
-            case '&':
-            {
-                // && Logical AND
-                if (match('&'))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Logical::And);
-                // & - Bitwise AND
-                return create_token({pos, curr_pos()}, Operator::Bitwise::And);
-            }
-
-            case '|':
-            {
-                // ||
-                if (match('|'))
-                    return create_token({pos, curr_pos()},
-                                        Operator::Logical::Or);
-                // | - Bitwise OR
-                return create_token({pos, curr_pos()}, Operator::Bitwise::Or);
-            }
-
-            case '^':
-            {
-                // ^^ - Possibly Exponent Operator
-
-                // ^ - Bitwise XOR
-                return create_token({pos, pos}, Operator::Bitwise::Xor);
-            }
-
-            default:
-            {
-                if (std::isalpha(ch))
+                case '>':
                 {
-                    ch = peek();
-                    while (std::isalnum(ch) || ch == '_')
-                        next(), ch = peek();
+                    // >=
+                    if (match('='))
+                    {
+                        create_token({ofs, offset - 1},
+                                     TokenType::GreaterEqual);
+                        continue;
+                    }
 
-                    size_t c_pos = curr_pos();
-                    auto it =
-                        reserved_.find(source_.substr(pos, (c_pos - pos) + 1));
-                    if (it == reserved_.end())
-                        return create_token({pos, c_pos}, Primary::Identifier);
-
-                    return create_token({pos, c_pos}, it->second);
+                    // >
+                    create_token({ofs, offset - 1}, TokenType::Greater);
+                    continue;
                 }
 
-                else if (std::isdigit(ch))
-                    return scan_numeric(pos);
+                case '=':
+                {
+                    // ==
+                    if (match('='))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::EqualEqual);
+                        continue;
+                    }
 
-                return create_token({pos, pos}, Invalid::UnknownToken);
+                    // =
+                    create_token({ofs, offset - 1}, TokenType::Equal);
+                    continue;
+                }
+
+                case '+':
+                {
+                    // +=
+                    if (match('='))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::PlusEqual);
+                        continue;
+                    }
+                    else if (match('+'))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::PlusPlus);
+                        continue;
+                    }
+
+                    // +
+                    create_token({ofs, offset - 1}, TokenType::Plus);
+                    continue;
+                }
+
+                case '-':
+                {
+                    char p = peek();
+                    if (p == '\0')
+                        break;
+
+                    if (std::isdigit(p))
+                    {
+                        read_num();
+                        continue;
+                    }
+
+                    // -=
+                    else if (match('='))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::MinusEqual);
+                        continue;
+                    }
+                    else if (match('-'))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::MinusMinus);
+                        continue;
+                    }
+                    else if (match('>'))
+                    {
+                        create_token({ofs, offset - 1},
+                                     TokenType::MinusGreater);
+                        continue;
+                    }
+
+                    // -
+                    create_token({ofs, offset - 1}, TokenType::Minus);
+                    continue;
+                }
+
+                case '*':
+                {
+                    // *=
+                    if (match('='))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::StarEqual);
+                        continue;
+                    }
+
+                    // *
+                    create_token({ofs, offset - 1}, TokenType::Star);
+                    continue;
+                }
+
+                case '/':
+                {
+                    // //
+                    if (match('/'))
+                    {
+                        while (!match('\n'))
+                            continue;
+
+                        p_row = row++;
+                        p_col = col;
+                        col = 1;
+                        continue;
+                    }
+
+                    // /=
+                    else if (match('='))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::SlashEqual);
+                        continue;
+                    }
+
+                    // /
+                    create_token({ofs, offset - 1}, TokenType::Slash);
+                    continue;
+                }
+
+                case '%':
+                {
+                    // %=
+                    if (match('='))
+                    {
+                        create_token({ofs, offset - 1},
+                                     TokenType::PercentEqual);
+                        continue;
+                    }
+
+                    // %
+                    create_token({ofs, offset - 1}, TokenType::Percent);
+                    continue;
+                }
+
+                case '!':
+                {
+                    // !=
+                    if (match('='))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::BangEqual);
+                        continue;
+                    }
+
+                    // !
+                    create_token({ofs, offset - 1}, TokenType::Bang);
+                    continue;
+                }
+
+                case '&':
+                {
+                    // &&
+                    if (match('&'))
+                    {
+                        create_token({ofs, offset - 1},
+                                     TokenType::AmpersandAmpersand);
+                        continue;
+                    }
+
+                    // &
+                    create_token({ofs, offset - 1}, TokenType::Ampersand);
+                    continue;
+                }
+
+                case '|':
+                {
+                    // ||
+                    if (match('|'))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::PipePipe);
+                        continue;
+                    }
+
+                    // |
+                    create_token({ofs, offset - 1}, TokenType::Pipe);
+                    continue;
+                }
+
+                case '^':
+                {
+                    // ^^ (Exponent)
+                    if (match('^'))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::CaretCaret);
+                        continue;
+                    }
+
+                    // ^
+                    create_token({ofs, offset - 1}, TokenType::Caret);
+                    continue;
+                }
+
+                default:
+                {
+                    if (eof())
+                        break;
+
+                    create_token({ofs, offset - 1}, TokenType::Illegal);
+                }
             }
         }
-    }
 
-    Token Tokenizer::scan_numeric(size_t start)
-    {
-
-        char ch = peek();
-        size_t sc_start = position_ - 1;
-
-        while (std::isdigit(ch) || ch == '_')
-            next(), ch = peek();
-
-        size_t c_pos = curr_pos();
-        char front = source_[sc_start], back = source_[c_pos];
-
-        if (!std::isdigit(front) || !std::isdigit(back))
-            return create_token({start, c_pos},
-                                TokenTypes::Invalid::UnknownToken);
-
-        if (match('.'))
-        {
-            position_++;
-            Token numeric = scan_numeric(start);
-
-            numeric.type = TokenTypes::Primary::Float;
-            return numeric;
-        }
-
-        return create_token({start, c_pos}, TokenTypes::Primary::Int);
+        return result;
     }
 
 } // namespace Lexer

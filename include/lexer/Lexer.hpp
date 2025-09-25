@@ -11,44 +11,33 @@ namespace Lexer
 {
     class Lexer;
 
-    struct LexerResult : public Core::Result<std::vector<Token>>
+    struct LexerResult : public Core::Result<void *>
     {
-        Lexer *lexer = nullptr;
-
-        LexerResult(Core::ResultStatus status, std::vector<Token> &&data,
+        LexerResult(Core::ResultStatus status, void *data,
                     Diagnostic::DiagnosticList diagnostics);
     };
 
-    class Lexer
+    struct Lexer
     {
-      private:
-        Core::ProgramFile &program_;
-        std::vector<Token> tokens_;
-        size_t position_ = 0;
+        Core::ProgramFile &program;
+        std::vector<Token> tokens;
+        size_t position = 0;
 
-        Tokenizer tokenizer_;
+        Tokenizer tokenizer;
 
-      public:
         Lexer(Core::ProgramFile &program);
         ~Lexer();
 
-      protected:
-      public:
-        Core::ProgramFile &program();
-        size_t position();
-        size_t size();
-
-        std::vector<Token> &tokens();
-
         LexerResult tokenize();
-        bool eof(bool absolute = true);
-        Token *at(size_t pos);
 
-        void rewind(size_t pos = 0);
-        void move(size_t pos);
+        bool bsof() const;
+        bool eof(bool absolute = true) const;
+
+        Token *at(size_t pos);
         Token *next();
         Token *peek();
         Token *peekn(size_t idx_pos);
+
         Token &current();
     };
 

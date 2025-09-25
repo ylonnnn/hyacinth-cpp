@@ -16,78 +16,49 @@ namespace Lexer
     }
 
     Lexer::Lexer(Core::ProgramFile &program)
-        : program_(program), tokenizer_(*this)
+        : program(program), tokenizer(*this)
     {
-        tokens_.reserve(
-            std::max(static_cast<size_t>(64), program.source().size() / 4));
+        tokens.reserve(
+            std::max(static_cast<size_t>(64), program.source.size() / 4));
     }
 
     Lexer::~Lexer() = default;
     // Lexer::~Lexer() { std::cout << "destroyed\n"; }
 
-    Core::ProgramFile &Lexer::program() { return program_; }
-
-    size_t Lexer::position() { return position_; }
-
-    size_t Lexer::size() { return tokens_.size(); }
-
-    std::vector<Token> &Lexer::tokens() { return tokens_; }
-
     LexerResult Lexer::tokenize()
     {
-        LexerResult result = tokenizer_.scan();
+        // LexerResult result = tokenizer_.scan();
 
-        tokens_ = std::move(result.data);
+        // tokens_ = std::move(result.data);
 
-        return result;
+        // return result;
     }
 
-    bool Lexer::eof(bool absolute)
+    bool Lexer::bsof() const { return position == 0; }
+
+    bool Lexer::eof(bool absolute) const
     {
-        return position_ >= (tokens_.size() - !absolute);
+        return position >= (tokens.size() - !absolute);
     }
 
-    Token *Lexer::at(size_t pos) { return eof() ? nullptr : &tokens_[pos]; }
+    Token *Lexer::at(size_t pos) { return eof() ? nullptr : &tokens[pos]; }
 
-    void Lexer::rewind(size_t pos)
+    Token *Lexer::next() { return eof() ? nullptr : &tokens[position++]; }
+
+    Token *Lexer::peek() { return peekn(position); }
+
+    Token *Lexer::peekn(size_t offset)
     {
-        if (pos > position_)
-        {
-            std::cerr << "Cannot rewind to a position that is still yet to be "
-                         "reached!\n";
-            return;
-        }
-
-        position_ = pos;
-    }
-
-    void Lexer::move(size_t pos) { position_ = pos; }
-
-    Token *Lexer::next()
-    {
-        Token *token = peek();
-        if (token == nullptr)
-            return nullptr;
-
-        position_++;
-
-        return token;
-    }
-
-    Token *Lexer::peek() { return eof() ? nullptr : peekn(position_); }
-
-    Token *Lexer::peekn(size_t idx_pos)
-    {
-        return idx_pos >= tokens_.size() ? nullptr : &tokens_.at(idx_pos);
+        size_t pos = position + offset;
+        return pos >= (tokens.size() - 1) ? nullptr : &tokens[pos];
     }
 
     Token &Lexer::current()
     {
-        using signed_size_t = std::make_signed_t<size_t>;
-        signed_size_t max_idx = static_cast<signed_size_t>(tokens_.size() - 1);
+        auto max_idx = static_cast<ssize_t>(tokens.size() - 1);
 
-        return tokens_.at(std::clamp(static_cast<signed_size_t>(position_) - 1,
-                                     static_cast<signed_size_t>(0), max_idx));
+        return tokens.at(
+            std::clamp(static_cast<ssize_t>(position) - 1, 0l, max_idx));
     }
 
 } // namespace Lexer
