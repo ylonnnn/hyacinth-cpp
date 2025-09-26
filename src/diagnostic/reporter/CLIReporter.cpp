@@ -16,8 +16,8 @@ namespace Diagnostic
 
     std::string CLIReporter::color_of(DiagnosticSeverity severity) const
     {
-        return ((std::string[]){note_color_, warning_color_,
-                                error_color_})[static_cast<size_t>(severity)];
+        return ((std::string[]){note_color, warning_color,
+                                error_color})[static_cast<size_t>(severity)];
     }
 
     std::string
@@ -70,7 +70,10 @@ namespace Diagnostic
 
             if (line.size())
             {
-                line.insert(l_end + 1, utils::Styles::Reset);
+                size_t e_pos = l_end + 1;
+
+                line.insert(e_pos > line.size() ? line.size() : e_pos,
+                            utils::Styles::Reset);
                 line.insert(l_start, color);
             }
 
@@ -105,8 +108,10 @@ namespace Diagnostic
         return formatted;
     }
 
-    void CLIReporter::report() const
+    DiagnosticReportStatusResult CLIReporter::report() const
     {
+        DiagnosticReportStatusResult result;
+
         std::cout << "\n";
 
         for (const auto &diagnostic : diagnostics)
@@ -114,8 +119,12 @@ namespace Diagnostic
             if (diagnostic == nullptr)
                 continue;
 
+            ++result[static_cast<size_t>(diagnostic->severity)];
+
             std::cout << format_diagnostic(*diagnostic) << "\n";
         }
+
+        return result;
     }
 
 } // namespace Diagnostic

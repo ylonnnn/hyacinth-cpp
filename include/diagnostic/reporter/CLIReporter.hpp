@@ -21,12 +21,11 @@ namespace Diagnostic
         std::string
         format_diagnostic(const Diagnostic &diagnostic) const override;
 
-        void report() const override;
+        DiagnosticReportStatusResult report() const override;
 
-      private:
-        utils::TextStyle note_color_ = utils::Colors::Blue,
-                         warning_color_ = utils::Colors::Yellow,
-                         error_color_ = utils::Colors::Red;
+        utils::TextStyle note_color = utils::Colors::BrightBlue,
+                         warning_color = utils::Colors::Yellow,
+                         error_color = utils::Colors::Red;
     };
 
 } // namespace Diagnostic

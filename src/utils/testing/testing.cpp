@@ -3,6 +3,7 @@
 #include "core/program/ProgramRegistry.hpp"
 #include "utils/control.hpp"
 #include "utils/style.hpp"
+#include <filesystem>
 
 namespace utils::testing
 {
@@ -27,7 +28,8 @@ namespace utils::testing
                              std::make_move_iterator(inner.end()));
             }
 
-            files.push_back(std::move(path));
+            else if (fs::is_regular_file(path))
+                files.emplace_back(std::move(std::move(path)));
         }
 
         return files;

@@ -41,7 +41,7 @@ namespace Core
         if (!fs::exists(path))
             utils::terminate("Unknown file provided: " + path);
 
-        this->path = fs::canonical(path);
+        this->path = fs::absolute(path);
         this->state.with(PFS_VALID);
 
         source_lines.reserve(64);
@@ -65,7 +65,7 @@ namespace Core
         auto path_str = path.string();
 
         if (!fs::is_regular_file(path))
-            utils::terminate("Target be a file: " + path_str);
+            utils::terminate("Target must be a file: " + path_str);
         else if (path.extension() != FILE_EXT)
             utils::terminate("Target must be a Hyacinth file: " + path_str);
 
@@ -345,7 +345,7 @@ namespace Core
         // Diagnostics
 
         Diagnostic::CLIReporter reporter(std::move(result.diagnostics));
-        reporter.report();
+        Diagnostic::DiagnosticReportStatusResult status = reporter.report();
 
         if (!state.has(PFS_MAIN))
             return;
@@ -353,10 +353,40 @@ namespace Core
         utils::TextStyle color =
             succeeded ? utils::Colors::Green : utils::Colors::Red;
 
-        std::cout << utils::tab(3) << color << "[" << (succeeded ? "/" : "X")
-                  << "]" << utils::Styles::Reset << " Program Executed ("
-                  << color << static_cast<double>(microseconds.count()) / 1'000
-                  << "ms" << utils::Styles::Reset << ")\n\n";
+        std::cout
+            <<
+            // [+] N, [~] N, [!] N
+            utils::tab(3)
+
+            // [+] N
+            << utils::Colors::BrightBlack << "[" << reporter.note_color << "+"
+            << utils::Colors::BrightBlack << "] " << reporter.note_color
+            << status[static_cast<size_t>(Diagnostic::DiagnosticSeverity::Note)]
+            << utils::Styles::Reset
+            << " | "
+
+            // [~] N
+            << utils::Colors::BrightBlack << "[" << reporter.warning_color
+            << "~" << utils::Colors::BrightBlack << "] "
+            << reporter.warning_color
+            << status[static_cast<size_t>(
+                   Diagnostic::DiagnosticSeverity::Warning)]
+            << utils::Styles::Reset
+            << " | "
+
+            // [!] N
+            << utils::Colors::BrightBlack << "[" << reporter.error_color << "!"
+            << utils::Colors::BrightBlack << "] " << reporter.error_color
+            << status[static_cast<size_t>(
+                   Diagnostic::DiagnosticSeverity::Error)]
+
+            << "\n"
+
+            // (/|X) Program Executed (N.NNNNms)
+            << utils::tab(3) << color << "[" << (succeeded ? "/" : "X") << "]"
+            << utils::Styles::Reset << " Program Executed (" << color
+            << static_cast<double>(microseconds.count()) / 1'000 << "ms"
+            << utils::Styles::Reset << ")\n\n";
     }
 
 } // namespace Core

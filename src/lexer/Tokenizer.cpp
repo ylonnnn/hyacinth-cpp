@@ -272,6 +272,7 @@ namespace Lexer
         char quot_mark = peek();
         size_t s_offset = offset, s_row = row, s_col = col,
                seq_len = read_char_seq(result, quot_mark);
+
         if (seq_len == 1)
         {
             create_token({s_offset, offset - 1}, TokenType::Char);
@@ -293,8 +294,6 @@ namespace Lexer
     {
         char quot_mark = peek();
         size_t s_offset = offset;
-
-        consume();
 
         if (read_char_seq(result, quot_mark) != SIZE_MAX)
             create_token({s_offset, offset - 1}, TokenType::String);
