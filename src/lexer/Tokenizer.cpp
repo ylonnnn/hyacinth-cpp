@@ -13,7 +13,7 @@ namespace Lexer
     Core::PositionRange range_to_curr(Lexer &lexer, size_t row, size_t col,
                                       size_t offset)
     {
-        Core::ProgramFile &program = lexer.program;
+        Core::Program &program = lexer.program;
         Tokenizer tokenizer = lexer.tokenizer;
 
         Core::PositionRange range{
@@ -124,8 +124,8 @@ namespace Lexer
 
         lexer.tokens.emplace_back(
             source.substr(start, len),
-            Core::PositionRange{program.position_at(row, col, start),
-                                program.position_at(row, col + (len - 1), end)},
+            Core::PositionRange{program.position_at(row, col - len, start),
+                                program.position_at(row, col - 1, end)},
             type);
     }
 
@@ -628,7 +628,10 @@ namespace Lexer
                 default:
                 {
                     if (eof())
+                    {
+                        create_token({ofs, offset - 1}, TokenType::EndOfFile);
                         break;
+                    }
 
                     create_token({ofs, offset - 1}, TokenType::Illegal);
                 }

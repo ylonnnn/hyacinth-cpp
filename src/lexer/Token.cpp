@@ -12,7 +12,7 @@ namespace Lexer
 
     std::ostream &operator<<(std::ostream &os, const Token &token)
     {
-        return os << "<" << type_to_string(token.type) << " "
+        return os << "<" << type_to_name(token.type) << " "
                   << token.range.start.row << ":" << token.range.start.col
                   << "> " << token.value;
     }

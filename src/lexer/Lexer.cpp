@@ -13,8 +13,7 @@ namespace Lexer
     {
     }
 
-    Lexer::Lexer(Core::ProgramFile &program)
-        : program(program), tokenizer(*this)
+    Lexer::Lexer(Core::Program &program) : program(program), tokenizer(*this)
     {
         tokens.reserve(
             std::max(static_cast<size_t>(64), program.source.size() / 4));
@@ -36,12 +35,19 @@ namespace Lexer
 
     Token *Lexer::next() { return eof() ? nullptr : &tokens[position++]; }
 
-    Token *Lexer::peek() { return peekn(position); }
+    Token *Lexer::peek() { return peekn(0); }
 
     Token *Lexer::peekn(size_t offset)
     {
         size_t pos = position + offset;
-        return pos >= (tokens.size() - 1) ? nullptr : &tokens[pos];
+        return pos >= tokens.size() ? nullptr : &tokens[pos];
+    }
+
+    void Lexer::consume(size_t n)
+    {
+        size_t pos = position + n;
+        if (pos <= tokens.size())
+            position = pos;
     }
 
     Token &Lexer::current()

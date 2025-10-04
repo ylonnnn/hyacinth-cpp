@@ -19,13 +19,13 @@ namespace Lexer
 
     struct Lexer
     {
-        Core::ProgramFile &program;
+        Core::Program &program;
         std::vector<Token> tokens;
         size_t position = 0;
 
         Tokenizer tokenizer;
 
-        Lexer(Core::ProgramFile &program);
+        Lexer(Core::Program &program);
         ~Lexer();
 
         LexerResult tokenize();
@@ -37,6 +37,8 @@ namespace Lexer
         Token *next();
         Token *peek();
         Token *peekn(size_t idx_pos);
+
+        void consume(size_t n = 1);
 
         Token &current();
     };

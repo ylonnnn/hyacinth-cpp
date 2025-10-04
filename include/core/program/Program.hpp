@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/program/ProgramState.hpp"
-#include <bitset>
 #include <filesystem>
 #include <vector>
+
+#include "core/program/ProgramState.hpp"
 
 namespace AST
 {
@@ -33,7 +33,7 @@ namespace Interpreter
 
 namespace Core
 {
-    class ProgramFile;
+    class Program;
     class ProgramRegistry;
 
     class Environment;
@@ -42,27 +42,26 @@ namespace Core
     struct ProgramResult;
     struct Position;
 
-    struct ProgramFile
+    struct Program
     {
         friend ProgramRegistry;
 
         ProgramRegistry *registry_ = nullptr;
 
         std::filesystem::path path;
-        ProgramStateFlags state;
+        ProgramState state;
 
         std::string source;
         std::vector<std::string_view> source_lines;
 
         Lexer::Lexer *lexer = nullptr;
-        // std::unique_ptr<AST::Program> node;
+        std::unique_ptr<AST::Program> node;
 
         // std::unique_ptr<DependencyEnvironment> dependencies;
         // std::unique_ptr<Environment> environment;
 
-        ProgramFile(const std::string &path,
-                    ProgramStateFlags state = PFS_MAIN);
-        ~ProgramFile();
+        Program(const std::string &path, ProgramState state = PFS_MAIN);
+        ~Program();
 
         size_t file_size(std::ifstream &file);
         void read();
@@ -77,8 +76,8 @@ namespace Core
 
         Lexer::LexerResult lex();
         Lexer::LexerResult lex(ProgramResult &result);
-        // Parser::ProgramParseResult parse(Lexer::Lexer *lexer);
-        // Parser::ProgramParseResult parse(ProgramResult &result);
+        Parser::ProgramParseResult parse();
+        Parser::ProgramParseResult parse(ProgramResult &result);
         // Semantic::AnalysisResult
         // analyze(std::unique_ptr<AST::Program> &program);
         // Semantic::AnalysisResult analyze(ProgramResult &result);

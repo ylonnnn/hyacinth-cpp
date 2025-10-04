@@ -1,9 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "core/position/Position.hpp"
 
 namespace Diagnostic

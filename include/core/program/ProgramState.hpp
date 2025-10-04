@@ -1,37 +1,61 @@
 #pragma once
 
-#include <bitset>
 #include <cstdint>
+#include <type_traits>
 
 namespace Core
 {
     enum ProgramState : uint8_t
     {
-        PFS_NONE = 0,
         PFS_MAIN = (1 << 0),
         PFS_VALID = (1 << 1),
         PFS_ANALYZED = (1 << 2),
         PFS_INTERPRETED = (1 << 3),
     };
 
-    class ProgramStateFlags
+    inline ProgramState operator|(ProgramState a, ProgramState b)
     {
-      private:
-        std::bitset<8> bits_;
+        using underlying_t = std::underlying_type_t<ProgramState>;
+        return static_cast<ProgramState>(static_cast<underlying_t>(a) |
+                                         static_cast<underlying_t>(b));
+    }
 
-      public:
-        inline ProgramStateFlags(ProgramState state) { with(state); }
+    inline ProgramState operator&(ProgramState a, ProgramState b)
+    {
+        using underlying_t = std::underlying_type_t<ProgramState>;
+        return static_cast<ProgramState>(static_cast<underlying_t>(a) &
+                                         static_cast<underlying_t>(b));
+    }
 
-        inline ProgramStateFlags &with(ProgramState state)
-        {
-            bits_.set(static_cast<uint8_t>(state));
-            return *this;
-        }
+    inline ProgramState operator^(ProgramState a, ProgramState b)
+    {
+        using underlying_t = std::underlying_type_t<ProgramState>;
+        return static_cast<ProgramState>(static_cast<underlying_t>(a) ^
+                                         static_cast<underlying_t>(b));
+    }
 
-        inline bool has(ProgramState state) const
-        {
-            return bits_.test(static_cast<uint8_t>(state));
-        }
-    };
+    inline ProgramState operator~(ProgramState state)
+    {
+        using underlying_t = std::underlying_type_t<ProgramState>;
+        return static_cast<ProgramState>(~static_cast<underlying_t>(state));
+    }
+
+    inline ProgramState &operator|=(ProgramState &a, ProgramState b)
+    {
+        a = a | b;
+        return a;
+    }
+
+    inline ProgramState &operator&=(ProgramState &a, ProgramState b)
+    {
+        a = a & b;
+        return a;
+    }
+
+    inline ProgramState &operator^=(ProgramState &a, ProgramState b)
+    {
+        a = a ^ b;
+        return a;
+    }
 
 } // namespace Core

@@ -53,7 +53,6 @@ namespace Diagnostic
         size_t tab_size = 4, l_size = lines.size();
         std::string formatted, tab = utils::tab(1, tab_size),
                                color = color_of(severity);
-
         for (size_t i = 0; i < l_size; ++i)
         {
             std::string line(lines[i]), l_no = std::to_string(start.row + i);
@@ -110,7 +109,7 @@ namespace Diagnostic
 
     DiagnosticReportStatusResult CLIReporter::report() const
     {
-        DiagnosticReportStatusResult result;
+        DiagnosticReportStatusResult result = {0, 0, 0};
 
         std::cout << "\n";
 

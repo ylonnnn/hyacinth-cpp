@@ -42,7 +42,7 @@ namespace utils::testing
             std::cout << utils::Colors::Green << "[TESTING] "
                       << utils::Styles::Reset << file.string() << "...\n";
 
-            Core::ProgramFile program(file.string());
+            Core::Program program(file.string());
             Core::ProgramRegistry registry(program);
 
             program.execute();

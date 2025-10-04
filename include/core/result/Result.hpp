@@ -1,10 +1,11 @@
 #pragma once
 
+#include <iostream>
+
 #include "diagnostic/Diagnostic.hpp"
 #include "diagnostic/ErrorType.hpp"
 #include "diagnostic/NoteType.hpp"
 #include "diagnostic/WarningType.hpp"
-#include <iostream>
 
 namespace Core
 {
@@ -35,7 +36,7 @@ namespace Core
         {
         }
 
-        virtual void adapt(Diagnostic::DiagnosticList diagnostics)
+        virtual void adapt(Diagnostic::DiagnosticList &&diagnostics)
         {
             this->diagnostics.insert(
                 this->diagnostics.end(),
@@ -44,7 +45,7 @@ namespace Core
         }
 
         virtual void adapt(ResultStatus status,
-                           Diagnostic::DiagnosticList diagnostics)
+                           Diagnostic::DiagnosticList &&diagnostics)
         {
             if (status == Core::ResultStatus::Fail)
                 this->status = status;
@@ -53,27 +54,12 @@ namespace Core
         }
 
         template <typename U>
-        void adapt(ResultStatus status, Diagnostic::DiagnosticList diagnostics,
-                   U &&data)
+        void adapt(ResultStatus status,
+                   Diagnostic::DiagnosticList &&diagnostics, U &&data)
         {
             adapt(status, std::move(diagnostics));
             this->data = std::forward<U>(data);
         }
-
-        // virtual void adapt(ResultStatus status,
-        //                    Diagnostic::DiagnosticList diagnostics, T &&data)
-        // {
-        //     adapt(status, std::move(diagnostics));
-        //     this->data = std::move(data);
-        // }
-
-        // virtual void adapt(ResultStatus status,
-        //                    Diagnostic::DiagnosticList diagnostics,
-        //                    const T &data)
-        // {
-        //     adapt(status, std::move(diagnostics));
-        //     this->data = data;
-        // }
 
         virtual Diagnostic::Diagnostic &
         error(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)

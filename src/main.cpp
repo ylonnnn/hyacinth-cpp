@@ -7,7 +7,7 @@
 
 void execute_file(const char *file)
 {
-    Core::ProgramFile program(file);
+    Core::Program program(file);
     Core::ProgramRegistry registry(program);
 
     program.execute();
@@ -16,7 +16,7 @@ void execute_file(const char *file)
 int main(int argc, char **argv)
 {
 #ifdef __TESTING__
-    utils::testing::begin_tests("hyc-examples/tests/lexer");
+    utils::testing::begin_tests("hyc-examples/tests/parser");
 #else
     // No file specified
     // if (argc < 2)

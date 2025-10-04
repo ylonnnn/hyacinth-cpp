@@ -2,7 +2,7 @@ LINUX_CXX := g++
 WIN_CXX := x86_64-w64-mingw32-g++
 
 CXXFLAGS := -ggdb -O0 -Wall -Wextra -std=c++17 -Iinclude -MMD -MP
-LDFLAGS = -fsanitize=address
+LDFLAGS := -fsanitize=address
 
 WIN_LDFLAGS = -static
 
@@ -23,7 +23,7 @@ WIN_DEPS := $(WIN_OBJECTS:.o=.d)
 LINUX_TARGET := $(BUILD_DIR)/hyc
 WIN_TARGET := $(BUILD_DIR)/hyc.exe
 
-.PHONY: all clean run
+.PHONY: all clean
 
 all: linux windows
 

@@ -9,16 +9,16 @@ namespace Core
     class ProgramRegistry
     {
       private:
-        ProgramFile &main_;
-        std::unordered_map<std::string, std::unique_ptr<ProgramFile>> programs_;
+        Program &main_;
+        std::unordered_map<std::string, std::unique_ptr<Program>> programs_;
 
       public:
-        ProgramRegistry(ProgramFile &main);
+        ProgramRegistry(Program &main);
 
-        std::unordered_map<std::string, std::unique_ptr<ProgramFile>> &
+        std::unordered_map<std::string, std::unique_ptr<Program>> &
         programs();
 
-        ProgramFile &file(const std::string &path);
+        Program &file(const std::string &path);
     };
 
 } // namespace Core

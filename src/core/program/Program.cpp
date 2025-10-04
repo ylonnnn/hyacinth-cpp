@@ -8,12 +8,14 @@
 // #include "core/program/DependencyEnvironment.hpp"
 #include "core/position/Position.hpp"
 #include "core/program/Program.hpp"
+#include "core/program/ProgramState.hpp"
 #include "core/result/Result.hpp"
-// #include "interpreter/Interpreter.hpp"
 #include "diagnostic/reporter/CLIReporter.hpp"
 #include "lexer/Lexer.hpp"
 // #include "parser/Parser.hpp"
 // #include "semantic/analyzer/Analyzer.hpp"
+// #include "interpreter/Interpreter.hpp"
+#include "parser/Parser.hpp"
 #include "utils/control.hpp"
 #include "utils/style.hpp"
 
@@ -23,18 +25,12 @@ namespace Core
 
     constexpr auto FILE_EXT = ".hyc";
 
-    // struct ProgramResult : Result<std::unique_ptr<AST::Program>>
-    // {
-    //     using Result<std::unique_ptr<AST::Program>>::Result;
-    // };
-
-    struct ProgramResult : Result<std::unique_ptr<int>>
+    struct ProgramResult : Result<std::unique_ptr<AST::Program>>
     {
-        using Result<std::unique_ptr<int>>::Result;
+        using Result<std::unique_ptr<AST::Program>>::Result;
     };
 
-    ProgramFile::ProgramFile(const std::string &path, ProgramStateFlags state)
-        : state(state)
+    Program::Program(const std::string &path, ProgramState state) : state(state)
     // dependencies_(std::make_unique<DependencyEnvironment>()),
     // environment_(std::make_unique<Environment>(dependencies_.get()))
     {
@@ -42,16 +38,16 @@ namespace Core
             utils::terminate("Unknown file provided: " + path);
 
         this->path = fs::absolute(path);
-        this->state.with(PFS_VALID);
+        this->state |= PFS_VALID;
 
         source_lines.reserve(64);
 
         read();
     }
 
-    ProgramFile::~ProgramFile() { delete lexer; }
+    Program::~Program() { delete lexer; }
 
-    size_t ProgramFile::file_size(std::ifstream &file)
+    size_t Program::file_size(std::ifstream &file)
     {
         file.seekg(0, std::ios::end);
         size_t size = file.tellg();
@@ -60,7 +56,7 @@ namespace Core
         return size;
     }
 
-    void ProgramFile::read()
+    void Program::read()
     {
         auto path_str = path.string();
 
@@ -98,16 +94,19 @@ namespace Core
             source_lines.emplace_back(source.data() + line_start,
                                       cursor - line_start);
 
+        // For EOF
+        source_lines.push_back("");
+
         file.close();
     }
 
-    bool ProgramFile::valid() const { return state.has(PFS_VALID); }
+    bool Program::valid() const { return state & PFS_VALID; }
 
-    bool ProgramFile::analyzed() const { return state.has(PFS_ANALYZED); }
+    bool Program::analyzed() const { return state & PFS_ANALYZED; }
 
-    bool ProgramFile::interpreted() const { return state.has(PFS_INTERPRETED); }
+    bool Program::interpreted() const { return state & PFS_INTERPRETED; }
 
-    Position ProgramFile::position_at(size_t row, size_t col, size_t offset)
+    Position Program::position_at(size_t row, size_t col, size_t offset)
     {
         return (Position){
             .row = row,
@@ -117,12 +116,12 @@ namespace Core
         };
     }
 
-    // void ProgramFile::depend(Environment &dependency)
+    // void Program::depend(Environment &dependency)
     // {
     //     dependencies_->dependencies().push_back(&dependency);
     // }
 
-    Lexer::LexerResult ProgramFile::lex()
+    Lexer::LexerResult Program::lex()
     {
         auto lexer_start = std::chrono::high_resolution_clock::now();
 
@@ -139,7 +138,7 @@ namespace Core
         return lex_result;
     }
 
-    Lexer::LexerResult ProgramFile::lex(ProgramResult &result)
+    Lexer::LexerResult Program::lex(ProgramResult &result)
     {
         Lexer::LexerResult lex_result = lex();
         result.adapt(lex_result.status, std::move(lex_result.diagnostics));
@@ -147,35 +146,34 @@ namespace Core
         return lex_result;
     }
 
-    // Parser::ProgramParseResult ProgramFile::parse(Lexer::Lexer *lexer)
-    // {
-    //     auto parser_start = std::chrono::high_resolution_clock::now();
+    Parser::ProgramParseResult Program::parse()
+    {
+        auto parser_start = std::chrono::high_resolution_clock::now();
 
-    //     Parser::Parser parser(*this, *lexer);
-    //     Parser::ProgramParseResult parse_result = parser.parse();
+        Parser::Parser parser(*this, *lexer);
+        Parser::ProgramParseResult parse_result = parser.parse();
 
-    //     std::cout << "[Parser] "
-    //               << std::chrono::duration_cast<std::chrono::microseconds>(
-    //                      std::chrono::high_resolution_clock::now() -
-    //                      parser_start)
-    //                      .count()
-    //               << "\n";
+        std::cout << "[Parser] "
+                  << std::chrono::duration_cast<std::chrono::microseconds>(
+                         std::chrono::high_resolution_clock::now() -
+                         parser_start)
+                         .count()
+                  << "\n";
 
-    //     return parse_result;
-    // }
+        return parse_result;
+    }
 
-    // Parser::ProgramParseResult ProgramFile::parse(ProgramResult &result)
-    // {
-    //     Parser::ProgramParseResult parse_result = parse(result.lexer);
-    //     result.adapt(parse_result.status,
-    //     std::move(parse_result.diagnostics),
-    //                  std::move(parse_result.data));
+    Parser::ProgramParseResult Program::parse(ProgramResult &result)
+    {
+        Parser::ProgramParseResult parse_result = parse();
+        result.adapt(parse_result.status, std::move(parse_result.diagnostics),
+                     std::move(parse_result.data));
 
-    //     return parse_result;
-    // }
+        return parse_result;
+    }
 
     // Semantic::AnalysisResult
-    // ProgramFile::analyze(std::unique_ptr<AST::Program> &program)
+    // Program::analyze(std::unique_ptr<AST::Program> &program)
     // {
     //     if (analyzed_)
     //         return {nullptr, Core::ResultStatus::Success, nullptr, {}};
@@ -197,7 +195,7 @@ namespace Core
     //     return analysis_result;
     // }
 
-    // Semantic::AnalysisResult ProgramFile::analyze(ProgramResult &result)
+    // Semantic::AnalysisResult Program::analyze(ProgramResult &result)
     // {
     //     Semantic::AnalysisResult analysis_result = analyze(result.data);
 
@@ -211,7 +209,7 @@ namespace Core
     // }
 
     // Interpreter::InterpretationResult
-    // ProgramFile::interpret(std::unique_ptr<AST::Program> &program)
+    // Program::interpret(std::unique_ptr<AST::Program> &program)
     // {
     //     if (interpreted_)
     //         return {Core::ResultStatus::Success, nullptr, {}};
@@ -234,7 +232,7 @@ namespace Core
     // }
 
     // Interpreter::InterpretationResult
-    // ProgramFile::interpret(ProgramResult &result)
+    // Program::interpret(ProgramResult &result)
     // {
     //     Interpreter::InterpretationResult interpretation_result =
     //         interpret(result.data);
@@ -248,7 +246,7 @@ namespace Core
     //     return interpretation_result;
     // }
 
-    // Semantic::AnalysisResult ProgramFile::lex_parse_analyze()
+    // Semantic::AnalysisResult Program::lex_parse_analyze()
     // {
     //     Semantic::AnalysisResult result = {
     //         nullptr, Core::ResultStatus::Success, nullptr, {}};
@@ -276,14 +274,14 @@ namespace Core
     // }
 
     // Interpreter::InterpretationResult
-    // ProgramFile::lex_parse_analyze_interpret()
+    // Program::lex_parse_analyze_interpret()
     // {
     //     lex_parse_analyze();
 
     //     return interpret(node_);
     // }
 
-    void ProgramFile::execute()
+    void Program::execute()
     {
         if (!valid())
             return;
@@ -297,11 +295,16 @@ namespace Core
         // Lexical Analysis
         succeeded = lex(result).status == Core::ResultStatus::Success;
 
-        // // Parsing
-        // if (succeeded)
-        //     succeeded = parse(result).status == Core::ResultStatus::Success;
+        for (const auto &token : lexer->tokens)
+        {
+            std::cout << token << "\n";
+        }
 
-        // node_ = std::move(result.data);
+        // Parsing
+        if (succeeded)
+            succeeded = parse(result).status == Core::ResultStatus::Success;
+
+        node = std::move(result.data);
 
         // // Semantic Analysis
         // if (succeeded)
@@ -333,8 +336,8 @@ namespace Core
                 std::chrono::high_resolution_clock::now() - start);
 
         // TEMP
-        // if (node_ != nullptr)
-        //     std::cout << *node_ << "\n";
+        if (node != nullptr)
+            std::cout << *node << "\n";
 
         // dependencies_->display_symbol_table(std::cout, 1);
         // std::cout << "\n";
@@ -347,7 +350,7 @@ namespace Core
         Diagnostic::CLIReporter reporter(std::move(result.diagnostics));
         Diagnostic::DiagnosticReportStatusResult status = reporter.report();
 
-        if (!state.has(PFS_MAIN))
+        if (!(state & PFS_MAIN))
             return;
 
         utils::TextStyle color =

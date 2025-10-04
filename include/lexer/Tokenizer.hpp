@@ -15,7 +15,7 @@ namespace Lexer
     struct Tokenizer
     {
         Lexer &lexer;
-        Core::ProgramFile &program;
+        Core::Program &program;
 
         std::string_view source;
 

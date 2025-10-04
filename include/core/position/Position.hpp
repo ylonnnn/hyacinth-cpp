@@ -7,7 +7,7 @@ namespace Core
     struct Position
     {
         size_t row, col, offset;
-        ProgramFile &program;
+        Program &program;
     };
 
     struct PositionRefRange
