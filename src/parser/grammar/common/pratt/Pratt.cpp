@@ -8,16 +8,16 @@
 #include "parser/Parser.hpp"
 #include "parser/grammar/GrammarContext.hpp"
 #include "parser/grammar/GrammarRule.hpp"
-// #include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/common/Common.hpp"
-#include "parser/grammar/common/expr/Expr.hpp"
-#include "parser/grammar/common/expr/ExprHandlers.hpp"
+#include "parser/grammar/common/pratt/Pratt.hpp"
+#include "parser/grammar/common/pratt/PrattHandlers.hpp"
 
 namespace Parser
 {
-    ExprParseResult::ExprParseResult(Parser &parser, Core::ResultStatus status,
-                                     std::unique_ptr<AST::Expr> data,
-                                     Diagnostic::DiagnosticList diagnostics)
+    PrattParseResult::PrattParseResult(Parser &parser,
+                                       Core::ResultStatus status,
+                                       std::unique_ptr<AST::Expr> data,
+                                       Diagnostic::DiagnosticList diagnostics)
         : ParseResult(parser, status, std::move(data), std::move(diagnostics))
     {
         std::unique_ptr<AST::Node> node = std::move(ParseResult::data);
@@ -25,12 +25,12 @@ namespace Parser
             this->data = std::unique_ptr<AST::Expr>(ptr);
     }
 
-    Expr::Expr() : GrammarRule(Lexer::TokenType::EndOfFile, GC_LOCAL)
+    Pratt::Pratt() : GrammarRule(Lexer::TokenType::EndOfFile, GC_LOCAL)
     {
         initialize();
     }
 
-    void Expr::initialize()
+    void Pratt::initialize()
     {
         using namespace Lexer;
 
@@ -42,25 +42,39 @@ namespace Parser
                   TokenType::Char, TokenType::String}))
         {
             add_handler(type,
-                        ExprHandler{.type = type,
-                                    .bp = std::pair<float, float>{primary_bp,
-                                                                  primary_bp},
-                                    .nud = parse_literal,
-                                    .led = nullptr});
+                        PrattHandler{.type = type,
+                                     .bp = std::pair<float, float>{primary_bp,
+                                                                   primary_bp},
+                                     .nud = parse_literal,
+                                     .led = nullptr});
         }
 
         // Identifier
-        // add_nud(TokenType::Identifier, parse_idtype_expr,
-        //         std::pair<float, float>{primary_bp, primary_bp});
+        add_handler(
+            TokenType::Identifier,
+            PrattHandler{
+                .type = TokenType::Identifier,
+                .bp = std::pair<float, float>{primary_bp, primary_bp},
+                .nud = [&](Parser &parser, PrattParseResult &result)
+                    -> std::unique_ptr<AST::Path>
+                {
+                    std::vector<std::unique_ptr<AST::Identifier>> segments;
+                    segments.push_back(
+                        std::move(parse_identifier(parser, result)));
+
+                    return std::make_unique<AST::Path>(std::move(segments));
+                },
+                .led = nullptr,
+            });
 
         // Grouping
         // add_nud(Delimeter::ParenthesisOpen,
         //         [&](Parser &parser,
-        //             ExprParseResult &result) -> std::unique_ptr<AST::Expr>
+        //             PrattParseResult &result) -> std::unique_ptr<AST::Expr>
         //         {
-        //             Expr &expr_rule = Common::Expr;
+        //             Pratt &expr_rule = Common::Pratt;
 
-        //             ExprParseResult expr_res = expr_rule.parse_expr(parser,
+        //             PrattParseResult expr_res = expr_rule.parse_expr(parser,
         //             0); std::unique_ptr<AST::Expr> expr =
         //             std::move(expr_res.data);
 
@@ -87,14 +101,21 @@ namespace Parser
         // // Element Access
         // add_led(Delimeter::BracketOpen, parse_elaccess);
 
-        // // Member Access
-        // float memaccess_bp = static_cast<int>(BindingPower::MemberAccess);
-        // for (const auto &type : std::vector<Lexer::TokenType>{
-        //          Operator::Access::Dot, Operator::Access::DoubleColon})
-        // {
-        //     add_led(type, parse_memaccess,
-        //             std::pair<float, float>{memaccess_bp, memaccess_bp});
-        // }
+        // Member Access
+        float memaccess_bp = static_cast<int>(BindingPower::MemberAccess);
+        for (const auto &type :
+             std::vector<TokenType>{TokenType::Dot, TokenType::DoubleColon})
+        {
+            add_handler(type, PrattHandler{
+                                  .type = type,
+                                  .bp = std::pair<float, float>{memaccess_bp,
+                                                                memaccess_bp},
+                                  .nud = nullptr,
+                                  .led = parse_path,
+                              });
+            // add_led(type, parse_memaccess,
+            //         std::pair<float, float>{memaccess_bp, memaccess_bp});
+        }
 
         // // Function Call
         // float fncall_bp = static_cast<int>(BindingPower::FunctionCall);
@@ -113,13 +134,13 @@ namespace Parser
         //      }))
         // {
         //     add_nud(
-        //         type, [](Parser &parser, ExprParseResult &result)
+        //         type, [](Parser &parser, PrattParseResult &result)
         //         { return parse_unary(parser, result); },
         //         std::pair<float, float>{unary_bp, unary_bp});
 
         //     add_led(type, [](Parser &parser, std::unique_ptr<AST::Expr>
         //     &left,
-        //                      float right_bp, ExprParseResult &result)
+        //                      float right_bp, PrattParseResult &result)
         //             { return parse_unary(parser, left, right_bp, result); });
         // }
 
@@ -191,12 +212,12 @@ namespace Parser
         // }
     }
 
-    void Expr::add_handler(Lexer::TokenType type, ExprHandler &&handler)
+    void Pratt::add_handler(Lexer::TokenType type, PrattHandler &&handler)
     {
         handlers_.insert_or_assign(type, std::move(handler));
     }
 
-    ExprHandler *Expr::get_handler(Lexer::TokenType type)
+    PrattHandler *Pratt::get_handler(Lexer::TokenType type)
     {
         auto it = handlers_.find(type);
         if (it == handlers_.end())
@@ -205,9 +226,9 @@ namespace Parser
         return &it->second;
     }
 
-    ExprParseResult Expr::parse_expr(Parser &parser, float right_bp)
+    PrattParseResult Pratt::parse_base(Parser &parser, float right_bp)
     {
-        ExprParseResult result = {
+        PrattParseResult result = {
             parser, Core::ResultStatus::Success, nullptr, {}};
 
         auto &lexer = parser.lexer;
@@ -218,7 +239,7 @@ namespace Parser
         }
 
         Lexer::Token *token = lexer.peek();
-        ExprHandler *handler = get_handler(token->type);
+        PrattHandler *handler = get_handler(token->type);
 
         if (handler == nullptr || handler->nud == nullptr)
         {
@@ -227,7 +248,7 @@ namespace Parser
         }
 
         lexer.consume();
-        std::unique_ptr<AST::Expr> left = handler->nud(parser, result);
+        std::unique_ptr<AST::Node> left = handler->nud(parser, result);
 
         while (!lexer.eof())
         {
@@ -235,7 +256,7 @@ namespace Parser
             if (token == nullptr)
                 break;
 
-            ExprHandler *n_handler = get_handler(token->type);
+            PrattHandler *n_handler = get_handler(token->type);
             if (n_handler == nullptr)
                 break;
 
@@ -245,14 +266,9 @@ namespace Parser
             if (right_bp > left_bp_)
                 break;
 
-            // result.status = Core::ResultStatus::Fail;
-            // result.diagnostics.push_back(
-            //     Diagnostic::create_syntax_error(token));
+            // result.error(Diagnostic::create_syntax_error(*token));
             if (led == nullptr)
-            {
-                result.error(Diagnostic::create_syntax_error(*token));
                 break;
-            }
 
             lexer.consume();
             left = led(parser, left, right_bp_, result);
@@ -263,7 +279,7 @@ namespace Parser
         return result;
     }
 
-    ParseResult Expr::parse(Parser &parser)
+    ParseResult Pratt::parse(Parser &parser)
     {
         ParseResult result{parser, Core::ResultStatus::Success, nullptr, {}};
         parse(parser, result);
@@ -271,9 +287,9 @@ namespace Parser
         return result;
     }
 
-    void Expr::parse(Parser &parser, ParseResult &result)
+    void Pratt::parse(Parser &parser, ParseResult &result)
     {
-        ExprParseResult expr_result = parse_expr(parser, 0);
+        PrattParseResult expr_result = parse_base(parser, 0);
 
         if (expr_result.data == nullptr)
         {
@@ -283,9 +299,8 @@ namespace Parser
             return;
         }
 
-        result.adapt(
-            expr_result.status, std::move(expr_result.diagnostics),
-            std::make_unique<AST::ExprStmt>(std::move(expr_result.data)));
+        result.adapt(expr_result.status, std::move(expr_result.diagnostics),
+                     std::move(expr_result.data));
 
         if (result.status == Core::ResultStatus::Fail)
         {

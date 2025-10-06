@@ -29,22 +29,22 @@ namespace Parser
 
     static std::pair<float, float> NO_BINDING_POWER = {0, 0};
 
-    struct ExprParseResult : public ParseResult
+    struct PrattParseResult : ParseResult
     {
-        std::unique_ptr<AST::Expr> data;
+        std::unique_ptr<AST::Node> data;
 
-        ExprParseResult(Parser &parser, Core::ResultStatus status,
-                        std::unique_ptr<AST::Expr> data,
-                        Diagnostic::DiagnosticList diagnostics);
+        PrattParseResult(Parser &parser, Core::ResultStatus status,
+                         std::unique_ptr<AST::Expr> data,
+                         Diagnostic::DiagnosticList diagnostics);
     };
 
     using NudHandler =
-        std::function<std::unique_ptr<AST::Expr>(Parser &, ExprParseResult &)>;
+        std::function<std::unique_ptr<AST::Node>(Parser &, PrattParseResult &)>;
 
     using LedHandler = std::function<std::unique_ptr<AST::Expr>(
-        Parser &, std::unique_ptr<AST::Expr> &, float, ExprParseResult &)>;
+        Parser &, std::unique_ptr<AST::Node> &, float, PrattParseResult &)>;
 
-    struct ExprHandler
+    struct PrattHandler
     {
         Lexer::TokenType type;
         std::pair<float, float> bp;
@@ -52,20 +52,20 @@ namespace Parser
         LedHandler led;
     };
 
-    struct Expr : GrammarRule
+    struct Pratt : GrammarRule
     {
-        Expr();
+        Pratt();
 
-        void add_handler(Lexer::TokenType type, ExprHandler &&handler);
-        ExprHandler *get_handler(Lexer::TokenType type);
+        void add_handler(Lexer::TokenType type, PrattHandler &&handler);
+        PrattHandler *get_handler(Lexer::TokenType type);
 
-        ExprParseResult parse_expr(Parser &parser, float right_bp = 0);
+        PrattParseResult parse_base(Parser &parser, float right_bp = 0);
 
         ParseResult parse(Parser &parser) override;
         void parse(Parser &parser, ParseResult &result) override;
 
       private:
-        std::unordered_map<Lexer::TokenType, ExprHandler> handlers_;
+        std::unordered_map<Lexer::TokenType, PrattHandler> handlers_;
 
         void initialize();
     };

@@ -1,1 +1,4 @@
-var mut x: bool = false;
+var x: std::strings_library::basic_strings::string = 123;
+var mut y: std::integers::int32 = 123;
+
+var z = std::ranges::int32::max;

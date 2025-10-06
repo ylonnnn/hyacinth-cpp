@@ -21,7 +21,7 @@ namespace Parser::Hyacinth
     // constexpr auto STRUCT = Reserved::Struct;
 
     // constexpr auto FUNCTION = Reserved::Function;
-    constexpr auto VARIABLE = Lexer::TokenType::Let;
+    constexpr auto VARIABLE = Lexer::TokenType::Var;
 
     void initialize(Grammar &grammar);
 

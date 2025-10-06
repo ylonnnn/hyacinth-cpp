@@ -14,16 +14,15 @@ namespace Lexer
         Unit,
         Struct,
         Fn,
-        Let,
+        Var,
 
         // ==== RESERVED::QUALIFIER ====
-        Var,
+        Mut,
 
         // ==== RESERVED::CONTROL ====
         Return,
 
         // ==== RESERVED::ACCESSIBILITY ====
-        Pub,
         Priv,
         Prot,
 
@@ -118,16 +117,15 @@ namespace Lexer
         "Unit",
         "Struct",
         "Fn",
-        "Let",
+        "Var",
 
         // ==== RESERVED::QUALIFIER ====
-        "Var",
+        "Mut",
 
         // ==== RESERVED::CONTROL ====
         "Return",
 
         // ==== RESERVED::ACCESSIBILITY ====
-        "Pub",
         "Priv",
         "Prot",
 
@@ -217,16 +215,15 @@ namespace Lexer
         "unit",
         "struct",
         "fn",
-        "let",
+        "var",
 
         // ==== RESERVED::QUALIFIER ====
-        "var",
+        "mut",
 
         // ==== RESERVED::CONTROL ====
         "return",
 
         // ==== RESERVED::ACCESSIBILITY ====
-        "pub",
         "priv",
         "prot",
 

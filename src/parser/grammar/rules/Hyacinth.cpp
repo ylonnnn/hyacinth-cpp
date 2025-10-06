@@ -1,5 +1,6 @@
 #include "parser/grammar/rules/Hyacinth.hpp"
 #include "parser/grammar/Grammar.hpp"
+#include "parser/grammar/rules/Variable.hpp"
 // #include "parser/grammar/rules/Function.hpp"
 // #include "parser/grammar/rules/Import.hpp"
 // #include "parser/grammar/rules/Lib.hpp"
@@ -11,6 +12,8 @@ namespace Parser::Hyacinth
 {
     void initialize(Grammar &grammar)
     {
+        grammar.add_rule(VARIABLE, std::make_unique<VariableDefinition>());
+
         // grammar.add_rule(IMPORT, std::make_unique<ImportStatement>(),
         //                  {true, false});
 

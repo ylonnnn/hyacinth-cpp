@@ -1,9 +1,13 @@
 #include "parser/grammar/common/Terminator.hpp"
+#include "parser/grammar/GrammarContext.hpp"
 #include "parser/grammar/rules/Hyacinth.hpp"
 
 namespace Parser
 {
-    Terminator::Terminator() : GrammarRule(Hyacinth::TERMINATOR) {}
+    Terminator::Terminator()
+        : GrammarRule(Hyacinth::TERMINATOR, GC_GLOBAL | GC_LOCAL)
+    {
+    }
 
     ParseResult Terminator::parse(Parser &parser)
     {

@@ -4,15 +4,47 @@
 // #include "ast/type/SimpleType.hpp"
 // #include "diagnostic/ErrorDiagnostic.hpp"
 // #include "parser/grammar/common/Common.hpp"
-#include "parser/grammar/common/expr/Expr.hpp"
-#include "parser/grammar/common/expr/ExprHandlers.hpp"
+#include "ast/common/Identifier.hpp"
+#include "ast/expr/Path.hpp"
+#include "parser/grammar/common/pratt/Pratt.hpp"
+#include "parser/grammar/common/pratt/PrattHandlers.hpp"
+#include "utils/dev.hpp"
 
 namespace Parser
 {
     std::unique_ptr<AST::LiteralExpr> parse_literal(Parser &parser,
-                                                    ExprParseResult &)
+                                                    PrattParseResult &)
     {
         return std::make_unique<AST::LiteralExpr>(parser.lexer.current());
+    }
+
+    std::unique_ptr<AST::Identifier> parse_identifier(Parser &parser,
+                                                      PrattParseResult &result)
+    {
+        auto identifier = std::make_unique<AST::Identifier>(
+            parser.lexer.current(), std::vector<AST::IdentifierArgument>{});
+
+        utils::todo("parse generic arguments for identifiers");
+
+        return identifier;
+    }
+
+    std::unique_ptr<AST::Path> parse_path(Parser &parser,
+                                          std::unique_ptr<AST::Node> &left,
+                                          float right_bp,
+                                          PrattParseResult &result)
+    {
+        auto ptr = dynamic_cast<AST::Path *>(left.get());
+        if (ptr == nullptr)
+            return nullptr;
+
+        parser.lexer.consume();
+        ptr->segments.push_back(std::move(parse_identifier(parser, result)));
+
+        auto _ = left.release();
+        (void)_;
+
+        return std::unique_ptr<AST::Path>(ptr);
     }
 
     // std::unique_ptr<AST::Expr> parse_idtype_expr(Parser &parser,

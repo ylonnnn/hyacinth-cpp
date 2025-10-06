@@ -5,21 +5,15 @@
 
 namespace AST
 {
-    class VariableDefinitionStmt : public VariableDeclarationStmt
+    struct VariableDefinitionStmt : VariableDeclarationStmt
     {
-      private:
-        std::unique_ptr<Expr> value_;
+        std::unique_ptr<Expr> value;
 
-      public:
-        VariableDefinitionStmt(Lexer::Token &name,
-                               IdentifierMutabilityState mut_state,
-                               std::unique_ptr<AST::Type> type,
-                               std::unique_ptr<AST::Expr> value);
-
-        bool is_definition() const override;
-
-        Expr &value();
-        std::unique_ptr<Expr> &value_ptr();
+        VariableDefinitionStmt(
+            Lexer::Token &name, IdentifierMutabilityState mut_state,
+            std::unique_ptr<Path> type, std::unique_ptr<Expr> value,
+            DeclarationAccessibility DeclarationAccessibility =
+                DeclarationAccessibility::Public);
 
         void print(std::ostream &os, uint8_t tab) const override;
     };

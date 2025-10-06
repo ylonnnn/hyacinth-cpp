@@ -2,24 +2,27 @@
 // #include "ast/expr/BinaryExpr.hpp"
 // #include "ast/expr/FunctionCallExpr.hpp"
 // #include "ast/expr/IdentifierExpr.hpp"
+#include "ast/common/Identifier.hpp"
 #include "ast/expr/LiteralExpr.hpp"
 // #include "ast/expr/UnaryExpr.hpp"
 // #include "ast/expr/compound/ArrayExpr.hpp"
 // #include "ast/expr/compound/InstanceExpr.hpp"
+#include "ast/expr/Path.hpp"
 #include "parser/Parser.hpp"
-#include "parser/grammar/common/expr/Expr.hpp"
+#include "parser/grammar/common/pratt/Pratt.hpp"
 
 namespace Parser
 {
     std::unique_ptr<AST::LiteralExpr> parse_literal(Parser &parser,
-                                                    ExprParseResult &result);
+                                                    PrattParseResult &result);
 
-    // std::unique_ptr<AST::Expr> parse_idtype_expr(Parser &parser,
-    //                                              ExprParseResult &result);
+    std::unique_ptr<AST::Identifier> parse_identifier(Parser &parser,
+                                                      PrattParseResult &result);
 
-    // std::unique_ptr<AST::IdentifierExpr>
-    // parse_identifier(Parser &parser, ExprParseResult &result);
-
+    std::unique_ptr<AST::Path> parse_path(Parser &parser,
+                                          std::unique_ptr<AST::Node> &left,
+                                          float right_bp,
+                                          PrattParseResult &result);
     // std::unique_ptr<AST::BinaryExpr>
     // parse_binary(Parser &parser, std::unique_ptr<AST::Expr> &left,
     //              float right_bp, ExprParseResult &result);

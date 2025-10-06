@@ -20,7 +20,8 @@ namespace Parser
 
         Grammar();
 
-        void add_rule(Lexer::TokenType type, std::unique_ptr<GrammarRule> rule);
+        void add_rule(Lexer::TokenType type,
+                      std::unique_ptr<GrammarRule> &&rule);
         GrammarRule *get_rule(Lexer::TokenType type,
                               GrammarContext context) const;
 

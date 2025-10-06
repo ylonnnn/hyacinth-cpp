@@ -4,12 +4,12 @@
 // #include "parser/grammar/common/IdentifierInit.hpp"
 // #include "parser/grammar/common/Mutability.hpp"
 #include "parser/grammar/common/Terminator.hpp"
-#include "parser/grammar/common/expr/Expr.hpp"
+#include "parser/grammar/common/pratt/Pratt.hpp"
 // #include "parser/grammar/common/type/Type.hpp"
 
 namespace Parser::Common
 {
-    static inline Expr Expr;
+    static inline Pratt Pratt;
     // extern Expr Expr;
     // extern Type Type;
 

@@ -6,22 +6,15 @@ namespace AST
 {
     VariableDefinitionStmt::VariableDefinitionStmt(
         Lexer::Token &name, IdentifierMutabilityState mut_state,
-        std::unique_ptr<Type> type, std::unique_ptr<Expr> value)
-        : Node(name.position),
-          VariableDeclarationStmt(name, mut_state, std::move(type)),
-          value_(std::move(value))
+        std::unique_ptr<Path> type, std::unique_ptr<Expr> value,
+        DeclarationAccessibility accessibility)
+        : Node(name.range.start),
+          VariableDeclarationStmt(name, mut_state, std::move(type),
+                                  accessibility),
+          value(std::move(value))
     {
-        if (value_ != nullptr)
-            set_end_position(value_->end_position());
-    }
-
-    bool VariableDefinitionStmt::is_definition() const { return true; }
-
-    Expr &VariableDefinitionStmt::value() { return *value_; }
-
-    std::unique_ptr<Expr> &VariableDefinitionStmt::value_ptr()
-    {
-        return value_;
+        if (value != nullptr)
+            end_position = value->end_position;
     }
 
     void VariableDefinitionStmt::print(std::ostream &os, uint8_t tab) const
@@ -31,22 +24,22 @@ namespace AST
 
         os << "VariableDefinitionStmt {"
            << "\n"
-           << inner_indentation << "accessibility: " << accessibility_ << "\n"
-           << inner_indentation << "name: " << name_ << "\n"
+           << inner_indentation << "accessibility: " << accessibility << "\n"
+           << inner_indentation << "name: " << name << "\n"
            << inner_indentation << "mut_state: "
-           << (mut_state_ == IdentifierMutabilityState::Mutable ? "Mutable"
-                                                                : "Immutable")
+           << (mut_state == IdentifierMutabilityState::Mutable ? "Mutable"
+                                                               : "Immutable")
            << "\n"
            << inner_indentation << "type: ";
 
-        if (type_ != nullptr)
-            type_->print(os, tab + 1);
+        if (type != nullptr)
+            type->print(os, tab + 1);
         else
-            os << "<deduced>";
+            os << "<Deduced>";
 
         os << "\n" << inner_indentation << "value: ";
 
-        value_->print(os, tab + 1);
+        value->print(os, tab + 1);
 
         os << "\n" << indentation << "}";
     }

@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <iostream>
 #include <unordered_map>
 
@@ -11,18 +10,19 @@
 #include "parser/Parser.hpp"
 #include "parser/grammar/Grammar.hpp"
 #include "parser/grammar/GrammarContext.hpp"
-#include "parser/grammar/common/expr/Expr.hpp"
+#include "parser/grammar/common/pratt/Pratt.hpp"
 
 namespace Parser
 {
-    Grammar::Grammar() : fallback(std::make_unique<Expr>())
+    Grammar::Grammar() : fallback(std::make_unique<Pratt>())
     {
         rules.reserve(16);
     }
 
     void Grammar::add_rule(Lexer::TokenType type,
-                           std::unique_ptr<GrammarRule> rule)
+                           std::unique_ptr<GrammarRule> &&rule)
     {
+        rules.insert_or_assign(type, std::move(rule));
     }
 
     GrammarRule *Grammar::get_rule(Lexer::TokenType type,
@@ -52,7 +52,6 @@ namespace Parser
         GrammarRule *rule = get_rule(token->type, context);
         if (rule == nullptr)
         {
-            std::cout << (fallback->context & context) << "\n";
             if (fallback->context & context)
                 rule = fallback.get();
 
@@ -68,6 +67,9 @@ namespace Parser
         ParseResult p_res = rule->parse(parser);
         result.adapt(p_res.status, std::move(p_res.diagnostics),
                      std::move(p_res.data));
+
+        if (result.status == Core::ResultStatus::Fail)
+            lexer.consume();
 
         return result;
     }
@@ -92,6 +94,7 @@ namespace Parser
             if (auto ptr = dynamic_cast<AST::GlobalNode *>(p_res.data.get()))
             {
                 result.data->nodes.emplace_back(ptr);
+
                 auto _ = p_res.data.release();
                 (void)_;
             }

@@ -10,8 +10,11 @@ namespace AST
                           : "Private");
     }
 
-    DeclarationStmt::DeclarationStmt(Lexer::Token &name, bool is_definition)
-        : Node(name.range.start), name(name), is_definition_(is_definition)
+    DeclarationStmt::DeclarationStmt(Lexer::Token &name,
+                                     DeclarationAccessibility accessibility,
+                                     bool is_definition)
+        : Node(name.range.start), name(name), accessibility(accessibility),
+          is_definition_(is_definition)
     {
     }
 

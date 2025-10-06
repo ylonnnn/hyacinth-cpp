@@ -21,7 +21,10 @@ namespace AST
         DeclarationAccessibility accessibility =
             DeclarationAccessibility::Public;
 
-        DeclarationStmt(Lexer::Token &name, bool is_definition = false);
+        DeclarationStmt(Lexer::Token &name,
+                        DeclarationAccessibility accessibility =
+                            DeclarationAccessibility::Public,
+                        bool is_definition = false);
         virtual ~DeclarationStmt() = default;
 
         bool is_definition() const;

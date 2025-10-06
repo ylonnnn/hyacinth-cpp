@@ -11,183 +11,152 @@
 // #include "parser/grammar/rules/Hyacinth.hpp"
 // #include "utils/style.hpp"
 
-// namespace Parser
-// {
-//     VariableDefinition::VariableDefinition() :
-//     GrammarRule(Hyacinth::VARIABLE)
-//     {
-//     }
+#include "parser/grammar/rules/Variable.hpp"
+#include "ast/common/IdentifierDecl.hpp"
+#include "ast/expr/Expr.hpp"
+#include "ast/stmt/variable/VariableDeclStmt.hpp"
+#include "ast/stmt/variable/VariableDefStmt.hpp"
+#include "diagnostic/helpers.hpp"
+#include "parser/grammar/common/Common.hpp"
+#include "parser/grammar/rules/Hyacinth.hpp"
+#include "utils/dev.hpp"
 
-//     ParseResult
-//     VariableDefinition::parse(Parser &parser,
-//                               AST::DeclarationAccessibility accessibility)
-//     {
-//         ParseResult result = parse(parser);
+namespace Parser
+{
+    VariableDefinition::VariableDefinition()
+        : GrammarRule(Hyacinth::VARIABLE, GC_GLOBAL | GC_LOCAL)
+    {
+    }
 
-//         auto decl =
-//             dynamic_cast<AST::VariableDeclarationStmt *>(result.data.get());
-//         if (decl == nullptr)
-//             return result;
+    ParseResult
+    VariableDefinition::parse(Parser &parser,
+                              AST::DeclarationAccessibility accessibility)
+    {
+        utils::todo("implement variable access modifiers");
+        return parse(parser);
+    }
 
-//         decl->set_accessibility(accessibility);
-//         return result;
-//     }
+    ParseResult VariableDefinition::parse(Parser &parser)
+    {
+        ParseResult result{parser, Core::ResultStatus::Success, nullptr, {}};
+        parse(parser, result);
 
-//     ParseResult VariableDefinition::parse(Parser &parser)
-//     {
-//         using namespace Lexer::TokenTypes;
-//         using namespace Operator;
+        return result;
+    }
 
-//         // "let" IDENTIFIER (":" | "!:") TYPE
-//         auto &lexer = parser.lexer();
-//         ParseResult result = {parser, Core::ResultStatus::Success, nullptr,
-//         {}};
+    void VariableDefinition::parse(Parser &parser, ParseResult &result)
+    {
+        using TokenType = Lexer::TokenType;
 
-//         result.diagnostics.reserve(16);
+        // "var" "mut"? IDENTIFIER ( ":" TYPE )? ( "=" VALUE )? ;
 
-//         // let (Reserved::Declaration)
-//         if (parser.expect(token_type_, false))
-//             lexer.next();
-//         else
-//         {
-//             result.status = Core::ResultStatus::Fail;
-//             return result;
-//         }
+        auto &lexer = parser.lexer;
+        result.diagnostics.reserve(16);
 
-//         // IDENTIFIER
-//         Lexer::Token *identifier = nullptr;
-//         if (auto diagnostic =
-//                 parser.expect_or_error(Primary::Identifier, false))
-//             result.force_error(std::move(diagnostic));
-//         else
-//             identifier = lexer.next();
+        // var (TokenType::Var)
+        lexer.consume();
 
-//         // ":" | "!:"
-//         ParseResult m_res = Common::Mutability.parse(parser);
-//         result.adapt(m_res.status, std::move(m_res.diagnostics));
+        // mut? (TokenType::Mut)
+        AST::IdentifierMutabilityState mut_state =
+            AST::IdentifierMutabilityState::Immutable;
+        if (parser.expect(TokenType::Mut, false))
+        {
+            lexer.consume();
+            mut_state = AST::IdentifierMutabilityState::Mutable;
+        }
 
-//         auto m_node = m_res.data.get();
-//         auto mut_state = AST::IdentifierMutabilityState::Immutable;
-//         Core::Position *ms_pos = nullptr;
+        // IDENTIFIER (TokenType::Identifier)
+        Lexer::Token *identifier = nullptr;
+        if (auto diagnostic =
+                parser.expect_or_error(TokenType::Identifier, false))
+            result.force_error(std::move(diagnostic));
+        else
+            identifier = lexer.next();
 
-//         if (typeid(*m_node) == typeid(MutabilityNode))
-//         {
-//             auto node = static_cast<MutabilityNode *>(m_node);
+        auto flag = 0;
 
-//             if (node->is_mutable())
-//                 mut_state = AST::IdentifierMutabilityState::Mutable;
+        // ":" TYPE
+        std::unique_ptr<AST::Path> type;
+        if (parser.expect(TokenType::Colon, false))
+        {
+            flag |= (1 << 0);
+            lexer.consume();
 
-//             ms_pos = &node->end_position();
-//         }
+            if (!parser.expect(TokenType::Identifier, false))
+            {
+                Lexer::Token *token = lexer.peek();
 
-//         // (Optional) TYPE
-//         TypeParseResult t_res = Common::Type.parse_type(parser, 0);
-//         std::unique_ptr<AST::Type> type = std::move(t_res.data);
+                result.error(
+                    Diagnostic::create_unexpected_token_error(*token, "type"));
+            }
+            else
+            {
+                PrattParseResult t_res = Common::Pratt.parse_base(parser, 0);
+                result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-//         // (Optional) = VALUE
-//         auto presence_flag = 0;
-//         Lexer::Token *token = lexer.peek();
+                auto ptr = dynamic_cast<AST::Path *>(t_res.data.get());
+                if (ptr == nullptr)
+                {
+                    utils::todo("throw error: type must be an identifier or a "
+                                "path to an identified type");
+                    return;
+                }
 
-//         if (parser.expect(Lexer::TokenTypes::Operator::Assignment::Direct,
-//                           false))
-//         {
-//             lexer.next();
-//             presence_flag |= (1 << 1);
-//         }
+                type = std::unique_ptr<AST::Path>(ptr);
 
-//         ExprParseResult v_res = Common::Expr.parse_expr(parser, 0);
+                auto _ = t_res.data.release();
+                (void)_;
+            }
+        }
 
-//         result.adapt(std::move(v_res.diagnostics));
+        // "=" VALUE
+        std::unique_ptr<AST::Expr> value;
+        if (parser.expect(TokenType::Equal, false))
+        {
+            flag |= (1 << 1);
+            lexer.consume();
 
-//         if (v_res.data != nullptr)
-//             presence_flag |= (1 << 0);
+            PrattParseResult v_res = Common::Pratt.parse_base(parser, 0);
+            result.adapt(v_res.status, std::move(v_res.diagnostics));
 
-//         std::unique_ptr<AST::Expr> value = std::move(v_res.data);
+            auto ptr = dynamic_cast<AST::Expr *>(v_res.data.get());
+            if (ptr == nullptr)
+            {
+                utils::todo("throw error: value must be an expression");
+                return;
+            }
 
-//         switch (presence_flag)
-//         {
-//             case 0b00:
-//             {
-//                 result.data = std::make_unique<AST::VariableDeclarationStmt>(
-//                     *identifier, mut_state, std::move(type));
+            value = std::unique_ptr<AST::Expr>(ptr);
 
-//                 result.data->set_end_position(*ms_pos);
+            auto _ = v_res.data.release();
+            (void)_;
+        }
 
-//                 break;
-//             }
+        // Invalid Form
+        if (flag == 0)
+        {
+            utils::todo("throw error: either a value or an explicit type "
+                        "annotation must be present.");
+            return;
+        }
 
-//             case 0b01: // = [X] Value [/]
-//             case 0b10: // = [/] Value [X]
-//             {
-//                 result.data = nullptr;
+        if (auto diagnostic =
+                parser.expect_or_error(TokenType::Semicolon, false))
+            result.error(std::move(diagnostic));
+        else
+            lexer.consume();
 
-//                 if (presence_flag == 0b01)
-//                     result.force_error(
-//                         value.get(),
-//                         Diagnostic::ErrorTypes::Syntax::MissingOperator,
-//                         std::string("Missing ") + Diagnostic::ERR_GEN + "=" +
-//                             utils::Styles::Reset + " operator.",
-//                         "Missing operator before this value");
+        // Distinction between declaration and definition
 
-//                 else
-//                 {
-//                     auto node = AST::LiteralExpr(*token);
+        // Declaration
+        if (value == nullptr)
+            result.data = std::make_unique<AST::VariableDeclarationStmt>(
+                *identifier, mut_state, std::move(type));
 
-//                     result.force_error(
-//                         &node, Diagnostic::ErrorTypes::Syntax::MissingValue,
-//                         std::string("Missing ") + Diagnostic::ERR_GEN +
-//                             "VALUE" + utils::Styles::Reset + ".",
-//                         "Missing value after this operator");
-//                 }
+        // Definition
+        else
+            result.data = std::make_unique<AST::VariableDefinitionStmt>(
+                *identifier, mut_state, std::move(type), std::move(value));
+    }
 
-//                 break;
-//             }
-
-//             case 0b11:
-//             {
-//                 if (v_res.status == Core::ResultStatus::Fail)
-//                     result.status = v_res.status;
-
-//                 result.data = std::make_unique<AST::VariableDefinitionStmt>(
-//                     *identifier, mut_state, std::move(type),
-//                     std::move(value));
-
-//                 break;
-//             }
-//         }
-
-//         // TERMINATOR ::= ";"
-//         ParseResult tp_res = Common::Terminator.parse(parser);
-//         result.adapt(tp_res.status, std::move(tp_res.diagnostics));
-
-//         if (auto ptr =
-//                 dynamic_cast<AST::VariableDeclarationStmt
-//                 *>(result.data.get()))
-//         {
-//             if (ptr->is_mutable() || ptr->is_definition())
-//                 return result;
-
-//             auto node = AST::IdentifierExpr(*identifier);
-//             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
-//                 &node,
-//                 Diagnostic::ErrorTypes::Uninitialization::
-//                     UninitializedImmutable,
-//                 std::string("Illegal uninitialization of immutable \"") +
-//                     Diagnostic::ERR_GEN + std::string(identifier->value) +
-//                     utils::Styles::Reset + "\".",
-//                 "Immutable variables require initial values");
-
-//             diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
-//                 result.data.get(), Diagnostic::NoteType::Declaration,
-//                 std::string("Immutable variable \"") + Diagnostic::NOTE_GEN +
-//                     std::string(identifier->value) + utils::Styles::Reset +
-//                     "\" declared here.",
-//                 "Declared here"));
-
-//             result.force_error(std::move(diagnostic));
-//         }
-
-//         return result;
-//     }
-
-// } // namespace Parser
+} // namespace Parser

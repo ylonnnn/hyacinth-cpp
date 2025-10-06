@@ -1,4 +1,3 @@
-#include <iostream>
 #include <optional>
 
 #include "core/position/Position.hpp"
@@ -8,18 +7,25 @@
 namespace Diagnostic
 {
     std::unique_ptr<Diagnostic>
-    create_syntax_error(const Lexer::Token &token,
-                        std::optional<Lexer::TokenType> type)
+    create_unexpected_token_error(const Lexer::Token &received,
+                                  std::string expected)
     {
         return std::make_unique<Diagnostic>(
             DiagnosticSeverity::Error,
             static_cast<uint32_t>(ErrorType::UnexpectedToken),
-            Core::PositionRange(token.range),
-            "unexpected \"" + std::string(token.value) +
-                (type ? std::string("\", expected \"") +
-                            Lexer::type_to_string(*type)
-                      : "") +
+            Core::PositionRange(received.range),
+            "unexpected \"" + std::string(received.value) +
+                (expected.size() ? std::string("\", expected \"") + expected
+                                 : "") +
                 "\".");
+    }
+
+    std::unique_ptr<Diagnostic>
+    create_syntax_error(const Lexer::Token &token,
+                        std::optional<Lexer::TokenType> type)
+    {
+        return create_unexpected_token_error(token,
+                                             Lexer::type_to_string(*type));
     }
 
 } // namespace Diagnostic
