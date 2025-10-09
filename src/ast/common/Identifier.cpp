@@ -14,7 +14,7 @@ namespace AST
     void Identifier::print(std::ostream &os, uint8_t tab) const
     {
         // TODO: Arguments
-        os << "Identifier { identifier: " << identifier << "}";
+        os << "Identifier { identifier: " << identifier << " }";
     }
 
 } // namespace AST

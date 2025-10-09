@@ -42,6 +42,7 @@ namespace Parser
 
         void panic();
         void synchronize();
+        void synchronize(const std::vector<Lexer::TokenType> &types);
 
         bool expect(Lexer::TokenType type, bool consume = true);
         std::unique_ptr<Diagnostic::Diagnostic>

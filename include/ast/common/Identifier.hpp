@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 #include "ast/Node.hpp"
 #include "ast/expr/Expr.hpp"
 #include "lexer/Token.hpp"

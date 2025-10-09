@@ -7,7 +7,7 @@ namespace Parser
 {
     class Parser;
 
-    struct ParseResult : public Core::Result<std::unique_ptr<AST::Node>>
+    struct ParseResult : Core::Result<std::unique_ptr<AST::Node>>
     {
         Parser &parser;
 
@@ -15,15 +15,19 @@ namespace Parser
                     std::unique_ptr<AST::Node> data,
                     Diagnostic::DiagnosticList diagnostics);
 
-        Diagnostic::Diagnostic &
-        error(std::unique_ptr<Diagnostic::Diagnostic> diagnostic) override;
-        Diagnostic::Diagnostic &error(Core::PositionRange &&range,
+        using Core::Result<std::unique_ptr<AST::Node>>::adapt;
+        void adapt(Core::ResultStatus status,
+                   Diagnostic::DiagnosticList &&diagnostics) override;
+
+        Diagnostic::Diagnostic *
+        error(std::unique_ptr<Diagnostic::Diagnostic> &&diagnostic) override;
+        Diagnostic::Diagnostic *error(Core::PositionRange &&range,
                                       Diagnostic::ErrorType type,
                                       std::string &&message) override;
 
-        Diagnostic::Diagnostic &
-        force_error(std::unique_ptr<Diagnostic::Diagnostic> diagnostic);
-        Diagnostic::Diagnostic &force_error(Core::PositionRange &&range,
+        Diagnostic::Diagnostic *
+        force_error(std::unique_ptr<Diagnostic::Diagnostic> &&diagnostic);
+        Diagnostic::Diagnostic *force_error(Core::PositionRange &&range,
                                             Diagnostic::ErrorType type,
                                             const std::string &message);
     };

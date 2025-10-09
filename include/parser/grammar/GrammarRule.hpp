@@ -18,6 +18,8 @@ namespace Parser
 
         virtual ParseResult parse(Parser &parser) = 0;
         virtual void parse(Parser &parser, ParseResult &result) = 0;
+
+        virtual void recover(Parser &parser);
     };
 
 } // namespace Parser

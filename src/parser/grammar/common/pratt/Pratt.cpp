@@ -11,6 +11,7 @@
 #include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/common/pratt/Pratt.hpp"
 #include "parser/grammar/common/pratt/PrattHandlers.hpp"
+#include "parser/grammar/rules/Hyacinth.hpp"
 
 namespace Parser
 {
@@ -103,19 +104,16 @@ namespace Parser
 
         // Member Access
         float memaccess_bp = static_cast<int>(BindingPower::MemberAccess);
-        for (const auto &type :
-             std::vector<TokenType>{TokenType::Dot, TokenType::DoubleColon})
-        {
-            add_handler(type, PrattHandler{
-                                  .type = type,
-                                  .bp = std::pair<float, float>{memaccess_bp,
-                                                                memaccess_bp},
-                                  .nud = nullptr,
-                                  .led = parse_path,
-                              });
-            // add_led(type, parse_memaccess,
-            //         std::pair<float, float>{memaccess_bp, memaccess_bp});
-        }
+
+        // Path
+        add_handler(
+            Hyacinth::PATH_SEP,
+            PrattHandler{
+                .type = Hyacinth::PATH_SEP,
+                .bp = std::pair<float, float>{memaccess_bp, memaccess_bp},
+                .nud = nullptr,
+                .led = parse_path,
+            });
 
         // // Function Call
         // float fncall_bp = static_cast<int>(BindingPower::FunctionCall);
@@ -126,90 +124,118 @@ namespace Parser
         //             std::pair<float, float>{fncall_bp, fncall_bp});
         // }
 
-        // // Unary
-        // float unary_bp = static_cast<int>(BindingPower::Unary);
-        // for (const auto &type : std::vector<Lexer::TokenType>({
-        //          Unary::Increment,
-        //          Unary::Decrement,
-        //      }))
-        // {
-        //     add_nud(
-        //         type, [](Parser &parser, PrattParseResult &result)
-        //         { return parse_unary(parser, result); },
-        //         std::pair<float, float>{unary_bp, unary_bp});
+        // Unary
+        float unary_bp = static_cast<int>(BindingPower::Unary);
+        for (const auto &type : std::vector<TokenType>({
+                 TokenType::PlusPlus,
+                 TokenType::MinusMinus,
+                 TokenType::Bang,
+                 TokenType::Tilde,
+             }))
+        {
+            add_handler(
+                type,
+                PrattHandler{
+                    .type = type,
+                    .bp = std::pair<float, float>{unary_bp, unary_bp},
+                    .nud = [&](Parser &parser, PrattParseResult &result)
+                        -> std::unique_ptr<AST::UnaryExpr>
+                    { return parse_unary(parser, result); },
+                    .led = [&](Parser &parser, std::unique_ptr<AST::Node> &left,
+                               float right_bp, PrattParseResult &result)
+                        -> std::unique_ptr<AST::UnaryExpr>
+                    { return parse_unary(parser, left, right_bp, result); },
+                });
+        }
 
-        //     add_led(type, [](Parser &parser, std::unique_ptr<AST::Expr>
-        //     &left,
-        //                      float right_bp, PrattParseResult &result)
-        //             { return parse_unary(parser, left, right_bp, result); });
-        // }
+        // Multiplicative
+        float multiplicative_bp =
+            static_cast<int>(BindingPower::Multiplicative);
+        for (const auto &type : std::vector<TokenType>(
+                 {TokenType::Star, TokenType::Slash, TokenType::Percent}))
+        {
+            add_handler(type,
+                        PrattHandler{
+                            .type = type,
+                            .bp = std::pair<float, float>{multiplicative_bp,
+                                                          multiplicative_bp},
+                            .nud = nullptr,
+                            .led = parse_binary,
+                        });
+        }
 
-        // // Multiplicative
-        // float multiplicative_bp =
-        //     static_cast<int>(BindingPower::Multiplicative);
-        // for (const auto &type : std::vector<Lexer::TokenType>({
-        //          Arithmetic::Multiplication,
-        //          Arithmetic::Division,
-        //          Arithmetic::Modulo,
-        //      }))
-        // {
-        //     add_led(type, parse_binary,
-        //             std::pair<float, float>(
-        //                 {multiplicative_bp, multiplicative_bp}));
-        // }
+        // Additive
+        float additive_bp = static_cast<int>(BindingPower::Additive);
+        for (const auto &type : std::vector<TokenType>({
+                 TokenType::Plus,
+                 TokenType::Minus,
+             }))
+        {
+            add_handler(type, PrattHandler{
+                                  .type = type,
+                                  .bp = std::pair<float, float>{additive_bp,
+                                                                additive_bp},
+                                  .nud = nullptr,
+                                  .led = parse_binary,
+                              });
+        }
 
-        // // Additive
-        // float additive_bp = static_cast<int>(BindingPower::Additive);
-        // for (const auto &type : std::vector<Lexer::TokenType>({
-        //          Arithmetic::Plus,
-        //          Arithmetic::Minus,
-        //      }))
-        // {
+        // Relational
+        float relational_bp = static_cast<int>(BindingPower::Relational);
+        for (const auto &type : std::vector<TokenType>({
+                 TokenType::Equal,
+                 TokenType::BangEqual,
+                 TokenType::LessEqual,
+                 TokenType::Less,
+                 TokenType::GreaterEqual,
+                 TokenType::Greater,
+             }))
+        {
+            add_handler(type, PrattHandler{
+                                  .type = type,
+                                  .bp = std::pair<float, float>{relational_bp,
+                                                                relational_bp},
+                                  .nud = nullptr,
+                                  .led = parse_binary,
+                              });
+        }
 
-        //     add_led(type, parse_binary,
-        //             std::pair<float, float>{additive_bp, additive_bp});
-        // }
+        // Logical
+        float logical_bp = static_cast<int>(BindingPower::Logical);
+        for (const auto &type : std::vector<TokenType>({
+                 TokenType::Bang,
+                 TokenType::AmpersandAmpersand,
+                 TokenType::PipePipe,
+             }))
+        {
+            add_handler(
+                type, PrattHandler{
+                          .type = type,
+                          .bp = std::pair<float, float>{logical_bp, logical_bp},
+                          .nud = nullptr,
+                          .led = parse_binary,
+                      });
+        }
 
-        // // Relational
-        // float relational_bp = static_cast<int>(BindingPower::Relational);
-        // for (const auto &type : std::vector<Lexer::TokenType>({
-        //          Relational::Equal,
-        //          Relational::NotEqual,
-        //          Relational::LessThanEqual,
-        //          Relational::LessThan,
-        //          Relational::GreaterThanEqual,
-        //          Relational::GreaterThan,
-        //      }))
-        // {
-        //     add_led(type, parse_binary,
-        //             std::pair<float, float>{relational_bp, relational_bp});
-        // }
-
-        // // Logical
-        // float logical_bp = static_cast<int>(BindingPower::Logical);
-        // for (const auto &type : std::vector<Lexer::TokenType>({
-        //          Logical::Not,
-        //          Logical::And,
-        //      }))
-        // {
-        //     add_led(type, parse_binary,
-        //             std::pair<float, float>{logical_bp, logical_bp});
-        // }
-
-        // // Assignment
-        // float assignment_bp = static_cast<int>(BindingPower::Assignment);
-        // for (const auto &type : std::vector<Lexer::TokenType>({
-        //          Assignment::Direct,
-        //          Assignment::Addition,
-        //          Assignment::Subtraction,
-        //          Assignment::Multiplication,
-        //          Assignment::Division,
-        //          Assignment::Modulo,
-        //      }))
-        // {
-        //     add_led(type, parse_binary,
-        //             std::pair<float, float>{assignment_bp, assignment_bp});
-        // }
+        // Assignment
+        float assignment_bp = static_cast<int>(BindingPower::Assignment);
+        for (const auto &type : std::vector<TokenType>({
+                 TokenType::Equal,
+                 TokenType::PlusEqual,
+                 TokenType::MinusEqual,
+                 TokenType::StarEqual,
+                 TokenType::SlashEqual,
+                 TokenType::PercentEqual,
+             }))
+        {
+            add_handler(type, PrattHandler{
+                                  .type = type,
+                                  .bp = std::pair<float, float>{assignment_bp,
+                                                                assignment_bp},
+                                  .nud = nullptr,
+                                  .led = parse_binary,
+                              });
+        }
     }
 
     void Pratt::add_handler(Lexer::TokenType type, PrattHandler &&handler)
@@ -247,7 +273,7 @@ namespace Parser
             return result;
         }
 
-        lexer.consume();
+        // lexer.consume();
         std::unique_ptr<AST::Node> left = handler->nud(parser, result);
 
         while (!lexer.eof())
@@ -270,7 +296,7 @@ namespace Parser
             if (led == nullptr)
                 break;
 
-            lexer.consume();
+            // lexer.consume();
             left = led(parser, left, right_bp_, result);
         }
 

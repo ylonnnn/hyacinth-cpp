@@ -6,27 +6,32 @@
 // #include "parser/grammar/common/Common.hpp"
 #include "ast/common/Identifier.hpp"
 #include "ast/expr/Path.hpp"
+#include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/common/pratt/Pratt.hpp"
 #include "parser/grammar/common/pratt/PrattHandlers.hpp"
 #include "utils/dev.hpp"
+#include "utils/pointer.hpp"
 
 namespace Parser
 {
     std::unique_ptr<AST::LiteralExpr> parse_literal(Parser &parser,
                                                     PrattParseResult &)
     {
-        return std::make_unique<AST::LiteralExpr>(parser.lexer.current());
+        auto &lexer = parser.lexer;
+        Lexer::Token *token = lexer.peek();
+
+        if (token == nullptr)
+            return nullptr;
+
+        lexer.consume();
+
+        return std::make_unique<AST::LiteralExpr>(*token);
     }
 
-    std::unique_ptr<AST::Identifier> parse_identifier(Parser &parser,
-                                                      PrattParseResult &result)
+    std::unique_ptr<AST::Identifier>
+    parse_identifier(Parser &parser, [[maybe_unused]] PrattParseResult &result)
     {
-        auto identifier = std::make_unique<AST::Identifier>(
-            parser.lexer.current(), std::vector<AST::IdentifierArgument>{});
-
-        utils::todo("parse generic arguments for identifiers");
-
-        return identifier;
+        return Common::PathRule.parse_ident(parser);
     }
 
     std::unique_ptr<AST::Path> parse_path(Parser &parser,
@@ -34,89 +39,93 @@ namespace Parser
                                           float right_bp,
                                           PrattParseResult &result)
     {
-        auto ptr = dynamic_cast<AST::Path *>(left.get());
-        if (ptr == nullptr)
+        auto left_ = utils::dynamic_ptr_cast<AST::Path>(left);
+        if (left_ == nullptr)
             return nullptr;
 
-        parser.lexer.consume();
-        ptr->segments.push_back(std::move(parse_identifier(parser, result)));
-
-        auto _ = left.release();
-        (void)_;
-
-        return std::unique_ptr<AST::Path>(ptr);
+        Common::PathRule.parse_path(parser, left_);
+        return left_;
     }
 
-    // std::unique_ptr<AST::Expr> parse_idtype_expr(Parser &parser,
-    //                                              ExprParseResult &)
-    // {
-    //     auto &lexer = parser.lexer();
+    std::unique_ptr<AST::BinaryExpr>
+    parse_binary(Parser &parser, std::unique_ptr<AST::Node> &left,
+                 float right_bp, PrattParseResult &result)
+    {
+        auto left_ = utils::dynamic_ptr_cast<AST::Expr>(left);
+        if (left_ == nullptr)
+            return nullptr;
 
-    //     lexer.rewind(lexer.position() - 1);
-    //     Lexer::Token *p_token = lexer.peek();
+        auto &lexer = parser.lexer;
+        Lexer::Token *operation = lexer.peek();
 
-    //     TypeParseResult t_res = Common::Type.parse_type(parser);
-    //     AST::Type *type = t_res.data.get();
+        if (operation == nullptr)
+            return nullptr;
 
-    //     if (typeid(*type) == typeid(AST::SimpleType))
-    //         return std::make_unique<AST::IdentifierExpr>(*p_token);
+        lexer.consume();
 
-    //     return std::make_unique<AST::TypeExpr>(std::move(t_res.data));
-    // }
+        PrattParseResult r_res = Common::Pratt.parse_base(parser, right_bp);
+        result.adapt(r_res.status, std::move(r_res.diagnostics));
 
-    // std::unique_ptr<AST::IdentifierExpr> parse_identifier(Parser &parser,
-    //                                                       ExprParseResult &)
-    // {
-    //     Lexer::Token &token = parser.lexer().current();
+        auto right_ = utils::dynamic_ptr_cast<AST::Expr>(r_res.data);
+        if (right_ == nullptr)
+            utils::todo("throw error: missing right-side value");
 
-    //     return std::make_unique<AST::IdentifierExpr>(token);
-    // }
+        // if (right == nullptr)
+        // {
+        //     auto node = AST::LiteralExpr(lexer.current());
+        //     result.force_error(&node,
+        //                        Diagnostic::ErrorTypes::Syntax::MissingValue,
+        //                        std::string("Missing ") + Diagnostic::ERR_GEN
+        //                        +
+        //                            "VALUE" + utils::Styles::Reset +
+        //                            " for the right-side of the
+        //                            expression ",
+        //                            "Missing here");
+        // }
 
-    // std::unique_ptr<AST::BinaryExpr>
-    // parse_binary(Parser &parser, std::unique_ptr<AST::Expr> &left,
-    //              float right_bp, ExprParseResult &result)
-    // {
-    //     auto &lexer = parser.lexer();
-    //     Lexer::Token &operation = lexer.current();
+        return std::make_unique<AST::BinaryExpr>(std::move(left_), *operation,
+                                                 std::move(right_));
+    }
 
-    //     ExprParseResult r_res = Common::Expr.parse_expr(parser, right_bp);
+    std::unique_ptr<AST::UnaryExpr> parse_unary(Parser &parser,
+                                                PrattParseResult &result)
+    {
+        auto &lexer = parser.lexer;
+        Lexer::Token *operation = lexer.peek();
 
-    //     std::unique_ptr<AST::Expr> right = std::move(r_res.data);
-    //     result.adapt(r_res.status, std::move(r_res.diagnostics));
+        if (operation == nullptr)
+            return nullptr;
 
-    //     if (right == nullptr)
-    //     {
-    //         auto node = AST::LiteralExpr(lexer.current());
-    //         result.force_error(&node,
-    //                            Diagnostic::ErrorTypes::Syntax::MissingValue,
-    //                            std::string("Missing ") + Diagnostic::ERR_GEN
-    //                            +
-    //                                "VALUE" + utils::Styles::Reset +
-    //                                " for the right-side of the expression",
-    //                            "Missing here");
-    //     }
+        lexer.consume();
+        PrattParseResult v_res = Common::Pratt.parse_base(parser, 0);
 
-    //     return std::make_unique<AST::BinaryExpr>(std::move(left), operation,
-    //                                              std::move(right));
-    // }
+        auto left_ = utils::dynamic_ptr_cast<AST::Expr>(v_res.data);
+        if (left_ == nullptr)
+            return nullptr;
 
-    // std::unique_ptr<AST::UnaryExpr> parse_unary(Parser &parser,
-    //                                             ExprParseResult &)
-    // {
-    //     Lexer::Token &operation = parser.lexer().current();
+        return std::make_unique<AST::UnaryExpr>(AST::UnaryType::Pre, *operation,
+                                                std::move(left_));
+    }
 
-    //     return std::make_unique<AST::UnaryExpr>(
-    //         AST::UnaryType::Pre, operation,
-    //         Common::Expr.parse_expr(parser, 0).data);
-    // }
+    std::unique_ptr<AST::UnaryExpr>
+    parse_unary(Parser &parser, std::unique_ptr<AST::Node> &left,
+                float right_bp, PrattParseResult &result)
+    {
+        auto left_ = utils::dynamic_ptr_cast<AST::Expr>(left);
+        if (left_ == nullptr)
+            return nullptr;
 
-    // std::unique_ptr<AST::UnaryExpr>
-    // parse_unary(Parser &parser, std::unique_ptr<AST::Expr> &left, float,
-    //             ExprParseResult &)
-    // {
-    //     return std::make_unique<AST::UnaryExpr>(
-    //         AST::UnaryType::Post, parser.lexer().current(), std::move(left));
-    // }
+        auto &lexer = parser.lexer;
+        Lexer::Token *operation = lexer.peek();
+
+        if (operation == nullptr)
+            return nullptr;
+
+        lexer.consume();
+
+        return std::make_unique<AST::UnaryExpr>(AST::UnaryType::Post,
+                                                *operation, std::move(left_));
+    }
 
     // std::unique_ptr<AST::BinaryExpr>
     // parse_memaccess(Parser &parser, std::unique_ptr<AST::Expr> &left,

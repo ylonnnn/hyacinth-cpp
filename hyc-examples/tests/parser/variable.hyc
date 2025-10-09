@@ -1,4 +1,13 @@
-var x: std::strings_library::basic_strings::string = 123;
-var mut y: std::integers::int32 = 123;
+var ident = std::values::annotations::none;
 
-var z = std::ranges::int32::max;
+var x: std::strings_library::basic_strings::string = 123;
+var mut y: std::integers::int32 = 123 + 456;
+
+var z = std::ranges::int32::max + std::ranges::int64::max;
+
+var shouldnt_be_valid: std::boolean = 23;
+
+var not_valid: std::boolean::values::False = false;
+
+var non_valid_type: bool = false;
+

@@ -282,7 +282,7 @@ namespace Lexer
             .error(range_to_curr(lexer, s_row, s_col, s_offset),
                    Diagnostic::ErrorType::InvalidLiteral,
                    "invalid character literal.")
-            .add_detail(std::make_unique<Diagnostic::Diagnostic>(
+            ->add_detail(std::make_unique<Diagnostic::Diagnostic>(
                 Diagnostic::DiagnosticSeverity::Note,
                 static_cast<uint32_t>(Diagnostic::NoteType::Suggestion),
                 range_to_curr(lexer, s_row, s_col, s_offset),
@@ -533,7 +533,10 @@ namespace Lexer
                     if (match('/'))
                     {
                         while (!match('\n'))
+                        {
+                            consume();
                             continue;
+                        }
 
                         ++row;
                         col = 1;

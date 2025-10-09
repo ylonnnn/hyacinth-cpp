@@ -61,16 +61,16 @@ namespace Core
             this->data = std::forward<U>(data);
         }
 
-        virtual Diagnostic::Diagnostic &
-        error(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
+        virtual Diagnostic::Diagnostic *
+        error(std::unique_ptr<Diagnostic::Diagnostic> &&diagnostic)
         {
             status = ResultStatus::Fail;
             diagnostics.push_back(std::move(diagnostic));
 
-            return *diagnostics.back();
+            return diagnostics.back().get();
         }
 
-        virtual Diagnostic::Diagnostic &error(Core::PositionRange &&range,
+        virtual Diagnostic::Diagnostic *error(Core::PositionRange &&range,
                                               Diagnostic::ErrorType type,
                                               std::string &&message)
         {
@@ -80,17 +80,17 @@ namespace Core
                 static_cast<uint32_t>(type), std::move(range),
                 std::move(message)));
 
-            return *diagnostics.back();
+            return diagnostics.back().get();
         }
 
-        virtual Diagnostic::Diagnostic &
-        warn(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
+        virtual Diagnostic::Diagnostic *
+        warn(std::unique_ptr<Diagnostic::Diagnostic> &&diagnostic)
         {
             diagnostics.push_back(std::move(diagnostic));
-            return *diagnostics.back();
+            return diagnostics.back().get();
         }
 
-        virtual Diagnostic::Diagnostic &warn(Core::PositionRange &&range,
+        virtual Diagnostic::Diagnostic *warn(Core::PositionRange &&range,
                                              Diagnostic::WarningType type,
                                              std::string &&message)
         {
@@ -99,17 +99,17 @@ namespace Core
                 static_cast<uint32_t>(type), std::move(range),
                 std::move(message)));
 
-            return *diagnostics.back();
+            return diagnostics.back().get();
         }
 
-        virtual Diagnostic::Diagnostic &
-        note(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
+        virtual Diagnostic::Diagnostic *
+        note(std::unique_ptr<Diagnostic::Diagnostic> &&diagnostic)
         {
             diagnostics.push_back(std::move(diagnostic));
-            return *diagnostics.back();
+            return diagnostics.back().get();
         }
 
-        virtual Diagnostic::Diagnostic &note(Core::PositionRange &&range,
+        virtual Diagnostic::Diagnostic *note(Core::PositionRange &&range,
                                              Diagnostic::NoteType type,
                                              std::string &&message)
         {
@@ -118,7 +118,7 @@ namespace Core
                 static_cast<uint32_t>(type), std::move(range),
                 std::move(message)));
 
-            return *diagnostics.back();
+            return diagnostics.back().get();
         }
     };
 

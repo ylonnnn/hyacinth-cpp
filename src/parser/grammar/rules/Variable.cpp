@@ -20,6 +20,7 @@
 #include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/rules/Hyacinth.hpp"
 #include "utils/dev.hpp"
+#include "utils/pointer.hpp"
 
 namespace Parser
 {
@@ -69,7 +70,11 @@ namespace Parser
         Lexer::Token *identifier = nullptr;
         if (auto diagnostic =
                 parser.expect_or_error(TokenType::Identifier, false))
+        {
             result.force_error(std::move(diagnostic));
+            return;
+        }
+
         else
             identifier = lexer.next();
 
@@ -82,31 +87,12 @@ namespace Parser
             flag |= (1 << 0);
             lexer.consume();
 
-            if (!parser.expect(TokenType::Identifier, false))
-            {
-                Lexer::Token *token = lexer.peek();
+            ParseResult t_res = Common::PathRule.parse(parser);
+            result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-                result.error(
-                    Diagnostic::create_unexpected_token_error(*token, "type"));
-            }
-            else
-            {
-                PrattParseResult t_res = Common::Pratt.parse_base(parser, 0);
-                result.adapt(t_res.status, std::move(t_res.diagnostics));
-
-                auto ptr = dynamic_cast<AST::Path *>(t_res.data.get());
-                if (ptr == nullptr)
-                {
-                    utils::todo("throw error: type must be an identifier or a "
-                                "path to an identified type");
-                    return;
-                }
-
-                type = std::unique_ptr<AST::Path>(ptr);
-
-                auto _ = t_res.data.release();
-                (void)_;
-            }
+            type = utils::dynamic_ptr_cast<AST::Path>(t_res.data);
+            if (type == nullptr)
+                return;
         }
 
         // "=" VALUE
@@ -119,17 +105,20 @@ namespace Parser
             PrattParseResult v_res = Common::Pratt.parse_base(parser, 0);
             result.adapt(v_res.status, std::move(v_res.diagnostics));
 
-            auto ptr = dynamic_cast<AST::Expr *>(v_res.data.get());
-            if (ptr == nullptr)
+            value = utils::dynamic_ptr_cast<AST::Expr>(v_res.data);
+            if (value == nullptr)
             {
-                utils::todo("throw error: value must be an expression");
+                Lexer::Token &prev = lexer.current(), *token = lexer.peek();
+                if (token == nullptr)
+                    return;
+
+                result.force_error(
+                    Core::range_between(prev.range.end, token->range.start),
+                    Diagnostic::ErrorType::MissingValue,
+                    "missing value expression.");
+
                 return;
             }
-
-            value = std::unique_ptr<AST::Expr>(ptr);
-
-            auto _ = v_res.data.release();
-            (void)_;
         }
 
         // Invalid Form
@@ -142,21 +131,31 @@ namespace Parser
 
         if (auto diagnostic =
                 parser.expect_or_error(TokenType::Semicolon, false))
+        {
             result.error(std::move(diagnostic));
+            return;
+        }
+
         else
             lexer.consume();
 
-        // Distinction between declaration and definition
+        if (result.status == Core::ResultStatus::Fail)
+            return;
 
-        // Declaration
-        if (value == nullptr)
-            result.data = std::make_unique<AST::VariableDeclarationStmt>(
-                *identifier, mut_state, std::move(type));
+        // Distinction
+        result.data = value == nullptr
+                          ? std::make_unique<AST::VariableDeclarationStmt>(
+                                *identifier, mut_state, std::move(type))
+                          : std::make_unique<AST::VariableDefinitionStmt>(
+                                *identifier, mut_state, std::move(type),
+                                std::move(value));
+    }
 
-        // Definition
-        else
-            result.data = std::make_unique<AST::VariableDefinitionStmt>(
-                *identifier, mut_state, std::move(type), std::move(value));
+    void VariableDefinition::recover(Parser &parser)
+    {
+        using TokenType = Lexer::TokenType;
+
+        parser.synchronize({TokenType::Semicolon});
     }
 
 } // namespace Parser

@@ -5,7 +5,7 @@
 
 namespace Parser
 {
-    enum GrammarContext : uint8_t
+    enum GrammarContext : uint32_t
     {
         GC_GLOBAL = (1 << 0),
         GC_LOCAL = (1 << 1),

@@ -24,8 +24,8 @@ namespace Diagnostic
     create_syntax_error(const Lexer::Token &token,
                         std::optional<Lexer::TokenType> type)
     {
-        return create_unexpected_token_error(token,
-                                             Lexer::type_to_string(*type));
+        return create_unexpected_token_error(
+            token, type ? Lexer::type_to_string(*type) : "");
     }
 
 } // namespace Diagnostic

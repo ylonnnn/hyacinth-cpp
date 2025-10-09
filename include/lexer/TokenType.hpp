@@ -1,5 +1,4 @@
 #include <cstddef>
-#include <variant>
 
 namespace Lexer
 {

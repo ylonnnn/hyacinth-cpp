@@ -15,6 +15,8 @@ namespace Parser
                           AST::DeclarationAccessibility accessibility);
         ParseResult parse(Parser &parser) override;
         void parse(Parser &parser, ParseResult &result) override;
+
+        void recover(Parser &parser) override;
     };
 
 } // namespace Parser

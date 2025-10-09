@@ -41,6 +41,29 @@ namespace Parser
 
     void Parser::synchronize() { state = ParserState::Synchronized; }
 
+    void Parser::synchronize(const std::vector<Lexer::TokenType> &types)
+    {
+        std::unordered_map<Lexer::TokenType, int32_t> types_;
+        types_.reserve(types.size());
+
+        for (const auto &key : types)
+            types_.emplace(key, 0);
+
+        while (!lexer.eof())
+        {
+            Lexer::Token *token = lexer.next();
+            if (token == nullptr)
+                break;
+
+            auto it = types_.find(token->type);
+            if (it == types_.end())
+                continue;
+
+            state = ParserState::Synchronized;
+            break;
+        }
+    }
+
     bool Parser::expect(Lexer::TokenType type, bool consume)
     {
         Lexer::Token *token =

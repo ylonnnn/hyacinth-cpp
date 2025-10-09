@@ -11,6 +11,7 @@
 #include "parser/grammar/Grammar.hpp"
 #include "parser/grammar/GrammarContext.hpp"
 #include "parser/grammar/common/pratt/Pratt.hpp"
+#include "utils/pointer.hpp"
 
 namespace Parser
 {
@@ -68,8 +69,9 @@ namespace Parser
         result.adapt(p_res.status, std::move(p_res.diagnostics),
                      std::move(p_res.data));
 
-        if (result.status == Core::ResultStatus::Fail)
-            lexer.consume();
+        // Attempt to recover if the parser is in panic mode
+        if (parser.is(ParserState::Panic))
+            rule->recover(parser);
 
         return result;
     }
@@ -88,16 +90,14 @@ namespace Parser
             ParseResult p_res = partial_parse(parser, GC_GLOBAL);
             result.adapt(p_res.status, std::move(p_res.diagnostics));
 
+            // Absolute Synchronization
+            parser.synchronize();
+
             if (p_res.data == nullptr)
                 continue;
 
-            if (auto ptr = dynamic_cast<AST::GlobalNode *>(p_res.data.get()))
-            {
-                result.data->nodes.emplace_back(ptr);
-
-                auto _ = p_res.data.release();
-                (void)_;
-            }
+            if (auto ptr = utils::dynamic_ptr_cast<AST::GlobalNode>(p_res.data))
+                result.data->nodes.push_back(std::move(ptr));
         }
 
         return result;

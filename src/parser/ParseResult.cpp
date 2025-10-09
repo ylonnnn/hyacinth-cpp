@@ -13,46 +13,57 @@ namespace Parser
     {
     }
 
-    Diagnostic::Diagnostic &
-    ParseResult::error(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
+    void ParseResult::adapt(Core::ResultStatus status,
+                            Diagnostic::DiagnosticList &&diagnostics)
+    {
+        if (status == Core::ResultStatus::Fail)
+            parser.panic();
+
+        Core::Result<std::unique_ptr<AST::Node>>::adapt(status,
+                                                        std::move(diagnostics));
+    }
+
+    Diagnostic::Diagnostic *
+    ParseResult::error(std::unique_ptr<Diagnostic::Diagnostic> &&diagnostic)
     {
         status = Core::ResultStatus::Fail;
-        // if (parser.is(ParserState::Panic)) return;
+        if (parser.is(ParserState::Panic))
+            return nullptr;
 
         parser.panic();
         diagnostics.push_back(std::move(diagnostic));
 
-        return *diagnostics.back().get();
+        return diagnostics.back().get();
     }
 
-    Diagnostic::Diagnostic &ParseResult::error(Core::PositionRange &&range,
+    Diagnostic::Diagnostic *ParseResult::error(Core::PositionRange &&range,
                                                Diagnostic::ErrorType type,
                                                std::string &&message)
     {
         status = Core::ResultStatus::Fail;
-        // if (parser.is(ParserState::Panic))
-        //     return;
+        if (parser.is(ParserState::Panic))
+            return nullptr;
 
         parser.panic();
         diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
             Diagnostic::DiagnosticSeverity::Error, static_cast<uint32_t>(type),
             std::move(range), std::string(message)));
 
-        return *diagnostics.back().get();
+        return diagnostics.back().get();
     }
 
-    Diagnostic::Diagnostic &
-    ParseResult::force_error(std::unique_ptr<Diagnostic::Diagnostic> diagnostic)
+    Diagnostic::Diagnostic *ParseResult::force_error(
+        std::unique_ptr<Diagnostic::Diagnostic> &&diagnostic)
     {
         parser.panic();
 
         status = Core::ResultStatus::Fail;
         diagnostics.push_back(std::move(diagnostic));
 
-        return *diagnostics.back().get();
+        return diagnostics.back().get();
     }
 
-    Diagnostic::Diagnostic &
+    Diagnostic::Diagnostic *
     ParseResult::force_error(Core::PositionRange &&range,
                              Diagnostic::ErrorType type,
                              const std::string &message)
@@ -64,7 +75,7 @@ namespace Parser
             Diagnostic::DiagnosticSeverity::Error, static_cast<uint32_t>(type),
             std::move(range), std::string(message)));
 
-        return *diagnostics.back().get();
+        return diagnostics.back().get();
     }
 
 } // namespace Parser

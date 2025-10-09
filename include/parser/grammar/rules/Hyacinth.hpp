@@ -5,7 +5,6 @@
 namespace Parser::Hyacinth
 {
     constexpr auto IDENTIFIER = Lexer::TokenType::Identifier;
-    constexpr auto TERMINATOR = Lexer::TokenType::Semicolon;
 
     // constexpr auto IMPORT = Lexer::TokenType::Import;
     // constexpr auto UNIT = Lexer::TokenType::Unit;
@@ -22,6 +21,9 @@ namespace Parser::Hyacinth
 
     // constexpr auto FUNCTION = Reserved::Function;
     constexpr auto VARIABLE = Lexer::TokenType::Var;
+
+    constexpr auto TERMINATOR = Lexer::TokenType::Semicolon;
+    constexpr auto PATH_SEP = Lexer::TokenType::DoubleColon;
 
     void initialize(Grammar &grammar);
 
