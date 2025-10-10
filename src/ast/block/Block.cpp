@@ -1,0 +1,30 @@
+#include "ast/block/Block.hpp"
+#include "utils/style.hpp"
+
+namespace AST
+{
+    Block::Block(Core::Position &position,
+                 std::vector<std::unique_ptr<Stmt>> &&statements)
+        : Node(position), statements(std::move(statements))
+    {
+    }
+
+    void Block::print(std::ostream &os, uint8_t tab) const
+    {
+        std::string indentation = utils::tab(tab - 1, 4),
+                    inner_indentation = utils::tab(tab, 4);
+
+        os << "Block {\n" << inner_indentation << "statements: {\n";
+
+        for (const auto &statement : statements)
+        {
+            std::string inner_indentation = utils::tab(tab + 1, 4);
+
+            os << "\n" << inner_indentation;
+            statement->print(os, tab + 1);
+        }
+
+        os << inner_indentation << "}" << indentation << "}";
+    }
+
+} // namespace AST
