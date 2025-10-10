@@ -1,0 +1,5 @@
+var val = false;
+
+var arr: []bool;
+var ref: &bool;
+var ptr: *bool;
