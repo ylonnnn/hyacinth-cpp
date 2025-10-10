@@ -7,8 +7,9 @@ namespace AST
     enum class PrefixedTypeKind
     {
         Array,
-        Reference,
         Pointer,
+        Reference,
+        RValueReference,
     };
 
     std::ostream &operator<<(std::ostream &os, PrefixedTypeKind kind);

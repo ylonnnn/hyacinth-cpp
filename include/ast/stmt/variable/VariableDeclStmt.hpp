@@ -12,9 +12,9 @@ namespace AST
 
         VariableDeclarationStmt(Lexer::Token &name,
                                 IdentifierMutabilityState mut_state,
-                                std::unique_ptr<Path> type,
+                                std::unique_ptr<Type> type,
                                 DeclarationAccessibility accessibility =
-                                    DeclarationAccessibility::Public);
+                                    DeclarationAccessibility::Private);
 
         virtual void print(std::ostream &os, uint8_t tab) const override;
     };

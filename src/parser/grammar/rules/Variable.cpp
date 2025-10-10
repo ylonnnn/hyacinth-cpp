@@ -81,16 +81,16 @@ namespace Parser
         auto flag = 0;
 
         // ":" TYPE
-        std::unique_ptr<AST::Path> type;
+        std::unique_ptr<AST::Type> type;
         if (parser.expect(TokenType::Colon, false))
         {
             flag |= (1 << 0);
             lexer.consume();
 
-            ParseResult t_res = Common::PathRule.parse(parser);
+            PrattParseResult t_res = Common::Pratt.parse_base(parser, 0, true);
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
-            type = utils::dynamic_ptr_cast<AST::Path>(t_res.data);
+            type = utils::dynamic_ptr_cast<AST::Type>(t_res.data);
             if (type == nullptr)
                 return;
         }

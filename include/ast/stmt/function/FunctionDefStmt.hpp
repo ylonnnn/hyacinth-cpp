@@ -12,7 +12,7 @@ namespace AST
                                std::vector<FunctionParameter> parameters,
                                std::unique_ptr<Block> body,
                                DeclarationAccessibility accessibility =
-                                   DeclarationAccessibility::Public);
+                                   DeclarationAccessibility::Private);
 
         void print(std::ostream &os, uint8_t tab) const override;
     };

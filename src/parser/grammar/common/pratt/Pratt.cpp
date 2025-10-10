@@ -2,7 +2,6 @@
 #include <utility>
 
 // #include "ast/stmt/ExprStmt.hpp"
-#include "ast/stmt/ExprStmt.hpp"
 #include "diagnostic/helpers.hpp"
 #include "parser/ParseResult.hpp"
 #include "parser/Parser.hpp"
@@ -17,37 +16,36 @@ namespace Parser
 {
     PrattParseResult::PrattParseResult(Parser &parser,
                                        Core::ResultStatus status,
-                                       std::unique_ptr<AST::Expr> data,
+                                       std::unique_ptr<AST::Node> data,
                                        Diagnostic::DiagnosticList diagnostics)
         : ParseResult(parser, status, std::move(data), std::move(diagnostics))
     {
-        std::unique_ptr<AST::Node> node = std::move(ParseResult::data);
-        if (auto ptr = dynamic_cast<AST::Expr *>(node.release()))
-            this->data = std::unique_ptr<AST::Expr>(ptr);
+        // std::unique_ptr<AST::Node> node = std::move(ParseResult::data);
+        // if (auto ptr = dynamic_cast<AST::Expr *>(node.release()))
+        //     this->data = std::unique_ptr<AST::Expr>(ptr);
     }
 
     Pratt::Pratt() : GrammarRule(Lexer::TokenType::EndOfFile, GC_LOCAL)
     {
         initialize();
+        initialize_types();
     }
 
     void Pratt::initialize()
     {
-        using namespace Lexer;
+        using TokenType = Lexer::TokenType;
 
         // Literal Expression
-        float primary_bp = static_cast<int>(BindingPower::Primary);
+        float primary_bp = static_cast<int32_t>(BindingPower::Primary);
 
         for (const auto &type : std::vector<TokenType>(
                  {TokenType::Int, TokenType::Float, TokenType::Bool,
                   TokenType::Char, TokenType::String}))
         {
-            add_handler(type,
-                        PrattHandler{.type = type,
-                                     .bp = std::pair<float, float>{primary_bp,
-                                                                   primary_bp},
-                                     .nud = parse_literal,
-                                     .led = nullptr});
+            add_handler(type, PrattHandler{.type = type,
+                                           .bp = {primary_bp, primary_bp},
+                                           .nud = parse_literal,
+                                           .led = nullptr});
         }
 
         // Identifier
@@ -55,7 +53,7 @@ namespace Parser
             TokenType::Identifier,
             PrattHandler{
                 .type = TokenType::Identifier,
-                .bp = std::pair<float, float>{primary_bp, primary_bp},
+                .bp = {primary_bp, primary_bp},
                 .nud = [&](Parser &parser, PrattParseResult &result)
                     -> std::unique_ptr<AST::Path>
                 {
@@ -103,29 +101,27 @@ namespace Parser
         // add_led(Delimeter::BracketOpen, parse_elaccess);
 
         // Member Access
-        float memaccess_bp = static_cast<int>(BindingPower::MemberAccess);
+        float memaccess_bp = static_cast<int32_t>(BindingPower::MemberAccess);
 
         // Path
-        add_handler(
-            Hyacinth::PATH_SEP,
-            PrattHandler{
-                .type = Hyacinth::PATH_SEP,
-                .bp = std::pair<float, float>{memaccess_bp, memaccess_bp},
-                .nud = nullptr,
-                .led = parse_path,
-            });
+        add_handler(Hyacinth::PATH_SEP, PrattHandler{
+                                            .type = Hyacinth::PATH_SEP,
+                                            .bp = {memaccess_bp, memaccess_bp},
+                                            .nud = nullptr,
+                                            .led = parse_path,
+                                        });
 
         // // Function Call
-        // float fncall_bp = static_cast<int>(BindingPower::FunctionCall);
+        // float fncall_bp = static_cast<int32_t>(BindingPower::FunctionCall);
         // for (const auto &type :
         //      std::vector<Lexer::TokenType>{Delimeter::ParenthesisOpen})
         // {
         //     add_led(type, parse_fncall,
-        //             std::pair<float, float>{fncall_bp, fncall_bp});
+        //             {fncall_bp, fncall_bp});
         // }
 
         // Unary
-        float unary_bp = static_cast<int>(BindingPower::Unary);
+        float unary_bp = static_cast<int32_t>(BindingPower::Unary);
         for (const auto &type : std::vector<TokenType>({
                  TokenType::PlusPlus,
                  TokenType::MinusMinus,
@@ -137,7 +133,7 @@ namespace Parser
                 type,
                 PrattHandler{
                     .type = type,
-                    .bp = std::pair<float, float>{unary_bp, unary_bp},
+                    .bp = {unary_bp, unary_bp},
                     .nud = [&](Parser &parser, PrattParseResult &result)
                         -> std::unique_ptr<AST::UnaryExpr>
                     { return parse_unary(parser, result); },
@@ -150,22 +146,20 @@ namespace Parser
 
         // Multiplicative
         float multiplicative_bp =
-            static_cast<int>(BindingPower::Multiplicative);
+            static_cast<int32_t>(BindingPower::Multiplicative);
         for (const auto &type : std::vector<TokenType>(
                  {TokenType::Star, TokenType::Slash, TokenType::Percent}))
         {
-            add_handler(type,
-                        PrattHandler{
-                            .type = type,
-                            .bp = std::pair<float, float>{multiplicative_bp,
-                                                          multiplicative_bp},
-                            .nud = nullptr,
-                            .led = parse_binary,
-                        });
+            add_handler(type, PrattHandler{
+                                  .type = type,
+                                  .bp = {multiplicative_bp, multiplicative_bp},
+                                  .nud = nullptr,
+                                  .led = parse_binary,
+                              });
         }
 
         // Additive
-        float additive_bp = static_cast<int>(BindingPower::Additive);
+        float additive_bp = static_cast<int32_t>(BindingPower::Additive);
         for (const auto &type : std::vector<TokenType>({
                  TokenType::Plus,
                  TokenType::Minus,
@@ -173,15 +167,14 @@ namespace Parser
         {
             add_handler(type, PrattHandler{
                                   .type = type,
-                                  .bp = std::pair<float, float>{additive_bp,
-                                                                additive_bp},
+                                  .bp = {additive_bp, additive_bp},
                                   .nud = nullptr,
                                   .led = parse_binary,
                               });
         }
 
         // Relational
-        float relational_bp = static_cast<int>(BindingPower::Relational);
+        float relational_bp = static_cast<int32_t>(BindingPower::Relational);
         for (const auto &type : std::vector<TokenType>({
                  TokenType::Equal,
                  TokenType::BangEqual,
@@ -193,49 +186,118 @@ namespace Parser
         {
             add_handler(type, PrattHandler{
                                   .type = type,
-                                  .bp = std::pair<float, float>{relational_bp,
-                                                                relational_bp},
+                                  .bp = {relational_bp, relational_bp},
                                   .nud = nullptr,
                                   .led = parse_binary,
                               });
         }
 
         // Logical
-        float logical_bp = static_cast<int>(BindingPower::Logical);
+        float logical_bp = static_cast<int32_t>(BindingPower::Logical);
         for (const auto &type : std::vector<TokenType>({
                  TokenType::Bang,
                  TokenType::AmpersandAmpersand,
                  TokenType::PipePipe,
              }))
         {
-            add_handler(
-                type, PrattHandler{
-                          .type = type,
-                          .bp = std::pair<float, float>{logical_bp, logical_bp},
-                          .nud = nullptr,
-                          .led = parse_binary,
-                      });
+            add_handler(type, PrattHandler{
+                                  .type = type,
+                                  .bp = {logical_bp, logical_bp},
+                                  .nud = nullptr,
+                                  .led = parse_binary,
+                              });
         }
 
         // Assignment
-        float assignment_bp = static_cast<int>(BindingPower::Assignment);
-        for (const auto &type : std::vector<TokenType>({
+        float assignment_bp = static_cast<int32_t>(BindingPower::Assignment);
+        for (const auto &type : std::vector<TokenType>{
                  TokenType::Equal,
                  TokenType::PlusEqual,
                  TokenType::MinusEqual,
                  TokenType::StarEqual,
                  TokenType::SlashEqual,
                  TokenType::PercentEqual,
-             }))
+             })
         {
             add_handler(type, PrattHandler{
                                   .type = type,
-                                  .bp = std::pair<float, float>{assignment_bp,
-                                                                assignment_bp},
+                                  .bp = {assignment_bp, assignment_bp},
                                   .nud = nullptr,
                                   .led = parse_binary,
                               });
         }
+    }
+
+    void Pratt::initialize_types()
+    {
+        using TokenType = Lexer::TokenType;
+
+        // Primary
+        float primary_tbp = static_cast<int32_t>(TypeBindingPower::Primary);
+        add_type_handler(TokenType::Identifier,
+                         PrattHandler{
+                             .type = TokenType::Identifier,
+                             .bp = {primary_tbp, primary_tbp},
+                             .nud = parse_type_identifier,
+                             .led = nullptr,
+                         });
+
+        // Array
+        float array_tbp = static_cast<int32_t>(TypeBindingPower::Array);
+        add_type_handler(TokenType::LeftBracket,
+                         PrattHandler{
+                             .type = TokenType::LeftBracket,
+                             .bp = {array_tbp, array_tbp},
+                             .nud = parse_type_array,
+                             .led = nullptr,
+                         });
+
+        // Pointer
+        float pointer_tbp = static_cast<int32_t>(TypeBindingPower::Pointer);
+        add_type_handler(
+            TokenType::Star,
+            PrattHandler{
+                .type = TokenType::Star,
+                .bp = {pointer_tbp, pointer_tbp},
+                .nud = make_type_nud_handler(TypeBindingPower::Pointer,
+                                             AST::PrefixedTypeKind::Pointer),
+                .led = nullptr,
+            });
+
+        // Reference
+        float reference_tbp = static_cast<int32_t>(TypeBindingPower::Reference);
+        add_type_handler(
+            TokenType::Ampersand,
+            PrattHandler{
+                .type = TokenType::Ampersand,
+                .bp = {reference_tbp, reference_tbp},
+                .nud = make_type_nud_handler(TypeBindingPower::Reference,
+                                             AST::PrefixedTypeKind::Reference),
+                .led = nullptr,
+            });
+
+        // RValue Reference
+        add_type_handler(
+            TokenType::AmpersandAmpersand,
+            PrattHandler{
+                .type = TokenType::AmpersandAmpersand,
+                .bp = {reference_tbp, reference_tbp},
+                .nud = make_type_nud_handler(TypeBindingPower::Reference,
+                                             AST::PrefixedTypeKind::Reference),
+                .led = nullptr,
+            });
+
+        // Optional
+        float optional_tbp = static_cast<int32_t>(TypeBindingPower::Optional);
+        add_type_handler(
+            TokenType::Question,
+            PrattHandler{
+                .type = TokenType::Question,
+                .bp = {optional_tbp, optional_tbp},
+                .nud = nullptr,
+                .led = make_type_led_handler(TypeBindingPower::Optional,
+                                             AST::SuffixedTypeKind::Optional),
+            });
     }
 
     void Pratt::add_handler(Lexer::TokenType type, PrattHandler &&handler)
@@ -252,7 +314,22 @@ namespace Parser
         return &it->second;
     }
 
-    PrattParseResult Pratt::parse_base(Parser &parser, float right_bp)
+    void Pratt::add_type_handler(Lexer::TokenType type, PrattHandler &&handler)
+    {
+        type_handlers_.insert_or_assign(type, std::move(handler));
+    }
+
+    PrattHandler *Pratt::get_type_handler(Lexer::TokenType type)
+    {
+        auto it = type_handlers_.find(type);
+        if (it == type_handlers_.end())
+            return nullptr;
+
+        return &it->second;
+    }
+
+    PrattParseResult Pratt::parse_base(Parser &parser, float right_bp,
+                                       bool type)
     {
         PrattParseResult result = {
             parser, Core::ResultStatus::Success, nullptr, {}};
@@ -265,11 +342,12 @@ namespace Parser
         }
 
         Lexer::Token *token = lexer.peek();
-        PrattHandler *handler = get_handler(token->type);
+        PrattHandler *handler =
+            type ? get_type_handler(token->type) : get_handler(token->type);
 
         if (handler == nullptr || handler->nud == nullptr)
         {
-            result.status = Core::ResultStatus::Fail;
+            result.error(Diagnostic::create_syntax_error(*token));
             return result;
         }
 
@@ -282,7 +360,9 @@ namespace Parser
             if (token == nullptr)
                 break;
 
-            PrattHandler *n_handler = get_handler(token->type);
+            PrattHandler *n_handler =
+                type ? get_type_handler(token->type) : get_handler(token->type);
+
             if (n_handler == nullptr)
                 break;
 

@@ -20,8 +20,8 @@ namespace AST
 
     std::string SuffixedType::to_string() const
     {
-        std::string prefix[] = {"?"}, str = prefix[static_cast<uint32_t>(kind)];
-        str += base->to_string();
+        std::string prefix[] = {"?"}, str = base->to_string();
+        str += prefix[static_cast<uint32_t>(kind)];
 
         return str;
     }
@@ -32,8 +32,8 @@ namespace AST
                     inner_indentation = utils::tab(tab, 4);
 
         os << "SuffixedType {\n"
-           << inner_indentation << "kind: " << kind << inner_indentation
-           << "base: ";
+           << inner_indentation << "kind: " << kind << "\n"
+           << inner_indentation << "base: ";
 
         base->print(os, tab + 1);
 

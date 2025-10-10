@@ -1,13 +1,12 @@
 #include "ast/stmt/variable/VariableDeclStmt.hpp"
 #include "ast/Node.hpp"
-#include "ast/common/Identifier.hpp"
 #include "utils/style.hpp"
 
 namespace AST
 {
     VariableDeclarationStmt::VariableDeclarationStmt(
         Lexer::Token &name, IdentifierMutabilityState mut_state,
-        std::unique_ptr<Path> type, DeclarationAccessibility accessibility)
+        std::unique_ptr<Type> type, DeclarationAccessibility accessibility)
         : Node(name.range.start), DeclarationStmt(name, accessibility, false),
           IdentifierDecl(name, mut_state, std::move(type)), name(name)
     {

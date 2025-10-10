@@ -8,7 +8,7 @@ namespace AST
 {
     struct Type : virtual Node
     {
-        Type();
+        Type() = default;
         virtual ~Type() = default;
 
         virtual std::string to_string() const = 0;

@@ -6,7 +6,7 @@ namespace AST
 {
     VariableDefinitionStmt::VariableDefinitionStmt(
         Lexer::Token &name, IdentifierMutabilityState mut_state,
-        std::unique_ptr<Path> type, std::unique_ptr<Expr> value,
+        std::unique_ptr<Type> type, std::unique_ptr<Expr> value,
         DeclarationAccessibility accessibility)
         : Node(name.range.start),
           VariableDeclarationStmt(name, mut_state, std::move(type),

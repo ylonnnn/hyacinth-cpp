@@ -30,7 +30,7 @@ namespace AST
         FunctionDeclarationStmt(Lexer::Token &name,
                                 std::vector<FunctionParameter> parameters,
                                 DeclarationAccessibility accessibility =
-                                    DeclarationAccessibility::Public);
+                                    DeclarationAccessibility::Private);
 
         virtual void print(std::ostream &os, uint8_t tab) const override;
     };

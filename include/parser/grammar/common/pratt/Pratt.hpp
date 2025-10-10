@@ -27,6 +27,16 @@ namespace Parser
         Primary,
     };
 
+    enum class TypeBindingPower
+    {
+        Default = 0,
+        Optional,
+        Reference,
+        Pointer,
+        Array,
+        Primary,
+    };
+
     static std::pair<float, float> NO_BINDING_POWER = {0, 0};
 
     struct PrattParseResult : ParseResult
@@ -34,22 +44,26 @@ namespace Parser
         std::unique_ptr<AST::Node> data;
 
         PrattParseResult(Parser &parser, Core::ResultStatus status,
-                         std::unique_ptr<AST::Expr> data,
+                         std::unique_ptr<AST::Node> data,
                          Diagnostic::DiagnosticList diagnostics);
     };
 
+    template <typename T = AST::Node,
+              typename = std::enable_if_t<std::is_base_of_v<AST::Node, T>>>
     using NudHandler =
-        std::function<std::unique_ptr<AST::Node>(Parser &, PrattParseResult &)>;
+        std::function<std::unique_ptr<T>(Parser &, PrattParseResult &)>;
 
-    using LedHandler = std::function<std::unique_ptr<AST::Expr>(
+    template <typename T = AST::Node,
+              typename = std::enable_if_t<std::is_base_of_v<AST::Node, T>>>
+    using LedHandler = std::function<std::unique_ptr<T>(
         Parser &, std::unique_ptr<AST::Node> &, float, PrattParseResult &)>;
 
     struct PrattHandler
     {
         Lexer::TokenType type;
         std::pair<float, float> bp;
-        NudHandler nud;
-        LedHandler led;
+        NudHandler<> nud;
+        LedHandler<> led;
     };
 
     struct Pratt : GrammarRule
@@ -59,15 +73,21 @@ namespace Parser
         void add_handler(Lexer::TokenType type, PrattHandler &&handler);
         PrattHandler *get_handler(Lexer::TokenType type);
 
-        PrattParseResult parse_base(Parser &parser, float right_bp = 0);
+        void add_type_handler(Lexer::TokenType type, PrattHandler &&handler);
+        PrattHandler *get_type_handler(Lexer::TokenType type);
+
+        PrattParseResult parse_base(Parser &parser, float right_bp = 0,
+                                    bool type = false);
 
         ParseResult parse(Parser &parser) override;
         void parse(Parser &parser, ParseResult &result) override;
 
       private:
         std::unordered_map<Lexer::TokenType, PrattHandler> handlers_;
+        std::unordered_map<Lexer::TokenType, PrattHandler> type_handlers_;
 
         void initialize();
+        void initialize_types();
     };
 
 } // namespace Parser

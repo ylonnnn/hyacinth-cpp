@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ast/Node.hpp"
-#include "ast/expr/Path.hpp"
+#include "ast/type/Type.hpp"
 #include "lexer/Token.hpp"
 
 namespace AST
@@ -16,10 +16,10 @@ namespace AST
     {
         IdentifierMutabilityState mut_state;
         Lexer::Token &name;
-        std::unique_ptr<Path> type;
+        std::unique_ptr<Type> type;
 
         IdentifierDecl(Lexer::Token &name, IdentifierMutabilityState mut_state,
-                       std::unique_ptr<Path> type);
+                       std::unique_ptr<Type> type);
 
         bool is_mutable() const;
 

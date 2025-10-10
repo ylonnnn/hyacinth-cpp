@@ -10,11 +10,14 @@ namespace AST
             case PrefixedTypeKind::Array:
                 return os << "Array";
 
+            case PrefixedTypeKind::Pointer:
+                return os << "Pointer";
+
             case PrefixedTypeKind::Reference:
                 return os << "Reference";
 
-            case PrefixedTypeKind::Pointer:
-                return os << "Pointer";
+            case PrefixedTypeKind::RValueReference:
+                return os << "RValueReference";
         }
     }
 
@@ -39,8 +42,8 @@ namespace AST
                     inner_indentation = utils::tab(tab, 4);
 
         os << "PrefixedType {\n"
-           << inner_indentation << "kind: " << kind << inner_indentation
-           << "base: ";
+           << inner_indentation << "kind: " << kind << "\n"
+           << inner_indentation << "base: ";
 
         base->print(os, tab + 1);
 

@@ -1,5 +1,21 @@
 var val = false;
+var some_str = "Hello World";
 
 var arr: []bool;
-var ref: &bool;
-var ptr: *bool;
+var str_arr: [][]std::string;
+
+var bool_ptr: *bool;
+var bool_ref: &bool;
+
+var bool_ptrptrptr: ***bool;
+var str_ref: &std::string;
+
+var custom_type_refrefref: &test::some_lib::types::general_purpose::CustomType;
+
+var string_ref: &std::string = some_str;
+var string_ptr: *std::string = &some_str;
+var str_rvalref: &&std::string = "hello world";
+var no_value_var = ;
+
+var test_opt: bool? = null;
+var random_opt: *[]std::string? = null;

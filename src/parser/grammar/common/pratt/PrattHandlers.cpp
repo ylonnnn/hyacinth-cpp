@@ -6,6 +6,7 @@
 // #include "parser/grammar/common/Common.hpp"
 #include "ast/common/Identifier.hpp"
 #include "ast/expr/Path.hpp"
+#include "diagnostic/helpers.hpp"
 #include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/common/pratt/Pratt.hpp"
 #include "parser/grammar/common/pratt/PrattHandlers.hpp"
@@ -14,6 +15,8 @@
 
 namespace Parser
 {
+    // Default
+
     std::unique_ptr<AST::LiteralExpr> parse_literal(Parser &parser,
                                                     PrattParseResult &)
     {
@@ -125,6 +128,77 @@ namespace Parser
 
         return std::make_unique<AST::UnaryExpr>(AST::UnaryType::Post,
                                                 *operation, std::move(left_));
+    }
+
+    // Type
+
+    std::unique_ptr<AST::SimpleType>
+    parse_type_identifier(Parser &parser, PrattParseResult &result)
+    {
+        std::unique_ptr<AST::Path> path =
+            Common::PathRule.parse_path(parser, &result);
+
+        return std::make_unique<AST::SimpleType>(std::move(path));
+    }
+
+    std::unique_ptr<AST::PrefixedType>
+    parse_type_array(Parser &parser, PrattParseResult &result)
+    {
+        auto &lexer = parser.lexer;
+        lexer.consume(); // Consume [
+
+        if (!parser.expect(Lexer::TokenType::RightBracket, false))
+        {
+            Lexer::Token *token = lexer.peek();
+            if (token == nullptr)
+                return nullptr;
+
+            result.error(Diagnostic::create_syntax_error(
+                *token, Lexer::TokenType::RightBracket));
+
+            return nullptr;
+        }
+
+        auto nud = make_type_nud_handler(TypeBindingPower::Array,
+                                         AST::PrefixedTypeKind::Array);
+
+        return nud(parser, result);
+    }
+
+    NudHandler<AST::PrefixedType>
+    make_type_nud_handler(TypeBindingPower bp, AST::PrefixedTypeKind kind)
+    {
+        return [&, bp, kind](Parser &parser, PrattParseResult &result)
+                   -> std::unique_ptr<AST::PrefixedType>
+        {
+            parser.lexer.consume();
+
+            PrattParseResult b_res = Common::Pratt.parse_base(
+                parser, static_cast<int32_t>(bp), true);
+            result.adapt(b_res.status, std::move(b_res.diagnostics));
+
+            auto base = utils::dynamic_ptr_cast<AST::Type>(b_res.data);
+            if (base == nullptr)
+                return nullptr;
+
+            return std::make_unique<AST::PrefixedType>(kind, std::move(base));
+        };
+    }
+
+    LedHandler<AST::SuffixedType>
+    make_type_led_handler(TypeBindingPower bp, AST::SuffixedTypeKind kind)
+    {
+        return [&, bp, kind](Parser &parser, std::unique_ptr<AST::Node> &left,
+                             float right_bp, PrattParseResult &result)
+                   -> std::unique_ptr<AST::SuffixedType>
+        {
+            parser.lexer.consume();
+            auto base = utils::dynamic_ptr_cast<AST::Type>(left);
+            if (base == nullptr)
+                return nullptr;
+
+            return std::make_unique<AST::SuffixedType>(kind, std::move(base));
+        };
     }
 
     // std::unique_ptr<AST::BinaryExpr>

@@ -627,6 +627,15 @@ namespace Lexer
                     continue;
                 }
 
+                case '?':
+                {
+                    // ??
+                    // TODO: ??
+
+                    create_token({ofs, offset - 1}, TokenType::Question);
+                    continue;
+                }
+
                 default:
                 {
                     if (eof())

@@ -5,7 +5,7 @@ namespace AST
 {
     IdentifierDecl::IdentifierDecl(Lexer::Token &name,
                                    IdentifierMutabilityState mut_state,
-                                   std::unique_ptr<Path> type)
+                                   std::unique_ptr<Type> type)
         : Node(name.range.start), name(name), mut_state(mut_state),
           type(std::move(type))
     {

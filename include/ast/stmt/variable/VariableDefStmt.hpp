@@ -11,9 +11,9 @@ namespace AST
 
         VariableDefinitionStmt(
             Lexer::Token &name, IdentifierMutabilityState mut_state,
-            std::unique_ptr<Path> type, std::unique_ptr<Expr> value,
+            std::unique_ptr<Type> type, std::unique_ptr<Expr> value,
             DeclarationAccessibility DeclarationAccessibility =
-                DeclarationAccessibility::Public);
+                DeclarationAccessibility::Private);
 
         void print(std::ostream &os, uint8_t tab) const override;
     };
