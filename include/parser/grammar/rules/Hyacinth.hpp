@@ -9,13 +9,11 @@ namespace Parser::Hyacinth
     // constexpr auto IMPORT = Lexer::TokenType::Import;
     // constexpr auto UNIT = Lexer::TokenType::Unit;
 
-    // constexpr auto
-    //     // pub
-    //     PUBLIC = Reserved::Public,
-    //     // priv
-    //     PRIVATE = Reserved::Private,
-    //     // prot
-    //     PROTECTED = Reserved::Protected;
+    constexpr auto
+        // pub
+        PUBLIC = Lexer::TokenType::Pub,
+        // prot
+        PROTECTED = Lexer::TokenType::Prot;
 
     // constexpr auto STRUCT = Reserved::Struct;
 

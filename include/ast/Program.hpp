@@ -3,8 +3,8 @@
 #include <memory>
 #include <vector>
 
-#include "ast/GlobalNode.hpp"
 #include "ast/Node.hpp"
+#include "ast/stmt/DeclarationStmt.hpp"
 #include "core/position/Position.hpp"
 #include "core/program/Program.hpp"
 
@@ -23,7 +23,7 @@ namespace AST
     struct Program : ProgramNode, Node
     {
         Core::Program &program;
-        std::vector<std::unique_ptr<GlobalNode>> nodes;
+        std::vector<std::unique_ptr<DeclarationStmt>> nodes;
 
         Program(Core::Program &program);
 

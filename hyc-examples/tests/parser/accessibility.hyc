@@ -1,0 +1,3 @@
+var priv_var: std::string = "Hello World";
+pub var pub_var: []char = "Hello Public World";
+pub var mut pub_mut_var: []test_unit::SomeType?;

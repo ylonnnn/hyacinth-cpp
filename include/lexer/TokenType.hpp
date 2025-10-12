@@ -22,7 +22,7 @@ namespace Lexer
         Return,
 
         // ==== RESERVED::ACCESSIBILITY ====
-        Priv,
+        Pub,
         Prot,
 
         // ==== RESERVED::OTHER ====
@@ -125,7 +125,7 @@ namespace Lexer
         "Return",
 
         // ==== RESERVED::ACCESSIBILITY ====
-        "Priv",
+        "Pub",
         "Prot",
 
         // ==== RESERVED::OTHER ====
@@ -223,7 +223,7 @@ namespace Lexer
         "return",
 
         // ==== RESERVED::ACCESSIBILITY ====
-        "priv",
+        "pub",
         "prot",
 
         // ==== RESERVED::OTHER ====

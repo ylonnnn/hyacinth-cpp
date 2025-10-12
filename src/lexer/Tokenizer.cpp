@@ -45,7 +45,7 @@ namespace Lexer
         reserved.insert_or_assign("import"sv, TokenType::Import);
         // reserved.insert_or_assign("lib"sv, Reserved::Lib);
 
-        reserved.insert_or_assign("priv"sv, TokenType::Priv);
+        reserved.insert_or_assign("pub"sv, TokenType::Pub);
         reserved.insert_or_assign("prot"sv, TokenType::Prot);
 
         reserved.insert_or_assign("struct"sv, TokenType::Struct);

@@ -1,6 +1,7 @@
 #include "parser/grammar/rules/Hyacinth.hpp"
 #include "parser/grammar/Grammar.hpp"
 #include "parser/grammar/rules/Variable.hpp"
+#include "parser/grammar/rules/accessibility/GlobalAccessibility.hpp"
 // #include "parser/grammar/rules/Function.hpp"
 // #include "parser/grammar/rules/Import.hpp"
 // #include "parser/grammar/rules/Lib.hpp"
@@ -20,12 +21,7 @@ namespace Parser::Hyacinth
         // grammar.add_rule(LIB, std::make_unique<LibBlock>(), {true, false});
 
         // // Global Accessibility
-        // grammar.add_rule(PUBLIC,
-        // std::make_unique<GlobalAccessibility>(PUBLIC),
-        //                  {true, false});
-        // grammar.add_rule(PRIVATE,
-        //                  std::make_unique<GlobalAccessibility>(PRIVATE),
-        //                  {true, false});
+        grammar.add_rule(PUBLIC, std::make_unique<GlobalAccessibility>(PUBLIC));
 
         // grammar.add_rule(STRUCT, std::make_unique<StructDefinition>(),
         //                  {true, true});

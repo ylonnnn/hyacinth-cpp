@@ -1,7 +1,7 @@
 #include <iostream>
 #include <unordered_map>
 
-#include "ast/GlobalNode.hpp"
+#include "ast/stmt/DeclarationStmt.hpp"
 #include "diagnostic/Diagnostic.hpp"
 #include "diagnostic/helpers.hpp"
 #include "lexer/Lexer.hpp"
@@ -96,7 +96,8 @@ namespace Parser
             if (p_res.data == nullptr)
                 continue;
 
-            if (auto ptr = utils::dynamic_ptr_cast<AST::GlobalNode>(p_res.data))
+            if (auto ptr =
+                    utils::dynamic_ptr_cast<AST::DeclarationStmt>(p_res.data))
                 result.data->nodes.push_back(std::move(ptr));
         }
 
