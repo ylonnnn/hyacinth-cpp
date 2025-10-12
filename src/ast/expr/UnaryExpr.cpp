@@ -13,21 +13,20 @@ namespace AST
                                             : expr->position),
           unary_type(unary_type), operation(operation), expr(std::move(expr))
     {
-        end_position = unary_type == UnaryType::Pre ? expr->end_position
+        end_position = unary_type == UnaryType::Pre ? this->expr->end_position
                                                     : &operation.range.end;
     }
 
     void UnaryExpr::print(std::ostream &os, uint8_t tab) const
     {
         std::string indentation = utils::tab(tab - 1, 4),
-                    tabs = utils::tab(tab, 4);
+                    inner_indentation = utils::tab(tab, 4);
 
-        os << "UnaryExpr {"
-           << "\n"
-           << tabs << "operation: " << operation.value << "\n"
-           << tabs << "expr: ";
+        os << "UnaryExpr {\n"
+           << inner_indentation << "operation: " << operation.value << "\n"
+           << inner_indentation << "expr: ";
 
-        expr->print(os, tab + 4);
+        expr->print(os, tab + 1);
 
         os << "\n" << indentation << "}";
     }

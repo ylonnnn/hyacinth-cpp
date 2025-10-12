@@ -122,12 +122,30 @@ namespace Parser
 
         // Unary
         float unary_bp = static_cast<int32_t>(BindingPower::Unary);
-        for (const auto &type : std::vector<TokenType>({
-                 TokenType::PlusPlus,
-                 TokenType::MinusMinus,
+
+        // Pre
+        for (const auto &type : std::vector<TokenType>{
                  TokenType::Bang,
                  TokenType::Tilde,
-             }))
+                 TokenType::Ampersand,
+             })
+        {
+            add_handler(type,
+                        PrattHandler{
+                            .type = type,
+                            .bp = {unary_bp, unary_bp},
+                            .nud = [&](Parser &parser, PrattParseResult &result)
+                                -> std::unique_ptr<AST::UnaryExpr>
+                            { return parse_unary(parser, result); },
+                            .led = nullptr,
+                        });
+        }
+
+        // Pre & Post
+        for (const auto &type : std::vector<TokenType>{
+                 TokenType::PlusPlus,
+                 TokenType::MinusMinus,
+             })
         {
             add_handler(
                 type,

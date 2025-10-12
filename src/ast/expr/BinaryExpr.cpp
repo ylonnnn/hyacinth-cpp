@@ -13,8 +13,8 @@ namespace AST
         : Node(left->position), left(std::move(left)), operation(operation),
           right(std::move(right))
     {
-        end_position =
-            right != nullptr ? right->end_position : &operation.range.end;
+        end_position = this->right != nullptr ? this->right->end_position
+                                              : &operation.range.end;
     }
 
     void BinaryExpr::print(std::ostream &os, uint8_t tab) const
@@ -22,9 +22,7 @@ namespace AST
         std::string indentation = utils::tab(tab - 1, 4),
                     inner_indentation = utils::tab(tab, 4);
 
-        os << "BinaryExpr {"
-           << "\n"
-           << inner_indentation << "left: ";
+        os << "BinaryExpr {\n" << inner_indentation << "left: ";
 
         left->print(os, tab + 1);
 

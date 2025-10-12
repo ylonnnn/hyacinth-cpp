@@ -100,9 +100,10 @@ namespace Parser
             return nullptr;
 
         lexer.consume();
-        PrattParseResult v_res = Common::Pratt.parse_base(parser, 0);
 
+        PrattParseResult v_res = Common::Pratt.parse_base(parser, 0);
         auto left_ = utils::dynamic_ptr_cast<AST::Expr>(v_res.data);
+
         if (left_ == nullptr)
             return nullptr;
 
