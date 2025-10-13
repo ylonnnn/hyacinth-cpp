@@ -7,3 +7,7 @@ fn test -> void (test: []mut char);
 fn main -> void (mut args: mut []char) {
     return;
 }
+
+fn something -> &[]*mut std::string (args: mut []*mut std::string) {
+
+}
