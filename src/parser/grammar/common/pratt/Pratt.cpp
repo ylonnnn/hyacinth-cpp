@@ -14,17 +14,6 @@
 
 namespace Parser
 {
-    PrattParseResult::PrattParseResult(Parser &parser,
-                                       Core::ResultStatus status,
-                                       std::unique_ptr<AST::Node> data,
-                                       Diagnostic::DiagnosticList diagnostics)
-        : ParseResult(parser, status, std::move(data), std::move(diagnostics))
-    {
-        // std::unique_ptr<AST::Node> node = std::move(ParseResult::data);
-        // if (auto ptr = dynamic_cast<AST::Expr *>(node.release()))
-        //     this->data = std::unique_ptr<AST::Expr>(ptr);
-    }
-
     Pratt::Pratt() : GrammarRule(Lexer::TokenType::EndOfFile, GC_LOCAL)
     {
         initialize();
@@ -35,7 +24,9 @@ namespace Parser
     {
         using TokenType = Lexer::TokenType;
 
-        // Literal Expression
+        float default_bp = static_cast<int32_t>(BindingPower::Default);
+
+        // Literal
         float primary_bp = static_cast<int32_t>(BindingPower::Primary);
 
         for (const auto &type : std::vector<TokenType>(
@@ -54,8 +45,8 @@ namespace Parser
             PrattHandler{
                 .type = TokenType::Identifier,
                 .bp = {primary_bp, primary_bp},
-                .nud = [&](Parser &parser, PrattParseResult &result)
-                    -> std::unique_ptr<AST::Path>
+                .nud = [&](Parser &parser,
+                           ParseResult &result) -> std::unique_ptr<AST::Path>
                 {
                     std::vector<std::unique_ptr<AST::Identifier>> segments;
                     segments.push_back(
@@ -67,31 +58,16 @@ namespace Parser
             });
 
         // Grouping
-        // add_nud(Delimeter::ParenthesisOpen,
-        //         [&](Parser &parser,
-        //             PrattParseResult &result) -> std::unique_ptr<AST::Expr>
-        //         {
-        //             Pratt &expr_rule = Common::Pratt;
-
-        //             PrattParseResult expr_res = expr_rule.parse_expr(parser,
-        //             0); std::unique_ptr<AST::Expr> expr =
-        //             std::move(expr_res.data);
-
-        //             result.adapt(expr_res.status,
-        //                          std::move(expr_res.diagnostics));
-
-        //             if (auto diagnostic = parser.expect_or_error(
-        //                     Delimeter::ParenthesisClose, false))
-        //             {
-        //                 result.error(std::move(diagnostic));
-
-        //                 return nullptr;
-        //             }
-        //             else
-        //                 parser.lexer().next();
-
-        //             return expr;
-        //         });
+        add_handler(
+            TokenType::LeftParen,
+            PrattHandler{
+                .type = TokenType::LeftParen,
+                .bp = {default_bp, default_bp},
+                .nud = make_group_handler(
+                    TokenType::RightParen, [&](Parser &parser) -> ParseResult
+                    { return Common::Pratt.parse_base(parser, 0); }),
+                .led = nullptr,
+            });
 
         // // Compound
         // add_nud(Delimeter::BraceOpen, parse_array);
@@ -134,7 +110,7 @@ namespace Parser
                         PrattHandler{
                             .type = type,
                             .bp = {unary_bp, unary_bp},
-                            .nud = [&](Parser &parser, PrattParseResult &result)
+                            .nud = [&](Parser &parser, ParseResult &result)
                                 -> std::unique_ptr<AST::UnaryExpr>
                             { return parse_unary(parser, result); },
                             .led = nullptr,
@@ -152,11 +128,11 @@ namespace Parser
                 PrattHandler{
                     .type = type,
                     .bp = {unary_bp, unary_bp},
-                    .nud = [&](Parser &parser, PrattParseResult &result)
+                    .nud = [&](Parser &parser, ParseResult &result)
                         -> std::unique_ptr<AST::UnaryExpr>
                     { return parse_unary(parser, result); },
                     .led = [&](Parser &parser, std::unique_ptr<AST::Node> &left,
-                               float right_bp, PrattParseResult &result)
+                               float right_bp, ParseResult &result)
                         -> std::unique_ptr<AST::UnaryExpr>
                     { return parse_unary(parser, left, right_bp, result); },
                 });
@@ -250,6 +226,8 @@ namespace Parser
     {
         using TokenType = Lexer::TokenType;
 
+        float default_tbp = static_cast<int32_t>(TypeBindingPower::Default);
+
         // Primary
         float primary_tbp = static_cast<int32_t>(TypeBindingPower::Primary);
         add_type_handler(TokenType::Identifier,
@@ -259,6 +237,18 @@ namespace Parser
                              .nud = parse_type_identifier,
                              .led = nullptr,
                          });
+
+        // Grouping
+        add_type_handler(
+            TokenType::LeftParen,
+            PrattHandler{
+                .type = TokenType::LeftParen,
+                .bp = {default_tbp, default_tbp},
+                .nud = make_group_handler(
+                    TokenType::RightParen, [&](Parser &parser) -> ParseResult
+                    { return Common::Pratt.parse_base(parser, 0, true); }),
+                .led = nullptr,
+            });
 
         // Array
         float array_tbp = static_cast<int32_t>(TypeBindingPower::Array);
@@ -318,7 +308,6 @@ namespace Parser
                          });
 
         // Mutability Binding
-        float default_tbp = static_cast<int32_t>(TypeBindingPower::Default);
         add_type_handler(TokenType::Mut, PrattHandler{
                                              .type = TokenType::Mut,
                                              .bp = {default_tbp, default_tbp},
@@ -357,11 +346,9 @@ namespace Parser
         return &it->second;
     }
 
-    PrattParseResult Pratt::parse_base(Parser &parser, float right_bp,
-                                       bool type)
+    ParseResult Pratt::parse_base(Parser &parser, float right_bp, bool type)
     {
-        PrattParseResult result = {
-            parser, Core::ResultStatus::Success, nullptr, {}};
+        ParseResult result = {parser, Core::ResultStatus::Success, nullptr, {}};
 
         auto &lexer = parser.lexer;
         if (lexer.eof())
@@ -424,7 +411,7 @@ namespace Parser
 
     void Pratt::parse(Parser &parser, ParseResult &result)
     {
-        PrattParseResult expr_result = parse_base(parser, 0);
+        ParseResult expr_result = parse_base(parser, 0);
 
         if (expr_result.data == nullptr)
         {

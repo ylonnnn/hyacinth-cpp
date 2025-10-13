@@ -16,37 +16,42 @@
 
 namespace Parser
 {
+    using GroupHandlerFn = std::function<ParseResult(Parser &)>;
+
+    NudHandler<AST::Node> make_group_handler(Lexer::TokenType &&cl_pair,
+                                             GroupHandlerFn &&handler);
+
     // Default
 
     std::unique_ptr<AST::LiteralExpr> parse_literal(Parser &parser,
-                                                    PrattParseResult &result);
+                                                    ParseResult &result);
 
     std::unique_ptr<AST::Identifier> parse_identifier(Parser &parser,
-                                                      PrattParseResult &result);
+                                                      ParseResult &result);
 
     std::unique_ptr<AST::Path> parse_path(Parser &parser,
                                           std::unique_ptr<AST::Node> &left,
                                           float right_bp,
-                                          PrattParseResult &result);
+                                          ParseResult &result);
 
     std::unique_ptr<AST::BinaryExpr>
     parse_binary(Parser &parser, std::unique_ptr<AST::Node> &left,
-                 float right_bp, PrattParseResult &result);
+                 float right_bp, ParseResult &result);
 
     std::unique_ptr<AST::UnaryExpr> parse_unary(Parser &parser,
-                                                PrattParseResult &result);
+                                                ParseResult &result);
 
     std::unique_ptr<AST::UnaryExpr>
     parse_unary(Parser &parser, std::unique_ptr<AST::Node> &left,
-                float right_bp, PrattParseResult &result);
+                float right_bp, ParseResult &result);
 
     // Type
 
     std::unique_ptr<AST::SimpleType>
-    parse_type_identifier(Parser &parser, PrattParseResult &result);
+    parse_type_identifier(Parser &parser, ParseResult &result);
 
     std::unique_ptr<AST::PrefixedType>
-    parse_type_array(Parser &parser, PrattParseResult &result);
+    parse_type_array(Parser &parser, ParseResult &result);
 
     NudHandler<AST::PrefixedType>
     make_type_pref_nud_handler(TypeBindingPower bp, AST::PrefixedTypeKind kind);

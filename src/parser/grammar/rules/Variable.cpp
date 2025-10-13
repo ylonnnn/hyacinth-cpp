@@ -87,7 +87,7 @@ namespace Parser
             flag |= (1 << 0);
             lexer.consume();
 
-            PrattParseResult t_res = Common::Pratt.parse_base(parser, 0, true);
+            ParseResult t_res = Common::Pratt.parse_base(parser, 0, true);
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
             type = utils::dynamic_ptr_cast<AST::Type>(t_res.data);
@@ -102,7 +102,7 @@ namespace Parser
             flag |= (1 << 1);
             lexer.consume();
 
-            PrattParseResult v_res = Common::Pratt.parse_base(parser, 0);
+            ParseResult v_res = Common::Pratt.parse_base(parser, 0);
             result.adapt(v_res.status, std::move(v_res.diagnostics));
 
             value = utils::dynamic_ptr_cast<AST::Expr>(v_res.data);

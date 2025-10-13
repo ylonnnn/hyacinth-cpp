@@ -57,7 +57,7 @@ namespace Parser
             lexer.consume();
 
         // TYPE
-        PrattParseResult t_res = Common::Pratt.parse_base(parser, 0, true);
+        ParseResult t_res = Common::Pratt.parse_base(parser, 0, true);
         result.adapt(t_res.status, std::move(t_res.diagnostics));
 
         auto type = utils::dynamic_ptr_cast<AST::Type>(t_res.data);
@@ -71,7 +71,7 @@ namespace Parser
         {
             lexer.consume();
 
-            PrattParseResult v_res = Common::Pratt.parse_base(parser, 0);
+            ParseResult v_res = Common::Pratt.parse_base(parser, 0);
             result.adapt(v_res.status, std::move(v_res.diagnostics));
 
             value = utils::dynamic_ptr_cast<AST::Expr>(v_res.data);
@@ -211,7 +211,7 @@ namespace Parser
             lexer.consume();
 
         // RETURN_TYPE
-        PrattParseResult rt_res = Common::Pratt.parse_base(parser, 0, true);
+        ParseResult rt_res = Common::Pratt.parse_base(parser, 0, true);
         result.adapt(rt_res.status, std::move(rt_res.diagnostics));
 
         auto ret_type = utils::dynamic_ptr_cast<AST::Type>(rt_res.data);
@@ -304,7 +304,7 @@ namespace Parser
         else
         {
             // VALUE
-            PrattParseResult v_res = Common::Pratt.parse_base(parser, 0);
+            ParseResult v_res = Common::Pratt.parse_base(parser, 0);
             result.adapt(v_res.status, std::move(v_res.diagnostics));
 
             value = utils::dynamic_ptr_cast<AST::Expr>(v_res.data);

@@ -19,3 +19,10 @@ var no_value_var = ;
 
 var test_opt: bool? = null;
 var random_opt: *[]std::string? = null;
+
+var another_test: *([]T);
+var more_type_test: &[]*T;
+var more_type_test2: &([]*T);
+
+var additional_test: *T?;
+var additional_test2: (*T)?;

@@ -10,3 +10,5 @@ var shouldnt_be_valid: std::boolean = 23;
 var not_valid: std::boolean::values::False = false;
 
 var non_valid_type: bool = false;
+
+var sum = (1 + 2) * 3;

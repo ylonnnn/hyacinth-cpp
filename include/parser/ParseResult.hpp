@@ -5,7 +5,7 @@
 
 namespace Parser
 {
-    class Parser;
+    struct Parser;
 
     struct ParseResult : Core::Result<std::unique_ptr<AST::Node>>
     {

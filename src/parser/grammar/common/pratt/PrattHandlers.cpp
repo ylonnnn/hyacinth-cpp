@@ -1,9 +1,5 @@
 #include <memory>
 
-// #include "ast/expr/TypeExpr.hpp"
-// #include "ast/type/SimpleType.hpp"
-// #include "diagnostic/ErrorDiagnostic.hpp"
-// #include "parser/grammar/common/Common.hpp"
 #include "ast/common/Identifier.hpp"
 #include "ast/expr/Path.hpp"
 #include "diagnostic/helpers.hpp"
@@ -15,10 +11,33 @@
 
 namespace Parser
 {
+
+    NudHandler<AST::Node> make_group_handler(Lexer::TokenType &&cl_pair,
+                                             GroupHandlerFn &&handler)
+    {
+        return [&, cl_pair, handler = std::move(handler)](
+                   Parser &parser,
+                   ParseResult &result) -> std::unique_ptr<AST::Node>
+        {
+            auto &lexer = parser.lexer;
+            lexer.consume();
+
+            ParseResult p_res = handler(parser);
+            result.adapt(p_res.status, std::move(p_res.diagnostics));
+
+            if (auto diagnostic = parser.expect_or_error(cl_pair, false))
+                result.error(std::move(diagnostic));
+            else
+                lexer.consume();
+
+            return std::move(p_res.data);
+        };
+    }
+
     // Default
 
     std::unique_ptr<AST::LiteralExpr> parse_literal(Parser &parser,
-                                                    PrattParseResult &)
+                                                    ParseResult &)
     {
         auto &lexer = parser.lexer;
         Lexer::Token *token = lexer.peek();
@@ -32,7 +51,7 @@ namespace Parser
     }
 
     std::unique_ptr<AST::Identifier>
-    parse_identifier(Parser &parser, [[maybe_unused]] PrattParseResult &result)
+    parse_identifier(Parser &parser, [[maybe_unused]] ParseResult &result)
     {
         return Common::PathRule.parse_ident(parser);
     }
@@ -40,7 +59,7 @@ namespace Parser
     std::unique_ptr<AST::Path> parse_path(Parser &parser,
                                           std::unique_ptr<AST::Node> &left,
                                           float right_bp,
-                                          PrattParseResult &result)
+                                          ParseResult &result)
     {
         auto left_ = utils::dynamic_ptr_cast<AST::Path>(left);
         if (left_ == nullptr)
@@ -52,7 +71,7 @@ namespace Parser
 
     std::unique_ptr<AST::BinaryExpr>
     parse_binary(Parser &parser, std::unique_ptr<AST::Node> &left,
-                 float right_bp, PrattParseResult &result)
+                 float right_bp, ParseResult &result)
     {
         auto left_ = utils::dynamic_ptr_cast<AST::Expr>(left);
         if (left_ == nullptr)
@@ -66,7 +85,7 @@ namespace Parser
 
         lexer.consume();
 
-        PrattParseResult r_res = Common::Pratt.parse_base(parser, right_bp);
+        ParseResult r_res = Common::Pratt.parse_base(parser, right_bp);
         result.adapt(r_res.status, std::move(r_res.diagnostics));
 
         auto right_ = utils::dynamic_ptr_cast<AST::Expr>(r_res.data);
@@ -91,7 +110,7 @@ namespace Parser
     }
 
     std::unique_ptr<AST::UnaryExpr> parse_unary(Parser &parser,
-                                                PrattParseResult &result)
+                                                ParseResult &result)
     {
         auto &lexer = parser.lexer;
         Lexer::Token *operation = lexer.peek();
@@ -101,7 +120,7 @@ namespace Parser
 
         lexer.consume();
 
-        PrattParseResult v_res = Common::Pratt.parse_base(parser, 0);
+        ParseResult v_res = Common::Pratt.parse_base(parser, 0);
         auto left_ = utils::dynamic_ptr_cast<AST::Expr>(v_res.data);
 
         if (left_ == nullptr)
@@ -113,7 +132,7 @@ namespace Parser
 
     std::unique_ptr<AST::UnaryExpr>
     parse_unary(Parser &parser, std::unique_ptr<AST::Node> &left,
-                float right_bp, PrattParseResult &result)
+                float right_bp, ParseResult &result)
     {
         auto left_ = utils::dynamic_ptr_cast<AST::Expr>(left);
         if (left_ == nullptr)
@@ -134,7 +153,7 @@ namespace Parser
     // Type
 
     std::unique_ptr<AST::SimpleType>
-    parse_type_identifier(Parser &parser, PrattParseResult &result)
+    parse_type_identifier(Parser &parser, ParseResult &result)
     {
         std::unique_ptr<AST::Path> path =
             Common::PathRule.parse_path(parser, &result);
@@ -143,7 +162,7 @@ namespace Parser
     }
 
     std::unique_ptr<AST::PrefixedType>
-    parse_type_array(Parser &parser, PrattParseResult &result)
+    parse_type_array(Parser &parser, ParseResult &result)
     {
         auto &lexer = parser.lexer;
         lexer.consume(); // Consume [
@@ -169,12 +188,12 @@ namespace Parser
     NudHandler<AST::PrefixedType>
     make_type_pref_nud_handler(TypeBindingPower bp, AST::PrefixedTypeKind kind)
     {
-        return [&, bp, kind](Parser &parser, PrattParseResult &result)
+        return [&, bp, kind](Parser &parser, ParseResult &result)
                    -> std::unique_ptr<AST::PrefixedType>
         {
             parser.lexer.consume();
 
-            PrattParseResult b_res = Common::Pratt.parse_base(
+            ParseResult b_res = Common::Pratt.parse_base(
                 parser, static_cast<int32_t>(bp), true);
             result.adapt(b_res.status, std::move(b_res.diagnostics));
 
@@ -190,7 +209,7 @@ namespace Parser
     make_type_suf_led_handler(TypeBindingPower bp, AST::SuffixedTypeKind kind)
     {
         return [&, bp, kind](Parser &parser, std::unique_ptr<AST::Node> &left,
-                             float right_bp, PrattParseResult &result)
+                             float right_bp, ParseResult &result)
                    -> std::unique_ptr<AST::SuffixedType>
         {
             parser.lexer.consume();
@@ -205,12 +224,12 @@ namespace Parser
     NudHandler<AST::ModifiedType>
     make_type_mod_nud_handler(TypeBindingPower bp, AST::ModifierType type)
     {
-        return [&, bp, type](Parser &parser, PrattParseResult &result)
+        return [&, bp, type](Parser &parser, ParseResult &result)
                    -> std::unique_ptr<AST::ModifiedType>
         {
             parser.lexer.consume();
 
-            PrattParseResult b_res = Common::Pratt.parse_base(
+            ParseResult b_res = Common::Pratt.parse_base(
                 parser, static_cast<int32_t>(bp), true);
             result.adapt(b_res.status, std::move(b_res.diagnostics));
 
