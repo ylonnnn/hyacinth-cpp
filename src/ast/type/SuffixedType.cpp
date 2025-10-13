@@ -10,6 +10,8 @@ namespace AST
             case SuffixedTypeKind::Optional:
                 return os << "Optional";
         }
+
+        return os << "Unknown";
     }
 
     SuffixedType::SuffixedType(SuffixedTypeKind kind,

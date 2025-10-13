@@ -10,6 +10,8 @@ namespace AST
             case ModifierType::Mutable:
                 return os << "Mutable";
         }
+
+        return os << "Unknown";
     }
 
     ModifiedType::ModifiedType(ModifierType type, std::unique_ptr<Type> &&base)

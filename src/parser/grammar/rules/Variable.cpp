@@ -16,7 +16,6 @@
 #include "ast/expr/Expr.hpp"
 #include "ast/stmt/variable/VariableDeclStmt.hpp"
 #include "ast/stmt/variable/VariableDefStmt.hpp"
-#include "diagnostic/helpers.hpp"
 #include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/rules/Hyacinth.hpp"
 #include "utils/dev.hpp"
@@ -27,14 +26,6 @@ namespace Parser
     VariableDefinition::VariableDefinition()
         : GrammarRule(Hyacinth::VARIABLE, GC_GLOBAL | GC_LOCAL)
     {
-    }
-
-    ParseResult
-    VariableDefinition::parse(Parser &parser,
-                              AST::DeclarationAccessibility accessibility)
-    {
-        utils::todo("implement variable access modifiers");
-        return parse(parser);
     }
 
     ParseResult VariableDefinition::parse(Parser &parser)

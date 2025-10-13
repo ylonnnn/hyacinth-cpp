@@ -19,6 +19,8 @@ namespace AST
             case PrefixedTypeKind::RValueReference:
                 return os << "RValueReference";
         }
+
+        return os << "Unknown";
     }
 
     PrefixedType::PrefixedType(PrefixedTypeKind kind,

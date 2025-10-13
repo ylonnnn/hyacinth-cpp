@@ -6,8 +6,8 @@ namespace Diagnostic
 {
     Diagnostic::Diagnostic(DiagnosticSeverity severity, uint32_t code,
                            Core::PositionRange &&range, std::string &&message)
-        : severity(severity), code(code), range(std::move(range)),
-          message(std::move(message))
+        : severity(severity), code(code), message(std::move(message)),
+          range(std::move(range))
     {
         details.reserve(4);
     }

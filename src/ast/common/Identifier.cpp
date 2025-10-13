@@ -11,7 +11,7 @@ namespace AST
     {
     }
 
-    void Identifier::print(std::ostream &os, uint8_t tab) const
+    void Identifier::print(std::ostream &os, uint8_t) const
     {
         // TODO: Arguments
         os << "Identifier { identifier: " << identifier << " }";

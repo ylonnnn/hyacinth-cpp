@@ -58,8 +58,7 @@ namespace Parser
 
     std::unique_ptr<AST::Path> parse_path(Parser &parser,
                                           std::unique_ptr<AST::Node> &left,
-                                          float right_bp,
-                                          ParseResult &result)
+                                          float, ParseResult &)
     {
         auto left_ = utils::dynamic_ptr_cast<AST::Path>(left);
         if (left_ == nullptr)
@@ -109,8 +108,7 @@ namespace Parser
                                                  std::move(right_));
     }
 
-    std::unique_ptr<AST::UnaryExpr> parse_unary(Parser &parser,
-                                                ParseResult &result)
+    std::unique_ptr<AST::UnaryExpr> parse_unary(Parser &parser, ParseResult &)
     {
         auto &lexer = parser.lexer;
         Lexer::Token *operation = lexer.peek();
@@ -131,8 +129,8 @@ namespace Parser
     }
 
     std::unique_ptr<AST::UnaryExpr>
-    parse_unary(Parser &parser, std::unique_ptr<AST::Node> &left,
-                float right_bp, ParseResult &result)
+    parse_unary(Parser &parser, std::unique_ptr<AST::Node> &left, float,
+                ParseResult &)
     {
         auto left_ = utils::dynamic_ptr_cast<AST::Expr>(left);
         if (left_ == nullptr)
@@ -152,8 +150,8 @@ namespace Parser
 
     // Type
 
-    std::unique_ptr<AST::SimpleType>
-    parse_type_identifier(Parser &parser, ParseResult &result)
+    std::unique_ptr<AST::SimpleType> parse_type_identifier(Parser &parser,
+                                                           ParseResult &result)
     {
         std::unique_ptr<AST::Path> path =
             Common::PathRule.parse_path(parser, &result);
@@ -161,8 +159,8 @@ namespace Parser
         return std::make_unique<AST::SimpleType>(std::move(path));
     }
 
-    std::unique_ptr<AST::PrefixedType>
-    parse_type_array(Parser &parser, ParseResult &result)
+    std::unique_ptr<AST::PrefixedType> parse_type_array(Parser &parser,
+                                                        ParseResult &result)
     {
         auto &lexer = parser.lexer;
         lexer.consume(); // Consume [
@@ -188,8 +186,9 @@ namespace Parser
     NudHandler<AST::PrefixedType>
     make_type_pref_nud_handler(TypeBindingPower bp, AST::PrefixedTypeKind kind)
     {
-        return [&, bp, kind](Parser &parser, ParseResult &result)
-                   -> std::unique_ptr<AST::PrefixedType>
+        return [&, bp,
+                kind](Parser &parser,
+                      ParseResult &result) -> std::unique_ptr<AST::PrefixedType>
         {
             parser.lexer.consume();
 
@@ -208,9 +207,9 @@ namespace Parser
     LedHandler<AST::SuffixedType>
     make_type_suf_led_handler(TypeBindingPower bp, AST::SuffixedTypeKind kind)
     {
-        return [&, bp, kind](Parser &parser, std::unique_ptr<AST::Node> &left,
-                             float right_bp, ParseResult &result)
-                   -> std::unique_ptr<AST::SuffixedType>
+        return [&, bp,
+                kind](Parser &parser, std::unique_ptr<AST::Node> &left, float,
+                      ParseResult &) -> std::unique_ptr<AST::SuffixedType>
         {
             parser.lexer.consume();
             auto base = utils::dynamic_ptr_cast<AST::Type>(left);
@@ -224,8 +223,9 @@ namespace Parser
     NudHandler<AST::ModifiedType>
     make_type_mod_nud_handler(TypeBindingPower bp, AST::ModifierType type)
     {
-        return [&, bp, type](Parser &parser, ParseResult &result)
-                   -> std::unique_ptr<AST::ModifiedType>
+        return [&, bp,
+                type](Parser &parser,
+                      ParseResult &result) -> std::unique_ptr<AST::ModifiedType>
         {
             parser.lexer.consume();
 

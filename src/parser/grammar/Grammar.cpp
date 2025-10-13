@@ -33,7 +33,8 @@ namespace Parser
         if (it == rules.end())
             return nullptr;
 
-        return it->second.get();
+        GrammarRule *rule = it->second.get();
+        return rule->context & context ? rule : nullptr;
     }
 
     ParseResult Grammar::partial_parse(Parser &parser, GrammarContext context)
