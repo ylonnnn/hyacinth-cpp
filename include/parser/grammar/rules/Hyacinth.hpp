@@ -17,8 +17,12 @@ namespace Parser::Hyacinth
 
     // constexpr auto STRUCT = Reserved::Struct;
 
-    // constexpr auto FUNCTION = Reserved::Function;
+    constexpr auto FUNCTION = Lexer::TokenType::Fn;
+    constexpr auto FN_RETURN = Lexer::TokenType::Return;
+
     constexpr auto VARIABLE = Lexer::TokenType::Var;
+
+    constexpr auto BLOCK = Lexer::TokenType::LeftBrace;
 
     constexpr auto TERMINATOR = Lexer::TokenType::Semicolon;
     constexpr auto PATH_SEP = Lexer::TokenType::DoubleColon;

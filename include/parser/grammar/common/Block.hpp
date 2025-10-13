@@ -5,12 +5,16 @@
 
 namespace Parser
 {
-    struct Terminator : GrammarRule
+    struct Block : GrammarRule
     {
-        Terminator();
+        Block();
 
         ParseResult parse(Parser &parser) override;
+
         void parse(Parser &parser, ParseResult &result) override;
+        void parse(Parser &parser, GrammarContext context, ParseResult &result);
+
+        void recover(Parser &parser) override;
     };
 
 } // namespace Parser

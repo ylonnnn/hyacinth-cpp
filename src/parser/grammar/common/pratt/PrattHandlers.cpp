@@ -160,14 +160,14 @@ namespace Parser
             return nullptr;
         }
 
-        auto nud = make_type_nud_handler(TypeBindingPower::Array,
-                                         AST::PrefixedTypeKind::Array);
+        auto nud = make_type_pref_nud_handler(TypeBindingPower::Array,
+                                              AST::PrefixedTypeKind::Array);
 
         return nud(parser, result);
     }
 
     NudHandler<AST::PrefixedType>
-    make_type_nud_handler(TypeBindingPower bp, AST::PrefixedTypeKind kind)
+    make_type_pref_nud_handler(TypeBindingPower bp, AST::PrefixedTypeKind kind)
     {
         return [&, bp, kind](Parser &parser, PrattParseResult &result)
                    -> std::unique_ptr<AST::PrefixedType>
@@ -187,7 +187,7 @@ namespace Parser
     }
 
     LedHandler<AST::SuffixedType>
-    make_type_led_handler(TypeBindingPower bp, AST::SuffixedTypeKind kind)
+    make_type_suf_led_handler(TypeBindingPower bp, AST::SuffixedTypeKind kind)
     {
         return [&, bp, kind](Parser &parser, std::unique_ptr<AST::Node> &left,
                              float right_bp, PrattParseResult &result)
@@ -199,6 +199,26 @@ namespace Parser
                 return nullptr;
 
             return std::make_unique<AST::SuffixedType>(kind, std::move(base));
+        };
+    }
+
+    NudHandler<AST::ModifiedType>
+    make_type_mod_nud_handler(TypeBindingPower bp, AST::ModifierType type)
+    {
+        return [&, bp, type](Parser &parser, PrattParseResult &result)
+                   -> std::unique_ptr<AST::ModifiedType>
+        {
+            parser.lexer.consume();
+
+            PrattParseResult b_res = Common::Pratt.parse_base(
+                parser, static_cast<int32_t>(bp), true);
+            result.adapt(b_res.status, std::move(b_res.diagnostics));
+
+            auto base = utils::dynamic_ptr_cast<AST::Type>(b_res.data);
+            if (base == nullptr)
+                return nullptr;
+
+            return std::make_unique<AST::ModifiedType>(type, std::move(base));
         };
     }
 

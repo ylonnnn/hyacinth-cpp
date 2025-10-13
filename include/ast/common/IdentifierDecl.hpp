@@ -15,10 +15,11 @@ namespace AST
     struct IdentifierDecl : virtual Node
     {
         IdentifierMutabilityState mut_state;
-        Lexer::Token &name;
+        Lexer::Token &identifier;
         std::unique_ptr<Type> type;
 
-        IdentifierDecl(Lexer::Token &name, IdentifierMutabilityState mut_state,
+        IdentifierDecl(Lexer::Token &identifier,
+                       IdentifierMutabilityState mut_state,
                        std::unique_ptr<Type> type);
 
         bool is_mutable() const;

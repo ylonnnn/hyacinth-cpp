@@ -29,7 +29,7 @@ namespace AST
 
     std::string PrefixedType::to_string() const
     {
-        std::string prefix[] = {"[]", "&", "*"},
+        std::string prefix[] = {"[]", "*", "&", "&&"},
                     str = prefix[static_cast<uint32_t>(kind)];
 
         str += base->to_string();

@@ -20,12 +20,9 @@ namespace Parser
     void Terminator::parse(Parser &parser, ParseResult &result)
     {
         if (auto diagnostic = parser.expect_or_error(token_type, false))
-        {
-            std::cout << "diagnostic: " << diagnostic.get() << "\n";
             result.error(std::move(diagnostic));
-        }
-
-        parser.lexer.consume();
+        else
+            parser.lexer.consume();
     }
 
 } // namespace Parser

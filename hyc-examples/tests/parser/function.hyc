@@ -1,0 +1,9 @@
+fn add -> int (x: int, mut y: mut int) {
+    return x + y; 
+}
+
+fn test -> void (test: []mut char);
+
+fn main -> void (mut args: mut []char) {
+    return;
+}

@@ -1,15 +1,15 @@
-#include "ast/block/Block.hpp"
+#include "ast/stmt/BlockStmt.hpp"
 #include "utils/style.hpp"
 
 namespace AST
 {
-    Block::Block(Core::Position &position,
-                 std::vector<std::unique_ptr<Stmt>> &&statements)
+    BlockStmt::BlockStmt(Core::Position &position,
+                         std::vector<std::unique_ptr<Stmt>> &&statements)
         : Node(position), statements(std::move(statements))
     {
     }
 
-    void Block::print(std::ostream &os, uint8_t tab) const
+    void BlockStmt::print(std::ostream &os, uint8_t tab) const
     {
         std::string indentation = utils::tab(tab - 1, 4),
                     inner_indentation = utils::tab(tab, 4);

@@ -10,7 +10,7 @@ namespace AST
         std::unique_ptr<Expr> return_value;
 
         FunctionReturnStmt(Core::Position &position,
-                           std::unique_ptr<Expr> value);
+                           std::unique_ptr<Expr> &&value = nullptr);
 
         void print(std::ostream &os, uint8_t tab) const override;
     };

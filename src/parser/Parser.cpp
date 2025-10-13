@@ -76,10 +76,12 @@ namespace Parser
     {
         Lexer::Token *token =
             lexer.eof() ? nullptr : (consume ? lexer.next() : lexer.peek());
-        auto expected = token == nullptr ? false : token->type == type;
+        if (token == nullptr)
+            return nullptr;
 
-        return expected ? nullptr
-                        : Diagnostic::create_syntax_error(*token, type);
+        return token->type == type
+                   ? nullptr
+                   : Diagnostic::create_syntax_error(*token, type);
     }
 
     ProgramParseResult Parser::parse() { return grammar.parse(*this); }

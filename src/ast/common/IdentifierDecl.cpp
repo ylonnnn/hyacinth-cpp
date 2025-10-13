@@ -3,11 +3,11 @@
 
 namespace AST
 {
-    IdentifierDecl::IdentifierDecl(Lexer::Token &name,
+    IdentifierDecl::IdentifierDecl(Lexer::Token &identifier,
                                    IdentifierMutabilityState mut_state,
                                    std::unique_ptr<Type> type)
-        : Node(name.range.start), name(name), mut_state(mut_state),
-          type(std::move(type))
+        : Node(identifier.range.start), identifier(identifier),
+          mut_state(mut_state), type(std::move(type))
     {
         if (type != nullptr)
             end_position = type->end_position;

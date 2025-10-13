@@ -4,14 +4,16 @@
 namespace AST
 {
     FunctionDefinitionStmt::FunctionDefinitionStmt(
-        Lexer::Token &name, std::vector<FunctionParameter> parameters,
-        std::unique_ptr<Block> body, DeclarationAccessibility accessibility)
-        : Node(name.range.start),
-          FunctionDeclarationStmt(name, std::move(parameters), accessibility)
+        Lexer::Token &identifier, std::unique_ptr<Type> &&return_type,
+        std::vector<std::unique_ptr<FunctionParameter>> &&parameters,
+        std::unique_ptr<BlockStmt> &&body,
+        DeclarationAccessibility accessibility)
+        : Node(identifier.range.start),
+          FunctionDeclarationStmt(identifier, std::move(return_type),
+                                  std::move(parameters), accessibility)
     {
-        body = std::move(body);
-
-        end_position = body->end_position;
+        this->body = std::move(body);
+        end_position = this->body->end_position;
     }
 
     void FunctionDefinitionStmt::print(std::ostream &os, uint8_t tab) const
@@ -21,13 +23,13 @@ namespace AST
 
         os << "FunctionDefinitionStmt {\n"
            << inner_indentation << "accessibility: " << accessibility << "\n"
-           << inner_indentation << "name: " << name << "\n";
-        // << inner_indentation << "return_type: ";
+           << inner_indentation << "identifier: " << identifier << "\n"
+           << inner_indentation << "return_type: ";
 
-        // if (return_type_ != nullptr)
-        //     return_type_->print(os, tab + 1);
-        // else
-        //     os << "nullptr";
+        if (return_type != nullptr)
+            return_type->print(os, tab + 1);
+        else
+            os << "<Deduced>";
 
         os << "\n" << inner_indentation << "parameters: {";
         for (auto &param : parameters)
@@ -35,7 +37,7 @@ namespace AST
             std::string inner_indentation = utils::tab(tab + 1, 4);
 
             os << "\n" << inner_indentation;
-            param.print(os, tab + 2);
+            param->print(os, tab + 2);
         }
 
         os << "\n"

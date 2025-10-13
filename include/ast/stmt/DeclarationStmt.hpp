@@ -16,11 +16,11 @@ namespace AST
 
     struct DeclarationStmt : Stmt
     {
-        Lexer::Token &name;
+        Lexer::Token &identifier;
         DeclarationAccessibility accessibility =
             DeclarationAccessibility::Public;
 
-        DeclarationStmt(Lexer::Token &name,
+        DeclarationStmt(Lexer::Token &identifier,
                         DeclarationAccessibility accessibility =
                             DeclarationAccessibility::Public,
                         bool is_definition = false);

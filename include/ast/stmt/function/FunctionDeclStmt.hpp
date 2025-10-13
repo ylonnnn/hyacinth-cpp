@@ -1,36 +1,37 @@
 #pragma once
 
-#include "ast/block/Block.hpp"
 #include "ast/common/IdentifierDecl.hpp"
+#include "ast/expr/Expr.hpp"
+#include "ast/stmt/BlockStmt.hpp"
 #include "ast/stmt/DeclarationStmt.hpp"
-// #include "ast/type/Type.hpp"
 
 namespace AST
 {
     struct FunctionParameter : IdentifierDecl
     {
-        // TODO: Default Value
+        std::unique_ptr<Expr> default_value;
 
-        FunctionParameter(Lexer::Token &name,
-                          IdentifierMutabilityState mut_state);
-        // std::unique_ptr<Type> type);
+        FunctionParameter(Lexer::Token &identifier,
+                          IdentifierMutabilityState mut_state,
+                          std::unique_ptr<Type> &&type,
+                          std::unique_ptr<Expr> &&default_value = nullptr);
 
         void print(std::ostream &os, uint8_t tab) const override;
     };
 
     struct FunctionDeclarationStmt : DeclarationStmt
     {
-        // std::unique_ptr<Type> return_type_;
-        std::vector<FunctionParameter> parameters;
+        std::unique_ptr<Type> return_type;
+        std::vector<std::unique_ptr<FunctionParameter>> parameters;
 
         // Empty
-        std::unique_ptr<Block> body;
+        std::unique_ptr<BlockStmt> body;
 
-        // TODO: Function Declaration Return Type
-        FunctionDeclarationStmt(Lexer::Token &name,
-                                std::vector<FunctionParameter> parameters,
-                                DeclarationAccessibility accessibility =
-                                    DeclarationAccessibility::Private);
+        FunctionDeclarationStmt(
+            Lexer::Token &name, std::unique_ptr<Type> &&return_type,
+            std::vector<std::unique_ptr<FunctionParameter>> &&parameters,
+            DeclarationAccessibility accessibility =
+                DeclarationAccessibility::Private);
 
         virtual void print(std::ostream &os, uint8_t tab) const override;
     };

@@ -277,45 +277,56 @@ namespace Parser
             PrattHandler{
                 .type = TokenType::Star,
                 .bp = {pointer_tbp, pointer_tbp},
-                .nud = make_type_nud_handler(TypeBindingPower::Pointer,
-                                             AST::PrefixedTypeKind::Pointer),
+                .nud = make_type_pref_nud_handler(
+                    TypeBindingPower::Pointer, AST::PrefixedTypeKind::Pointer),
                 .led = nullptr,
             });
 
         // Reference
         float reference_tbp = static_cast<int32_t>(TypeBindingPower::Reference);
-        add_type_handler(
-            TokenType::Ampersand,
-            PrattHandler{
-                .type = TokenType::Ampersand,
-                .bp = {reference_tbp, reference_tbp},
-                .nud = make_type_nud_handler(TypeBindingPower::Reference,
-                                             AST::PrefixedTypeKind::Reference),
-                .led = nullptr,
-            });
+        add_type_handler(TokenType::Ampersand,
+                         PrattHandler{
+                             .type = TokenType::Ampersand,
+                             .bp = {reference_tbp, reference_tbp},
+                             .nud = make_type_pref_nud_handler(
+                                 TypeBindingPower::Reference,
+                                 AST::PrefixedTypeKind::Reference),
+                             .led = nullptr,
+                         });
 
         // RValue Reference
-        add_type_handler(
-            TokenType::AmpersandAmpersand,
-            PrattHandler{
-                .type = TokenType::AmpersandAmpersand,
-                .bp = {reference_tbp, reference_tbp},
-                .nud = make_type_nud_handler(TypeBindingPower::Reference,
-                                             AST::PrefixedTypeKind::Reference),
-                .led = nullptr,
-            });
+        add_type_handler(TokenType::AmpersandAmpersand,
+                         PrattHandler{
+                             .type = TokenType::AmpersandAmpersand,
+                             .bp = {reference_tbp, reference_tbp},
+                             .nud = make_type_pref_nud_handler(
+                                 TypeBindingPower::Reference,
+                                 AST::PrefixedTypeKind::Reference),
+                             .led = nullptr,
+                         });
 
         // Optional
         float optional_tbp = static_cast<int32_t>(TypeBindingPower::Optional);
-        add_type_handler(
-            TokenType::Question,
-            PrattHandler{
-                .type = TokenType::Question,
-                .bp = {optional_tbp, optional_tbp},
-                .nud = nullptr,
-                .led = make_type_led_handler(TypeBindingPower::Optional,
-                                             AST::SuffixedTypeKind::Optional),
-            });
+        add_type_handler(TokenType::Question,
+                         PrattHandler{
+                             .type = TokenType::Question,
+                             .bp = {optional_tbp, optional_tbp},
+                             .nud = nullptr,
+                             .led = make_type_suf_led_handler(
+                                 TypeBindingPower::Optional,
+                                 AST::SuffixedTypeKind::Optional),
+                         });
+
+        // Mutability Binding
+        float default_tbp = static_cast<int32_t>(TypeBindingPower::Default);
+        add_type_handler(TokenType::Mut, PrattHandler{
+                                             .type = TokenType::Mut,
+                                             .bp = {default_tbp, default_tbp},
+                                             .nud = make_type_mod_nud_handler(
+                                                 TypeBindingPower::Default,
+                                                 AST::ModifierType::Mutable),
+                                             .led = nullptr,
+                                         });
     }
 
     void Pratt::add_handler(Lexer::TokenType type, PrattHandler &&handler)
