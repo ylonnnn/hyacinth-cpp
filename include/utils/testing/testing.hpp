@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <vector>
 
-#define __TESTING__
+// #define __TESTING__
 
 namespace utils::testing
 {

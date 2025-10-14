@@ -7,7 +7,6 @@
 #include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/rules/Function.hpp"
 #include "parser/grammar/rules/Hyacinth.hpp"
-#include "utils/dev.hpp"
 #include "utils/pointer.hpp"
 
 namespace Parser
@@ -101,7 +100,7 @@ namespace Parser
         std::vector<std::unique_ptr<AST::FunctionParameter>> parameters;
         parameters.reserve(8);
 
-        Lexer::TokenType closing = TokenType::LeftParen;
+        Lexer::TokenType closing = TokenType::RightParen;
 
         auto expect_param = true;
         ParseResult p_res{parser, Core::ResultStatus::Success, nullptr, {}};

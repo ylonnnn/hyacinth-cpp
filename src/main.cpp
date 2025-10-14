@@ -1,9 +1,11 @@
+#ifndef __TESTING__
 // For main execution
 #include "core/program/Program.hpp"
 #include "core/program/ProgramRegistry.hpp"
-
+#else
 // For test executions
 #include "utils/testing/testing.hpp"
+#endif
 
 void execute_file(const char *file)
 {
@@ -25,7 +27,8 @@ int main(int argc, char **argv)
     //     return 1;
     // }
 
-    const char *file = argc < 2 ? "hyc-examples/tests/main.hyc" : argv[1];
+    const char *file =
+        argc < 2 ? "hyc-examples/tests/parser/expressions.hyc" : argv[1];
     execute_file(file);
 #endif
 
