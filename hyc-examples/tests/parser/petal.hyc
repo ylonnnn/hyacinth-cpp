@@ -1,10 +1,13 @@
 // Petals
 // - Library system of Hyacinth
+//   Accessed with :: (e.g. std::math::)
 
 petal std {
     petal math {
-    }
-}
+        pub fn add -> int (a: int, b: int);
 
-// Accessed with ::
-// std::math::
+        fn internal_fn -> void ();
+    }
+
+    pub fn some_util_fn -> void ();
+}

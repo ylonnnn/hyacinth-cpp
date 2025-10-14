@@ -21,7 +21,8 @@ namespace AST
         os << "PetalDeclarationStmt {\n" << inner_indentation << "identifier: ";
         identifier->print(os, tab + 1);
 
-        os << inner_indentation << "accessibility: " << accessibility << "\n"
+        os << "\n"
+           << inner_indentation << "accessibility: " << accessibility << "\n"
            << indentation << "}";
     }
 

@@ -10,7 +10,8 @@ namespace Lexer
         // ==== RESERVED ====
 
         // ==== RESERVED::DECLARATION ====
-        Unit,
+        Petal,
+
         Struct,
         Fn,
         Var,
@@ -115,7 +116,8 @@ namespace Lexer
         // ==== RESERVED ====
 
         // ==== RESERVED::DECLARATION ====
-        "Unit",
+        "Petal",
+
         "Struct",
         "Fn",
         "Var",
@@ -215,7 +217,8 @@ namespace Lexer
         "Illegal",
 
         // ==== RESERVED::DECLARATION ====
-        "unit",
+        "petal",
+
         "struct",
         "fn",
         "var",

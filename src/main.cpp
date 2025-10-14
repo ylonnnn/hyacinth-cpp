@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     // }
 
     const char *file =
-        argc < 2 ? "hyc-examples/tests/parser/expressions.hyc" : argv[1];
+        argc < 2 ? "hyc-examples/tests/parser/petal.hyc" : argv[1];
     execute_file(file);
 #endif
 

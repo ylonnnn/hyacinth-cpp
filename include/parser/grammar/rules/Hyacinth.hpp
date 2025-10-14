@@ -4,10 +4,8 @@
 
 namespace Parser::Hyacinth
 {
-    constexpr auto IDENTIFIER = Lexer::TokenType::Identifier;
-
     // constexpr auto IMPORT = Lexer::TokenType::Import;
-    // constexpr auto UNIT = Lexer::TokenType::Unit;
+    constexpr auto PETAL = Lexer::TokenType::Petal;
 
     constexpr auto
         // pub

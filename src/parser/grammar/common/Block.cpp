@@ -27,9 +27,9 @@ namespace Parser
     {
         // "{" STATEMENT* "}"
 
-        // {
         auto &lexer = parser.lexer;
 
+        // {
         Core::Position &pos = lexer.next()->range.start;
 
         auto block = std::make_unique<AST::BlockStmt>(

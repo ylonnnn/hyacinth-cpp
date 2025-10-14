@@ -48,6 +48,8 @@ namespace Lexer
         reserved.insert_or_assign("pub"sv, TokenType::Pub);
         reserved.insert_or_assign("prot"sv, TokenType::Prot);
 
+        reserved.insert_or_assign("petal"sv, TokenType::Petal);
+
         reserved.insert_or_assign("struct"sv, TokenType::Struct);
 
         reserved.insert_or_assign("fn"sv, TokenType::Fn);

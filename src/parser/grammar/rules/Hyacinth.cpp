@@ -1,6 +1,7 @@
 #include "parser/grammar/rules/Hyacinth.hpp"
 #include "parser/grammar/Grammar.hpp"
 #include "parser/grammar/rules/Function.hpp"
+#include "parser/grammar/rules/Petal.hpp"
 #include "parser/grammar/rules/Variable.hpp"
 #include "parser/grammar/rules/accessibility/GlobalAccessibility.hpp"
 // #include "parser/grammar/rules/Function.hpp"
@@ -17,7 +18,7 @@ namespace Parser::Hyacinth
         // grammar.add_rule(IMPORT, std::make_unique<ImportStatement>(),
         //                  {true, false});
 
-        // grammar.add_rule(LIB, std::make_unique<LibBlock>(), {true, false});
+        grammar.add_rule(PETAL, std::make_unique<PetalDefinition>());
 
         // // Global Accessibility
         grammar.add_rule(PUBLIC, std::make_unique<GlobalAccessibility>(PUBLIC));
