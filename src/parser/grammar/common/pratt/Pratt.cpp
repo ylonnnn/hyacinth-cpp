@@ -79,6 +79,19 @@ namespace Parser
         // Member Access
         float memaccess_bp = static_cast<int32_t>(BindingPower::MemberAccess);
 
+        for (const auto &type : std::vector<TokenType>({
+                 TokenType::Dot,
+                 TokenType::QuestionDot,
+             }))
+        {
+            add_handler(type, PrattHandler{
+                                  .type = type,
+                                  .bp = {memaccess_bp, memaccess_bp},
+                                  .nud = nullptr,
+                                  .led = parse_binary,
+                              });
+        }
+
         // Path
         add_handler(Hyacinth::PATH_SEP, PrattHandler{
                                             .type = Hyacinth::PATH_SEP,
@@ -103,7 +116,6 @@ namespace Parser
         for (const auto &type : std::vector<TokenType>{
                  TokenType::Bang,
                  TokenType::Tilde,
-                 TokenType::Ampersand,
              })
         {
             add_handler(type,
@@ -138,6 +150,17 @@ namespace Parser
                 });
         }
 
+        // Exponentiation
+        float exponentiation_bp =
+            static_cast<int32_t>(BindingPower::Exponentiation);
+        add_handler(TokenType::CaretCaret,
+                    PrattHandler{
+                        .type = TokenType::CaretCaret,
+                        .bp = {exponentiation_bp, exponentiation_bp},
+                        .nud = nullptr,
+                        .led = parse_binary,
+                    });
+
         // Multiplicative
         float multiplicative_bp =
             static_cast<int32_t>(BindingPower::Multiplicative);
@@ -167,6 +190,20 @@ namespace Parser
                               });
         }
 
+        // BitwiseShift
+        float bitwise_shift_bp =
+            static_cast<int32_t>(BindingPower::BitwiseShift);
+        for (const auto &type : std::vector<TokenType>{
+                 TokenType::LessLess, TokenType::GreaterGreater})
+        {
+            add_handler(type, PrattHandler{
+                                  .type = type,
+                                  .bp = {bitwise_shift_bp, bitwise_shift_bp},
+                                  .nud = nullptr,
+                                  .led = parse_binary,
+                              });
+        }
+
         // Relational
         float relational_bp = static_cast<int32_t>(BindingPower::Relational);
         for (const auto &type : std::vector<TokenType>({
@@ -186,8 +223,33 @@ namespace Parser
                               });
         }
 
-        // Logical
-        float logical_bp = static_cast<int32_t>(BindingPower::Logical);
+        // Bitwise
+        float bitwise_bp = static_cast<int32_t>(BindingPower::Bitwise);
+        for (const auto &type :
+             std::vector<TokenType>{TokenType::Pipe, TokenType::Caret})
+        {
+            add_handler(type, PrattHandler{
+                                  .type = type,
+                                  .bp = {bitwise_bp, bitwise_bp},
+                                  .nud = nullptr,
+                                  .led = parse_binary,
+                              });
+        }
+
+        // Bitwise & Address-Of
+        add_handler(TokenType::Ampersand,
+                    PrattHandler{
+                        .type = TokenType::Ampersand,
+                        .bp = {bitwise_bp + 1.0f, unary_bp},
+                        .nud = [&](Parser &parser, ParseResult &result)
+                            -> std::unique_ptr<AST::UnaryExpr>
+                        { return parse_unary(parser, result); },
+                        .led = parse_binary,
+                    });
+
+        // ConditionalLogical
+        float cond_logical_bp =
+            static_cast<int32_t>(BindingPower::ConditionalLogical);
         for (const auto &type : std::vector<TokenType>({
                  TokenType::Bang,
                  TokenType::AmpersandAmpersand,
@@ -196,7 +258,21 @@ namespace Parser
         {
             add_handler(type, PrattHandler{
                                   .type = type,
-                                  .bp = {logical_bp, logical_bp},
+                                  .bp = {cond_logical_bp, cond_logical_bp},
+                                  .nud = nullptr,
+                                  .led = parse_binary,
+                              });
+        }
+
+        // ConditionalSelection
+        float cond_selection_bp =
+            static_cast<int32_t>(BindingPower::ConditionalSelection);
+        for (const auto &type :
+             std::vector<TokenType>{TokenType::QuestionQuestion})
+        {
+            add_handler(type, PrattHandler{
+                                  .type = type,
+                                  .bp = {cond_selection_bp, cond_selection_bp},
                                   .nud = nullptr,
                                   .led = parse_binary,
                               });

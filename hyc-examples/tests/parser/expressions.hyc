@@ -1,0 +1,7 @@
+fn main -> void () {
+    var x = a.hello_world?.test;
+    var y: std::string? = somefunction().to_string();
+    var test_ref: &std::string;
+    var test_ptr: *std::string = &test_ref;
+    var test_bw = 1 & 2;
+}

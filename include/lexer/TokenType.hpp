@@ -85,19 +85,21 @@ namespace Lexer
         PercentEqual, // %=
 
         // ===== DELIMITERS =====
-        LeftParen,    // (
-        RightParen,   // )
-        LeftBrace,    // {
-        RightBrace,   // {}
-        LeftBracket,  // [
-        RightBracket, // ]
-        Comma,        // ,
-        Dot,          // .
-        DoubleDot,    // ..
-        Semicolon,    // ;
-        Colon,        // :
-        DoubleColon,  // ::
-        Question,     // ?
+        LeftParen,        // (
+        RightParen,       // )
+        LeftBrace,        // {
+        RightBrace,       // }
+        LeftBracket,      // [
+        RightBracket,     // ]
+        Comma,            // ,
+        Dot,              // .
+        DoubleDot,        // ..
+        Semicolon,        // ;
+        Colon,            // :
+        DoubleColon,      // ::
+        Question,         // ?
+        QuestionQuestion, // ??
+        QuestionDot,      // ?.
 
         // ==== MISC ====
         EndOfFile, // EOF
@@ -188,19 +190,21 @@ namespace Lexer
         "PercentEqual", // %=
 
         // ===== DELIMITERS =====
-        "LeftParen",    // (
-        "RightParen",   // )
-        "LeftBrace",    // {
-        "RightBrace",   // {}
-        "LeftBracket",  // [
-        "RightBracket", // ]
-        "Comma",        // ,
-        "Dot",          // .
-        "DoubleDot",    // ..
-        "Semicolon",    // ;
-        "Colon",        // :
-        "DoubleColon",  // ::
-        "Question",     // ?
+        "LeftParen",        // (
+        "RightParen",       // )
+        "LeftBrace",        // {
+        "RightBrace",       // {}
+        "LeftBracket",      // [
+        "RightBracket",     // ]
+        "Comma",            // ,
+        "Dot",              // .
+        "DoubleDot",        // ..
+        "Semicolon",        // ;
+        "Colon",            // :
+        "DoubleColon",      // ::
+        "Question",         // ?
+        "QuestionDot",      // ?.
+        "QuestionQuestion", // ??
 
         // ==== MISC ====
         "EndOfFile", // EOF
@@ -297,6 +301,8 @@ namespace Lexer
         ":",  // Colon
         "::", // DoubleColon
         "?",  // Question
+        "?.", // QuestionDot
+        "??", // QuestionQuestion
 
         // ==== MISC ====
         "EOF", // EndOfFile

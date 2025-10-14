@@ -401,8 +401,14 @@ namespace Lexer
 
                 case '<':
                 {
+                    if (match('<'))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::LessLess);
+                        continue;
+                    }
+
                     // <-
-                    if (match('-'))
+                    else if (match('-'))
                     {
                         char p = peek();
                         if (p == '\0')
@@ -432,8 +438,15 @@ namespace Lexer
 
                 case '>':
                 {
+                    if (match('>'))
+                    {
+                        create_token({ofs, offset - 1},
+                                     TokenType::GreaterGreater);
+                        continue;
+                    }
+
                     // >=
-                    if (match('='))
+                    else if (match('='))
                     {
                         create_token({ofs, offset - 1},
                                      TokenType::GreaterEqual);
@@ -613,6 +626,12 @@ namespace Lexer
                     continue;
                 }
 
+                case '~':
+                {
+                    create_token({ofs, offset - 1}, TokenType::Tilde);
+                    continue;
+                }
+
                 case '^':
                 {
                     // ^^ (Exponent)
@@ -631,7 +650,21 @@ namespace Lexer
                 {
                     // ??
                     // TODO: ??
+                    if (match('?'))
+                    {
+                        create_token({ofs, offset - 1},
+                                     TokenType::QuestionQuestion);
+                        continue;
+                    }
 
+                    // ?.
+                    else if (match('.'))
+                    {
+                        create_token({ofs, offset - 1}, TokenType::QuestionDot);
+                        continue;
+                    }
+
+                    // ?
                     create_token({ofs, offset - 1}, TokenType::Question);
                     continue;
                 }

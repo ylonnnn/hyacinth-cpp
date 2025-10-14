@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "ast/expr/Expr.hpp"
 #include "lexer/Token.hpp"
 #include "parser/ParseResult.hpp"
 #include "parser/Parser.hpp"
@@ -17,10 +16,15 @@ namespace Parser
         Default = 0,
         Comma,
         Assignment,
-        Logical,
+        Statement,
+        ConditionalSelection,
+        ConditionalLogical,
+        Bitwise,
         Relational,
+        BitwiseShift,
         Additive,
         Multiplicative,
+        Exponentiation,
         Unary,
         FunctionCall,
         MemberAccess,

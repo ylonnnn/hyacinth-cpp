@@ -118,7 +118,13 @@ namespace Parser
 
         lexer.consume();
 
-        ParseResult v_res = Common::Pratt.parse_base(parser, 0);
+        Pratt &pratt = Common::Pratt;
+        PrattHandler *handler = pratt.get_handler(operation->type);
+
+        if (handler == nullptr)
+            return nullptr;
+
+        ParseResult v_res = pratt.parse_base(parser, handler->bp.second);
         auto left_ = utils::dynamic_ptr_cast<AST::Expr>(v_res.data);
 
         if (left_ == nullptr)
