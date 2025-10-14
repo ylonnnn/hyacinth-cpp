@@ -6,7 +6,7 @@
 
 namespace Parser
 {
-    using TokenType = Lexer::TokenType;
+    using Lexer::TokenType;
 
     PathRule::PathRule()
         : GrammarRule(TokenType::EndOfFile, GC_GLOBAL | GC_LOCAL)

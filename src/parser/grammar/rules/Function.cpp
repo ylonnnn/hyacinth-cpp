@@ -11,7 +11,7 @@
 
 namespace Parser
 {
-    using TokenType = Lexer::TokenType;
+    using Lexer::TokenType;
 
     FunctionParameter::FunctionParameter()
         : GrammarRule(TokenType::EndOfFile, GC_LOCAL)
@@ -82,7 +82,7 @@ namespace Parser
 
     void FunctionParameter::recover(Parser &parser)
     {
-        using TokenType = Lexer::TokenType;
+        using Lexer::TokenType;
 
         parser.synchronize({TokenType::Comma, TokenType::RightParen});
     }
@@ -264,7 +264,7 @@ namespace Parser
 
     void FunctionDefinition::recover(Parser &parser)
     {
-        using TokenType = Lexer::TokenType;
+        using Lexer::TokenType;
 
         parser.synchronize({TokenType::LeftBrace, TokenType::RightBrace});
     }
@@ -318,7 +318,7 @@ namespace Parser
 
     void FunctionDefinitionReturn::recover(Parser &parser)
     {
-        using TokenType = Lexer::TokenType;
+        using Lexer::TokenType;
 
         parser.synchronize({TokenType::Semicolon});
     }

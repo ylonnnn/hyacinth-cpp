@@ -22,7 +22,7 @@ namespace Parser
 
     void Pratt::initialize()
     {
-        using TokenType = Lexer::TokenType;
+        using Lexer::TokenType;
 
         float default_bp = static_cast<int32_t>(BindingPower::Default);
 
@@ -292,7 +292,7 @@ namespace Parser
 
     void Pratt::initialize_types()
     {
-        using TokenType = Lexer::TokenType;
+        using Lexer::TokenType;
 
         float default_tbp = static_cast<int32_t>(TypeBindingPower::Default);
 

@@ -66,7 +66,7 @@ namespace Parser
 
     void Block::recover(Parser &parser)
     {
-        using TokenType = Lexer::TokenType;
+        using Lexer::TokenType;
 
         parser.synchronize({TokenType::RightBrace});
     }

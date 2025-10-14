@@ -25,7 +25,7 @@ namespace Parser
 
     void VariableDefinition::parse(Parser &parser, ParseResult &result)
     {
-        using TokenType = Lexer::TokenType;
+        using Lexer::TokenType;
 
         // "var" "mut"? IDENTIFIER ( ":" TYPE )? ( "=" VALUE )? ;
 
@@ -131,7 +131,7 @@ namespace Parser
 
     void VariableDefinition::recover(Parser &parser)
     {
-        using TokenType = Lexer::TokenType;
+        using Lexer::TokenType;
 
         parser.synchronize({TokenType::Semicolon});
     }
