@@ -13,6 +13,8 @@ namespace AST
                                   accessibility),
           value(std::move(value))
     {
+        is_definition_ = true;
+
         if (value != nullptr)
             end_position = value->end_position;
     }

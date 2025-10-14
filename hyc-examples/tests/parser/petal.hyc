@@ -1,0 +1,10 @@
+// Petals
+// - Library system of Hyacinth
+
+petal std {
+    petal math {
+    }
+}
+
+// Accessed with ::
+// std::math::
