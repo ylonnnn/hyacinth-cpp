@@ -1,7 +1,8 @@
 fn main -> void () {
-    var x = a.hello_world?.test;
+    var x = a.hello_world?.test?.another_field?.more_field?.more_field2;
     var y: std::string? = somefunction().to_string();
     var test_ref: &std::string;
     var test_ptr: *std::string = &test_ref;
     var test_bw = 1 & 2;
+    var nested_fn_calls = a(b()).c().d().e(f(g(h + i))).j(k, l, m(), n(o(), p()));
 }

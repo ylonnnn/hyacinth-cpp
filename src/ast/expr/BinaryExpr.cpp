@@ -7,10 +7,10 @@
 
 namespace AST
 {
-    BinaryExpr::BinaryExpr(std::unique_ptr<Expr> &&left,
-                           Lexer::Token &operation,
+    BinaryExpr::BinaryExpr(Lexer::Token &operation,
+                           std::unique_ptr<Expr> &&left,
                            std::unique_ptr<Expr> &&right)
-        : Node(left->position), left(std::move(left)), operation(operation),
+        : Node(left->position), operation(operation), left(std::move(left)),
           right(std::move(right))
     {
         end_position = this->right != nullptr ? this->right->end_position

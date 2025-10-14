@@ -1,6 +1,7 @@
 
 #include "ast/common/Identifier.hpp"
 #include "ast/expr/BinaryExpr.hpp"
+#include "ast/expr/FunctionCallExpr.hpp"
 #include "ast/expr/LiteralExpr.hpp"
 // #include "ast/expr/FunctionCallExpr.hpp"
 // #include "ast/expr/compound/ArrayExpr.hpp"
@@ -31,8 +32,7 @@ namespace Parser
 
     std::unique_ptr<AST::Path> parse_path(Parser &parser,
                                           std::unique_ptr<AST::Node> &left,
-                                          float right_bp,
-                                          ParseResult &result);
+                                          float right_bp, ParseResult &result);
 
     std::unique_ptr<AST::BinaryExpr>
     parse_binary(Parser &parser, std::unique_ptr<AST::Node> &left,
@@ -45,13 +45,17 @@ namespace Parser
     parse_unary(Parser &parser, std::unique_ptr<AST::Node> &left,
                 float right_bp, ParseResult &result);
 
+    std::unique_ptr<AST::FunctionCallExpr>
+    parse_func_call(Parser &parser, std::unique_ptr<AST::Node> &left,
+                    float right_bp, ParseResult &result);
+
     // Type
 
-    std::unique_ptr<AST::SimpleType>
-    parse_type_identifier(Parser &parser, ParseResult &result);
+    std::unique_ptr<AST::SimpleType> parse_type_identifier(Parser &parser,
+                                                           ParseResult &result);
 
-    std::unique_ptr<AST::PrefixedType>
-    parse_type_array(Parser &parser, ParseResult &result);
+    std::unique_ptr<AST::PrefixedType> parse_type_array(Parser &parser,
+                                                        ParseResult &result);
 
     NudHandler<AST::PrefixedType>
     make_type_pref_nud_handler(TypeBindingPower bp, AST::PrefixedTypeKind kind);

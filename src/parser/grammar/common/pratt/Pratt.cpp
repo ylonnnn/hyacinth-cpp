@@ -57,16 +57,17 @@ namespace Parser
                 .led = nullptr,
             });
 
-        // Grouping
+        // Grouping & Function Call
+        float func_call_bp = static_cast<int32_t>(BindingPower::FunctionCall);
         add_handler(
             TokenType::LeftParen,
             PrattHandler{
                 .type = TokenType::LeftParen,
-                .bp = {default_bp, default_bp},
+                .bp = {func_call_bp, default_bp},
                 .nud = make_group_handler(
                     TokenType::RightParen, [&](Parser &parser) -> ParseResult
                     { return Common::Pratt.parse_base(parser, 0); }),
-                .led = nullptr,
+                .led = parse_func_call,
             });
 
         // // Compound
@@ -86,7 +87,7 @@ namespace Parser
         {
             add_handler(type, PrattHandler{
                                   .type = type,
-                                  .bp = {memaccess_bp, memaccess_bp},
+                                  .bp = {memaccess_bp, memaccess_bp + 1.0f},
                                   .nud = nullptr,
                                   .led = parse_binary,
                               });
@@ -99,15 +100,6 @@ namespace Parser
                                             .nud = nullptr,
                                             .led = parse_path,
                                         });
-
-        // // Function Call
-        // float fncall_bp = static_cast<int32_t>(BindingPower::FunctionCall);
-        // for (const auto &type :
-        //      std::vector<Lexer::TokenType>{Delimeter::ParenthesisOpen})
-        // {
-        //     add_led(type, parse_fncall,
-        //             {fncall_bp, fncall_bp});
-        // }
 
         // Unary
         float unary_bp = static_cast<int32_t>(BindingPower::Unary);

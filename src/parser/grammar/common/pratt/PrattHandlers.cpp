@@ -1,5 +1,6 @@
 #include <memory>
 
+#include "ast/NodeCollection.hpp"
 #include "ast/common/Identifier.hpp"
 #include "ast/expr/Path.hpp"
 #include "diagnostic/helpers.hpp"
@@ -104,7 +105,7 @@ namespace Parser
         //                            "Missing here");
         // }
 
-        return std::make_unique<AST::BinaryExpr>(std::move(left_), *operation,
+        return std::make_unique<AST::BinaryExpr>(*operation, std::move(left_),
                                                  std::move(right_));
     }
 
@@ -152,6 +153,88 @@ namespace Parser
 
         return std::make_unique<AST::UnaryExpr>(AST::UnaryType::Post,
                                                 *operation, std::move(left_));
+    }
+
+    static NudHandler<> func_call_argument_handler = make_group_handler(
+        Lexer::TokenType::RightParen,
+        [](Parser &parser) -> ParseResult
+        {
+            using Lexer::TokenType;
+
+            auto &lexer = parser.lexer;
+            ParseResult result{
+                parser, Core::ResultStatus::Success, nullptr, {}};
+
+            auto collection = std::make_unique<AST::NodeCollection<AST::Expr>>(
+                lexer.current().range.start,
+                std::vector<std::unique_ptr<AST::Expr>>{});
+
+            Lexer::TokenType closing = TokenType::RightParen;
+            auto expect_arg = true;
+
+            while (!parser.expect(closing, false))
+            {
+                if (expect_arg)
+                {
+                    ParseResult p_res = Common::Pratt.parse_base(parser, 0);
+                    result.adapt(p_res.status, std::move(p_res.diagnostics));
+
+                    if (p_res.data == nullptr)
+                        break;
+
+                    auto param = dynamic_cast<AST::Expr *>(p_res.data.get());
+                    if (param == nullptr)
+                        break;
+
+                    // Store and use to avoid warnings
+                    auto _ = p_res.data.release();
+                    (void)_;
+
+                    collection->collection.emplace_back(param);
+                    expect_arg = false;
+                }
+
+                if (parser.expect(TokenType::Comma, false))
+                {
+                    lexer.consume();
+                    expect_arg = true;
+
+                    continue;
+                }
+
+                break;
+            }
+
+            if (auto diagnostic = parser.expect_or_error(closing, false))
+                result.error(std::move(diagnostic));
+            else
+                collection->end_position = &lexer.peek()->range.end;
+
+            result.data = std::move(collection);
+
+            return result;
+        });
+
+    std::unique_ptr<AST::FunctionCallExpr>
+    parse_func_call(Parser &parser, std::unique_ptr<AST::Node> &left, float,
+                    ParseResult &result)
+    {
+        auto callee = utils::dynamic_ptr_cast<AST::Expr>(left);
+        if (callee == nullptr)
+        {
+            utils::todo("throw error: cannot invoke non-expression nodes");
+            return nullptr;
+        }
+
+        std::unique_ptr<AST::Node> args =
+            func_call_argument_handler(parser, result);
+        auto arguments =
+            utils::dynamic_ptr_cast<AST::NodeCollection<AST::Expr>>(args);
+        if (arguments == nullptr)
+            return nullptr;
+
+        return std::make_unique<AST::FunctionCallExpr>(
+            std::move(callee), std::move(arguments->collection));
     }
 
     // Type

@@ -7,11 +7,11 @@ namespace AST
 {
     struct BinaryExpr : Expr
     {
-        std::unique_ptr<Expr> left;
         Lexer::Token &operation;
+        std::unique_ptr<Expr> left;
         std::unique_ptr<Expr> right;
 
-        BinaryExpr(std::unique_ptr<Expr> &&left, Lexer::Token &operation,
+        BinaryExpr(Lexer::Token &operation, std::unique_ptr<Expr> &&left,
                    std::unique_ptr<Expr> &&right);
         ~BinaryExpr() override = default;
 
