@@ -1,22 +1,17 @@
 #include "parser/grammar/rules/Hyacinth.hpp"
 #include "parser/grammar/Grammar.hpp"
 #include "parser/grammar/rules/Function.hpp"
+#include "parser/grammar/rules/Import.hpp"
 #include "parser/grammar/rules/Petal.hpp"
 #include "parser/grammar/rules/Variable.hpp"
 #include "parser/grammar/rules/accessibility/GlobalAccessibility.hpp"
-// #include "parser/grammar/rules/Function.hpp"
-// #include "parser/grammar/rules/Import.hpp"
-// #include "parser/grammar/rules/Lib.hpp"
-// #include "parser/grammar/rules/Variable.hpp"
-// #include "parser/grammar/rules/accessibility/GlobalAccessibility.hpp"
 // #include "parser/grammar/rules/types/Struct.hpp"
 
 namespace Parser::Hyacinth
 {
     void initialize(Grammar &grammar)
     {
-        // grammar.add_rule(IMPORT, std::make_unique<ImportStatement>(),
-        //                  {true, false});
+        grammar.add_rule(IMPORT, std::make_unique<ImportStatement>());
 
         grammar.add_rule(PETAL, std::make_unique<PetalDefinition>());
 

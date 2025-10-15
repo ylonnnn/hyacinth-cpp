@@ -8,9 +8,10 @@ namespace AST
     struct ImportStmt : DeclarationStmt
     {
         Lexer::Token &target;
+        std::vector<Lexer::Token *> symbols;
         // TODO: Symbols
 
-        ImportStmt(Lexer::Token &target);
+        ImportStmt(Lexer::Token &target, std::vector<Lexer::Token *> &&symbols);
 
         void print(std::ostream &os, uint8_t tab) const override;
     };

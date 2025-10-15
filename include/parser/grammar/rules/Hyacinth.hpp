@@ -4,7 +4,7 @@
 
 namespace Parser::Hyacinth
 {
-    // constexpr auto IMPORT = Lexer::TokenType::Import;
+    constexpr auto IMPORT = Lexer::TokenType::Import;
     constexpr auto PETAL = Lexer::TokenType::Petal;
 
     constexpr auto

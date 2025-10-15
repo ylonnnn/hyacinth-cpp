@@ -1,2 +1,2 @@
 import "@std/io" -> { std }; 
-import "./petal.hyc" -> { std };
+import "./petal.hyc" -> { std, other_fn, some_other_fn, test_fn };
