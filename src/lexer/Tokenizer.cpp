@@ -204,16 +204,21 @@ namespace Lexer
         if (c == '0')
         {
             consume(), c = peek();
-            base = c == 'b' ? 2 : c == 'o' ? 8 : c == 'x' ? 16 : UINT32_MAX;
 
-            consume();
-            if (eof() || !utils::is_digit_of(base, peek()))
+            // Potential digit
+            if (std::isalnum(c))
             {
-                result.error(range_to_curr(lexer, s_row, s_col, s_offset),
-                             Diagnostic::ErrorType::MalformedLiteral,
-                             "malformed numeric literal.");
+                base = c == 'b' ? 2 : c == 'o' ? 8 : c == 'x' ? 16 : UINT32_MAX;
 
-                return;
+                consume();
+                if (eof() || !utils::is_digit_of(base, peek()))
+                {
+                    result.error(range_to_curr(lexer, s_row, s_col, s_offset),
+                                 Diagnostic::ErrorType::MalformedLiteral,
+                                 "malformed numeric literal.");
+
+                    return;
+                }
             }
         }
 
