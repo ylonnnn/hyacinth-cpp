@@ -14,13 +14,12 @@ namespace AST
     {
     }
 
-    void StructField::print(std::ostream &os,
-                            [[maybe_unused]] uint8_t tab) const
+    void StructField::print(std::ostream &os, uint8_t tab) const
     {
         os << "Field { " << identifier.value << ": " << type->to_string()
            << " = ";
         if (default_value != nullptr)
-            os << *default_value;
+            default_value->print(os, tab + 1);
         else
             os << "nullptr";
         os << " }";
@@ -47,7 +46,8 @@ namespace AST
         for (auto &[_, field] : fields)
         {
             std::string inner_indentation = utils::tab(tab + 1, 4);
-            os << "\n" << inner_indentation << field;
+            os << "\n" << inner_indentation;
+            field.print(os, tab + 1);
         }
 
         os << "\n" << inner_indentation << "}\n" << indentation << "}";
