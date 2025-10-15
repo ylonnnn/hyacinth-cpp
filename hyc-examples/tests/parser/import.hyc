@@ -1,0 +1,2 @@
+import "@std/io" -> { std }; 
+import "./petal.hyc" -> { std };
