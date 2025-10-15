@@ -1,6 +1,5 @@
 #include "ast/stmt/types/struct/StructDefStmt.hpp"
 #include "ast/Node.hpp"
-#include "ast/common/Identifier.hpp"
 #include "utils/style.hpp"
 
 namespace AST
@@ -10,7 +9,8 @@ namespace AST
                              std::unique_ptr<Type> &&type,
                              std::unique_ptr<Expr> &&default_value)
         : Node(identifier.range.start),
-          IdentifierDecl(identifier, mut_state, std::move(type))
+          IdentifierDecl(identifier, mut_state, std::move(type)),
+          default_value(std::move(default_value))
     {
     }
 
@@ -18,7 +18,12 @@ namespace AST
                             [[maybe_unused]] uint8_t tab) const
     {
         os << "Field { " << identifier.value << ": " << type->to_string()
-           << *default_value << " }";
+           << " = ";
+        if (default_value != nullptr)
+            os << *default_value;
+        else
+            os << "nullptr";
+        os << " }";
     }
 
     StructDefinitionStmt::StructDefinitionStmt(
@@ -39,10 +44,10 @@ namespace AST
            << inner_indentation << "name: " << identifier << "\n"
            << inner_indentation << "fields: {";
 
-        for (auto &field_ : fields)
+        for (auto &[_, field] : fields)
         {
             std::string inner_indentation = utils::tab(tab + 1, 4);
-            os << "\n" << inner_indentation << field_.second;
+            os << "\n" << inner_indentation << field;
         }
 
         os << "\n" << inner_indentation << "}\n" << indentation << "}";

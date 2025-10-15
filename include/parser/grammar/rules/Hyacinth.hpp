@@ -13,7 +13,7 @@ namespace Parser::Hyacinth
         // prot
         PROTECTED = Lexer::TokenType::Prot;
 
-    // constexpr auto STRUCT = Reserved::Struct;
+    constexpr auto STRUCT = Lexer::TokenType::Struct;
 
     constexpr auto FUNCTION = Lexer::TokenType::Fn;
     constexpr auto FN_RETURN = Lexer::TokenType::Return;

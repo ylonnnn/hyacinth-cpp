@@ -1,0 +1,21 @@
+struct test;
+
+struct another_test;
+
+struct string {
+    data: *char;
+    len: usize;
+    cap: usize;
+}
+
+struct vector {
+    data: *T;
+    len: usize;
+    cap: usize = 8;
+}
+
+struct Lexer {
+    program: &Program = &program;
+    source: std::string;
+    pos: usize = 0;
+}
