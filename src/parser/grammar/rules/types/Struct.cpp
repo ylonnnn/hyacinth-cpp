@@ -83,8 +83,6 @@ namespace Parser
     std::unordered_map<std::string_view, AST::StructField>
     StructDefinition::parse_fields(Parser &parser, ParseResult &result)
     {
-        auto &lexer = parser.lexer;
-
         std::unordered_map<std::string_view, AST::StructField> fields;
         fields.reserve(8);
 

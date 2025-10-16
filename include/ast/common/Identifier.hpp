@@ -4,11 +4,13 @@
 
 #include "ast/Node.hpp"
 #include "ast/expr/Expr.hpp"
+#include "ast/type/Type.hpp"
 #include "lexer/Token.hpp"
 
 namespace AST
 {
-    using IdentifierArgument = std::variant<std::unique_ptr<Expr>>;
+    using IdentifierArgument =
+        std::variant<std::unique_ptr<Type>, std::unique_ptr<Expr>>;
 
     struct Identifier : Node
     {

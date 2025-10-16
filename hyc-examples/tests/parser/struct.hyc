@@ -14,8 +14,10 @@ struct vector {
     cap: usize = 8;
 }
 
-struct Lexer {
-    program: &Program = &program;
-    source: std::string;
-    pos: usize = 0;
+pub petal lexer {
+    pub struct Lexer {
+        program: &Program = program;
+        source: std::string;
+        pos: usize = 0;
+    }
 }

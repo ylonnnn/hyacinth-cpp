@@ -51,21 +51,21 @@ namespace Parser
         return std::make_unique<AST::LiteralExpr>(*token);
     }
 
-    std::unique_ptr<AST::Identifier>
-    parse_identifier(Parser &parser, [[maybe_unused]] ParseResult &result)
+    std::unique_ptr<AST::Identifier> parse_identifier(Parser &parser,
+                                                      ParseResult &result)
     {
-        return Common::PathRule.parse_ident(parser);
+        return Common::PathRule.parse_ident(parser, result);
     }
 
     std::unique_ptr<AST::Path> parse_path(Parser &parser,
                                           std::unique_ptr<AST::Node> &left,
-                                          float, ParseResult &)
+                                          float, ParseResult &result)
     {
         auto left_ = utils::dynamic_ptr_cast<AST::Path>(left);
         if (left_ == nullptr)
             return nullptr;
 
-        Common::PathRule.parse_path(parser, left_);
+        Common::PathRule.parse_path(parser, left_, result);
         return left_;
     }
 
@@ -243,7 +243,7 @@ namespace Parser
                                                            ParseResult &result)
     {
         std::unique_ptr<AST::Path> path =
-            Common::PathRule.parse_path(parser, &result);
+            Common::PathRule.parse_path(parser, result);
 
         return std::make_unique<AST::SimpleType>(std::move(path));
     }

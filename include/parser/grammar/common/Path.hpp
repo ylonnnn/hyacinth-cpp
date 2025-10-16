@@ -12,12 +12,16 @@ namespace Parser
       public:
         PathRule();
 
-        std::unique_ptr<AST::Identifier>
-        parse_ident(Parser &parser, ParseResult *result = nullptr);
-        std::unique_ptr<AST::Path> parse_path(Parser &parser,
-                                              ParseResult *result = nullptr);
+        std::vector<AST::IdentifierArgument> parse_args(Parser &parser,
+                                                        ParseResult &result);
 
-        void parse_path(Parser &parser, std::unique_ptr<AST::Path> &left);
+        std::unique_ptr<AST::Identifier> parse_ident(Parser &parser,
+                                                     ParseResult &result);
+        std::unique_ptr<AST::Path> parse_path(Parser &parser,
+                                              ParseResult &result);
+
+        void parse_path(Parser &parser, std::unique_ptr<AST::Path> &left,
+                        ParseResult &result);
 
         ParseResult parse(Parser &parser) override;
         void parse(Parser &parser, ParseResult &result) override;

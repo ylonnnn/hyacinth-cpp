@@ -20,7 +20,7 @@ namespace AST
             std::string inner_indentation = utils::tab(tab + 1, 4);
 
             os << "\n" << inner_indentation;
-            segment->print(os, tab + 1);
+            segment->print(os, tab + 2);
         }
 
         os << "\n" << inner_indentation << "}\n" << indentation << "}";

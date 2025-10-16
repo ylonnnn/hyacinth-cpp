@@ -69,8 +69,6 @@ namespace Parser
             result.adapt(t_res.status, std::move(t_res.diagnostics));
 
             type = utils::dynamic_ptr_cast<AST::Type>(t_res.data);
-            if (type == nullptr)
-                return;
         }
 
         // "=" VALUE
@@ -107,15 +105,8 @@ namespace Parser
             return;
         }
 
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::Semicolon, false))
-        {
-            result.error(std::move(diagnostic));
-            return;
-        }
-
-        else
-            lexer.consume();
+        // ;
+        Common::Terminator.parse(parser, result);
 
         if (result.status == Core::ResultStatus::Fail)
             return;

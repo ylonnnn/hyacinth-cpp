@@ -1,0 +1,4 @@
+var strs: std::vector[std::string];
+var int_arr: std::array[int[32]];
+var test: std::int[32] = 1;
+var x = 1 + 2;

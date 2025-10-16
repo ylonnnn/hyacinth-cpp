@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     // }
 
     const char *file =
-        argc < 2 ? "hyc-examples/tests/parser/struct.hyc" : argv[1];
+        argc < 2 ? "hyc-examples/tests/parser/identifier_args.hyc" : argv[1];
     execute_file(file);
 #endif
 
