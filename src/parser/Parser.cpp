@@ -84,6 +84,30 @@ namespace Parser
                    : Diagnostic::create_syntax_error(*token, type);
     }
 
+    Lexer::Token *
+    Parser::expect_or_error(Lexer::TokenType type, ParseResult &result,
+                                  ParserTokenConsumptionType consumption)
+    {
+        if (auto diagnostic = expect_or_error(
+                type, consumption == ParserTokenConsumptionType::Absolute))
+        {
+            result.error(std::move(diagnostic));
+            return nullptr;
+        }
+
+        switch (consumption)
+        {
+            case ParserTokenConsumptionType::UponSuccess:
+                return lexer.next();
+
+            case ParserTokenConsumptionType::Preserve:
+                return lexer.peek();
+
+            default:
+                return &lexer.current();
+        }
+    }
+
     ProgramParseResult Parser::parse() { return grammar.parse(*this); }
 
 } // namespace Parser

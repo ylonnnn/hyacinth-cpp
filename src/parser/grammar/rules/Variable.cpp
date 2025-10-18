@@ -44,17 +44,11 @@ namespace Parser
             mut_state = AST::IdentifierMutabilityState::Mutable;
         }
 
-        // IDENTIFIER (TokenType::Identifier)
-        Lexer::Token *identifier = nullptr;
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::Identifier, false))
-        {
-            result.force_error(std::move(diagnostic));
+        // IDENTIFIER
+        Lexer::Token *identifier =
+            parser.expect_or_error(TokenType::Identifier, result);
+        if (identifier == nullptr)
             return;
-        }
-
-        else
-            identifier = lexer.next();
 
         auto flag = 0;
 

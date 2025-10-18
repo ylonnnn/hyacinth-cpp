@@ -15,6 +15,13 @@ namespace Parser
         Synchronized,
     };
 
+    enum class ParserTokenConsumptionType
+    {
+        Absolute,
+        UponSuccess,
+        Preserve,
+    };
+
     struct ProgramParseResult : ParseResult
     {
         std::unique_ptr<AST::Program> data;
@@ -47,6 +54,11 @@ namespace Parser
         bool expect(Lexer::TokenType type, bool consume = true);
         std::unique_ptr<Diagnostic::Diagnostic>
         expect_or_error(Lexer::TokenType type, bool consume = true);
+
+        Lexer::Token *
+        expect_or_error(Lexer::TokenType type, ParseResult &result,
+                        ParserTokenConsumptionType consumption =
+                            ParserTokenConsumptionType::UponSuccess);
 
         ProgramParseResult parse();
     };

@@ -81,16 +81,10 @@ namespace Parser
     {
         auto &lexer = parser.lexer;
 
-        Lexer::Token *identifier = nullptr;
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::Identifier, false))
-        {
-            result.error(std::move(diagnostic));
+        Lexer::Token *identifier =
+            parser.expect_or_error(TokenType::Identifier, result);
+        if (identifier == nullptr)
             return nullptr;
-        }
-
-        else
-            identifier = lexer.next();
 
         auto node = std::make_unique<AST::Identifier>(
             *identifier, std::vector<AST::IdentifierArgument>{});

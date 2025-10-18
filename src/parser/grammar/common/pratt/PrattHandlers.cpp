@@ -26,10 +26,8 @@ namespace Parser
             ParseResult p_res = handler(parser);
             result.adapt(p_res.status, std::move(p_res.diagnostics));
 
-            if (auto diagnostic = parser.expect_or_error(cl_pair, false))
-                result.error(std::move(diagnostic));
-            else
-                lexer.consume();
+            parser.expect_or_error(
+                cl_pair, result, ParserTokenConsumptionType::UponSuccess);
 
             return std::move(p_res.data);
         };
@@ -46,7 +44,6 @@ namespace Parser
         if (token == nullptr)
             return nullptr;
 
-        std::cout << "token: " << *token << "\n";
         lexer.consume();
 
         return std::make_unique<AST::LiteralExpr>(*token);
@@ -206,10 +203,9 @@ namespace Parser
                 break;
             }
 
-            if (auto diagnostic = parser.expect_or_error(closing, false))
-                result.error(std::move(diagnostic));
-            else
-                collection->end_position = &lexer.peek()->range.end;
+            if (auto cl = parser.expect_or_error(
+                    closing, result, ParserTokenConsumptionType::UponSuccess))
+                collection->end_position = &cl->range.end;
 
             result.data = std::move(collection);
 
@@ -255,17 +251,9 @@ namespace Parser
         auto &lexer = parser.lexer;
         lexer.consume(); // Consume [
 
-        if (!parser.expect(Lexer::TokenType::RightBracket, false))
-        {
-            Lexer::Token *token = lexer.peek();
-            if (token == nullptr)
-                return nullptr;
-
-            result.error(Diagnostic::create_syntax_error(
-                *token, Lexer::TokenType::RightBracket));
-
-            return nullptr;
-        }
+        // Validate ]
+        parser.expect_or_error(Lexer::TokenType::RightBracket, result,
+                                     ParserTokenConsumptionType::Preserve);
 
         auto nud = make_type_pref_nud_handler(TypeBindingPower::Array,
                                               AST::PrefixedTypeKind::Array);

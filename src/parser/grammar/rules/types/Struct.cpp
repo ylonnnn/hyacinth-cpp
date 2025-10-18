@@ -32,18 +32,13 @@ namespace Parser
         }
 
         // FIELD_IDENTIFIER
-        Lexer::Token *identifier = nullptr;
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::Identifier, false))
-            result.error(std::move(diagnostic));
-        else
-            identifier = lexer.next();
+        Lexer::Token *identifier =
+            parser.expect_or_error(TokenType::Identifier, result);
+        if (identifier == nullptr)
+            return;
 
         // :
-        if (auto diagnostic = parser.expect_or_error(TokenType::Colon, false))
-            result.error(std::move(diagnostic));
-        else
-            lexer.consume();
+        parser.expect_or_error(TokenType::Colon, result);
 
         // FIELD_TYPE
         ParseResult t_res = Common::Pratt.parse_base(parser, 0, true);
@@ -74,10 +69,8 @@ namespace Parser
             AST::StructField(*identifier, mut_state, std::move(type),
                              std::move(value)));
 
-        if (inserted)
-            return;
-
-        utils::todo("throw error: duplication of field {}");
+        if (!inserted)
+            utils::todo("throw error: duplication of field {}");
     }
 
     std::unordered_map<std::string_view, AST::StructField>
@@ -89,6 +82,7 @@ namespace Parser
         while (!parser.expect(TokenType::RightBrace, false))
         {
             parse_field(parser, result, fields);
+
             if (result.status == Core::ResultStatus::Fail)
                 break;
         }
@@ -115,12 +109,8 @@ namespace Parser
         lexer.consume();
 
         // IDENTIFIER
-        Lexer::Token *identifier = nullptr;
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::Identifier, false))
-            result.error(std::move(diagnostic));
-        else
-            identifier = lexer.next();
+        Lexer::Token *identifier =
+            parser.expect_or_error(TokenType::Identifier, result);
 
         // {
         if (parser.expect(TokenType::LeftBrace, false))
@@ -133,11 +123,8 @@ namespace Parser
 
             // }
             Core::Position *e_pos = nullptr;
-            if (auto diagnostic =
-                    parser.expect_or_error(TokenType::RightBrace, false))
-                result.error(std::move(diagnostic));
-            else
-                e_pos = &lexer.next()->range.end;
+            if (auto cl = parser.expect_or_error(TokenType::RightBrace, result))
+                e_pos = &cl->range.end;
 
             auto node = std::make_unique<AST::StructDefinitionStmt>(
                 *identifier, std::move(fields));

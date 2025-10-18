@@ -56,10 +56,9 @@ namespace Parser
         }
 
         // }
-        if (auto diagnostic = parser.expect_or_error(closing, false))
-            result.error(std::move(diagnostic));
-        else
-            block->end_position = &lexer.next()->range.end;
+
+        if (auto cl = parser.expect_or_error(closing, result))
+            block->end_position = &cl->range.end;
 
         result.data = std::move(block);
     }

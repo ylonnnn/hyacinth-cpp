@@ -42,18 +42,13 @@ namespace Parser
         }
 
         // IDENTIFIER
-        Lexer::Token *identifier = nullptr;
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::Identifier, false))
-            result.error(std::move(diagnostic));
-        else
-            identifier = lexer.next();
+        Lexer::Token *identifier =
+            parser.expect_or_error(TokenType::Identifier, result);
+        if (identifier == nullptr)
+            return;
 
         // : (TokenType::Colon)
-        if (auto diagnostic = parser.expect_or_error(TokenType::Colon, false))
-            result.error(std::move(diagnostic));
-        else
-            lexer.consume();
+        parser.expect_or_error(TokenType::Colon, result);
 
         // TYPE
         ParseResult t_res = Common::Pratt.parse_base(parser, 0, true);
@@ -146,19 +141,10 @@ namespace Parser
                                                       ParseResult &result,
                                                       Lexer::TokenType expected)
     {
-        auto &lexer = parser.lexer;
+        if (auto cl = parser.expect_or_error(expected, result))
+            return &cl->range.end;
 
-        if (auto diagnostic = parser.expect_or_error(expected, false))
-        {
-            // parser.panic();
-            // result.status = Core::ResultStatus::Fail;
-            // result.diagnostics.push_back(std::move(diagnostic));
-
-            result.force_error(std::move(diagnostic));
-            return nullptr;
-        }
-
-        return &lexer.next()->range.end;
+        return nullptr;
     }
 
     ParseResult
@@ -189,25 +175,16 @@ namespace Parser
         auto &lexer = parser.lexer;
 
         // fn
-        if (auto diagnostic = parser.expect_or_error(token_type, false))
-            result.force_error(std::move(diagnostic));
-        else
-            lexer.next();
+        lexer.consume();
 
         // IDENTIFIER
-        Lexer::Token *identifier = nullptr;
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::Identifier, false))
-            result.error(std::move(diagnostic));
-        else
-            identifier = lexer.next();
+        Lexer::Token *identifier =
+            parser.expect_or_error(TokenType::Identifier, result);
+        if (identifier == nullptr)
+            return;
 
-        // -> (TokenType::MinusGreater)
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::MinusGreater, false))
-            result.error(std::move(diagnostic));
-        else
-            lexer.consume();
+        // ->
+        parser.expect_or_error(TokenType::MinusGreater, result);
 
         // RETURN_TYPE
         ParseResult rt_res = Common::Pratt.parse_base(parser, 0, true);
@@ -217,12 +194,8 @@ namespace Parser
         if (ret_type == nullptr)
             return;
 
-        // ( (TokenType::LeftParen)
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::LeftParen, false))
-            result.error(std::move(diagnostic));
-        else
-            lexer.consume();
+        // (
+        parser.expect_or_error(TokenType::LeftParen, result);
 
         // PARAM_LIST
         std::vector<std::unique_ptr<AST::FunctionParameter>> parameters =
@@ -286,18 +259,14 @@ namespace Parser
     {
         // return ( VALUE )? ";"
 
-        auto &lexer = parser.lexer;
-
         // return
         Core::Position *ret_pos = nullptr;
-        if (auto diagnostic = parser.expect_or_error(token_type, false))
-            result.error(std::move(diagnostic));
-        else
-            ret_pos = &lexer.next()->range.start;
+        if (auto ret = parser.expect_or_error(TokenType::LeftParen, result))
+            ret_pos = &ret->range.end;
 
         std::unique_ptr<AST::Expr> value;
 
-        // ; (TokenType::Semicolon)
+        // ;
         if (parser.expect(TokenType::Semicolon, false))
             Common::Terminator.parse(parser, result);
         else
@@ -308,7 +277,7 @@ namespace Parser
 
             value = utils::dynamic_ptr_cast<AST::Expr>(v_res.data);
 
-            // ; (TokenType::Semicolon)
+            // ;
             Common::Terminator.parse(parser, result);
         }
 

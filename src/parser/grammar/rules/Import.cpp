@@ -28,11 +28,9 @@ namespace Parser
         {
             if (expect_sym)
             {
-                if (auto diagnostic =
-                        parser.expect_or_error(TokenType::Identifier, false))
-                    result.error(std::move(diagnostic));
-                else
-                    symbols.push_back(lexer.next());
+                if (auto symbol =
+                        parser.expect_or_error(TokenType::Identifier, result))
+                    symbols.push_back(symbol);
 
                 expect_sym = false;
             }
@@ -69,25 +67,16 @@ namespace Parser
         lexer.consume();
 
         // "TARGET" (TokenType::String)
-        Lexer::Token *target = nullptr;
-        if (auto diagnostic = parser.expect_or_error(TokenType::String, false))
-            result.error(std::move(diagnostic));
-        else
-            target = lexer.next();
+        Lexer::Token *target =
+            parser.expect_or_error(TokenType::String, result);
+        if (target == nullptr)
+            return;
 
         // ->
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::MinusGreater, false))
-            result.error(std::move(diagnostic));
-        else
-            lexer.consume();
+        parser.expect_or_error(TokenType::MinusGreater, result);
 
         // {
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::LeftBrace, false))
-            result.error(std::move(diagnostic));
-        else
-            lexer.consume();
+        parser.expect_or_error(TokenType::LeftBrace, result);
 
         // SYMBOLS*
         std::vector<Lexer::Token *> symbols =
@@ -95,11 +84,8 @@ namespace Parser
 
         // }
         Core::Position *e_pos = nullptr;
-        if (auto diagnostic =
-                parser.expect_or_error(TokenType::RightBrace, false))
-            result.error(std::move(diagnostic));
-        else
-            e_pos = &lexer.next()->range.end;
+        if (auto cl = parser.expect_or_error(TokenType::LeftBrace, result))
+            e_pos = &cl->range.end;
 
         // ;
         ParseResult t_res = Common::Terminator.parse(parser);
