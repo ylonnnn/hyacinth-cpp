@@ -46,6 +46,7 @@ namespace Parser
         if (token == nullptr)
             return nullptr;
 
+        std::cout << "token: " << *token << "\n";
         lexer.consume();
 
         return std::make_unique<AST::LiteralExpr>(*token);

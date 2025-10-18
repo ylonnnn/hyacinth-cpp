@@ -23,7 +23,7 @@ namespace AST
 
         for (auto &argument : arguments)
         {
-            std::string inner_indentation = utils::tab(tab + 2, 4);
+            std::string inner_indentation = utils::tab(tab + 1, 4);
             os << "\n" << inner_indentation;
 
             if (auto ptr = std::get_if<std::unique_ptr<Type>>(&argument))

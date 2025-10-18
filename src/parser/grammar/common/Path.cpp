@@ -1,9 +1,7 @@
 #include "parser/grammar/common/Path.hpp"
-#include "diagnostic/helpers.hpp"
 #include "parser/grammar/GrammarRule.hpp"
 #include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/rules/Hyacinth.hpp"
-#include "utils/dev.hpp"
 #include "utils/pointer.hpp"
 
 namespace Parser
@@ -23,56 +21,45 @@ namespace Parser
         std::vector<AST::IdentifierArgument> arguments;
         arguments.reserve(8);
 
-        auto closing = TokenType::RightBracket;
+        auto closing = TokenType::Greater;
         auto expect_arg = true;
 
         while (!parser.expect(closing, false))
         {
             if (expect_arg)
             {
-                ParseResult t_res = Common::Pratt.parse_base(parser, 0, true);
-
-                auto adapt_type = [&]() -> void
+                // Expression
+                if (parser.expect(TokenType::LeftBrace, false))
                 {
-                    result.adapt(t_res.status, std::move(t_res.diagnostics));
-                    arguments.emplace_back(
-                        utils::dynamic_ptr_cast<AST::Type>(t_res.data));
-                };
-
-                auto adapt_expr = [&](ParseResult &e_res) -> void
-                {
-                    result.adapt(e_res.status, std::move(e_res.diagnostics));
-                    arguments.emplace_back(
-                        utils::dynamic_ptr_cast<AST::Expr>(e_res.data));
-                };
-
-                // If type parsing succeeds, proceed with parsing other
-                // arguments
-                if (t_res.status == Core::ResultStatus::Success)
-                {
-                    adapt_type();
-                    expect_arg = false;
-
-                    continue;
-                }
-
-                // If type parsing fails, attempt expression parsing
-                else
-                {
-                    // Synchronize to be able to attempt expression parsing
-                    parser.synchronize();
+                    lexer.consume();
 
                     ParseResult e_res = Common::Pratt.parse_base(parser, 0);
+                    result.adapt(e_res.status, std::move(e_res.diagnostics));
 
-                    // If expression parsing fails, use type parsing result
-                    if (e_res.status == Core::ResultStatus::Fail)
-                        adapt_type();
-
+                    if (auto diagnostic = parser.expect_or_error(
+                            TokenType::RightBrace, false))
+                        result.error(std::move(diagnostic));
                     else
-                        adapt_expr(e_res);
+                        lexer.consume();
 
-                    expect_arg = false;
+                    auto ptr = utils::dynamic_ptr_cast<AST::Expr>(e_res.data);
+                    if (ptr != nullptr)
+                        arguments.push_back(std::move(ptr));
                 }
+
+                // Type
+                else
+                {
+                    ParseResult t_res =
+                        Common::Pratt.parse_base(parser, 0, true);
+                    result.adapt(t_res.status, std::move(t_res.diagnostics));
+
+                    auto ptr = utils::dynamic_ptr_cast<AST::Type>(t_res.data);
+                    if (ptr != nullptr)
+                        arguments.push_back(std::move(ptr));
+                }
+
+                expect_arg = false;
             }
 
             if (parser.expect(TokenType::Comma, false))
@@ -108,17 +95,17 @@ namespace Parser
         auto node = std::make_unique<AST::Identifier>(
             *identifier, std::vector<AST::IdentifierArgument>{});
 
-        // [
-        if (parser.expect(TokenType::LeftBracket, false))
+        // <
+        if (parser.expect(TokenType::Less, false))
         {
             lexer.consume();
 
             // ARGS
             node->arguments = parse_args(parser, result);
 
-            // ]
+            // >
             if (auto diagnostic =
-                    parser.expect_or_error(TokenType::RightBracket, false))
+                    parser.expect_or_error(TokenType::Greater, false))
                 result.error(std::move(diagnostic));
             else
                 lexer.consume();
