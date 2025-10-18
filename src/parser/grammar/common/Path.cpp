@@ -21,10 +21,10 @@ namespace Parser
         std::vector<AST::IdentifierArgument> arguments;
         arguments.reserve(8);
 
-        auto closing = TokenType::Greater;
         auto expect_arg = true;
 
-        while (!parser.expect(closing, false))
+        while (!parser.expect(TokenType::Greater, false) ||
+               !parser.expect(TokenType::GreaterGreater, false))
         {
             if (expect_arg)
             {
@@ -106,9 +106,32 @@ namespace Parser
             // >
             if (auto diagnostic =
                     parser.expect_or_error(TokenType::Greater, false))
-                result.error(std::move(diagnostic));
+            {
+                std::cout << *lexer.peek() << "\n";
+                // If the next token is ">>" instead of a single ">"
+                if (parser.expect(TokenType::GreaterGreater, false))
+                {
+                    phase++;
+
+                    if (phase >= 2)
+                    {
+                        lexer.consume();
+                        phase = 0;
+                    }
+
+                    if (args_depth >= 2)
+                        --args_depth;
+                }
+
+                else
+                    result.error(std::move(diagnostic));
+            }
+
             else
+            {
                 lexer.consume();
+                --args_depth;
+            }
         }
 
         return node;
@@ -159,3 +182,4 @@ namespace Parser
     }
 
 } // namespace Parser
+  // namespace Parser

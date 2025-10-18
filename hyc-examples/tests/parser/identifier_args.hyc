@@ -1,2 +1,5 @@
-var x: int<{32}> = 123;
-var y: std::array<int<{32}>, {8 + 2 * 3}>;
+var test: std::vector<hello<test<test<tes >>>>;
+var map: std::map<std::string, int<{8}>>;
+var vec_vec: std::vector<std::vector<int<{8}>>>;
+var str_vec_map: std::map<std::string, std::vector<int<{32}> >>;
+var test1: std::vector<test<hello > >;

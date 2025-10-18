@@ -7,9 +7,10 @@
 
 namespace Parser
 {
-    struct PathRule : public GrammarRule
+    struct PathRule : GrammarRule
     {
-      public:
+        size_t args_depth = 0, phase = 0;
+
         PathRule();
 
         std::vector<AST::IdentifierArgument> parse_args(Parser &parser,
