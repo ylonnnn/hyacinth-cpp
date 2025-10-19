@@ -6,7 +6,7 @@
 
 namespace AST
 {
-    struct BlockStmt : virtual Stmt
+    struct BlockStmt : Stmt
     {
         std::vector<std::unique_ptr<Stmt>> statements;
 

@@ -13,7 +13,7 @@
 #include "diagnostic/reporter/CLIReporter.hpp"
 #include "lexer/Lexer.hpp"
 // #include "parser/Parser.hpp"
-// #include "semantic/analyzer/Analyzer.hpp"
+// #include "analyzer/Analyzer.hpp"
 // #include "interpreter/Interpreter.hpp"
 #include "parser/Parser.hpp"
 #include "utils/control.hpp"
