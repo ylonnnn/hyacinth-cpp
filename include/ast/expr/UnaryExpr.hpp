@@ -23,7 +23,7 @@ namespace AST
                   std::unique_ptr<Expr> &&expr);
         ~UnaryExpr() override = default;
 
-        void print(std::ostream &os, uint8_t tab) const override;
+        void print(std::ostream &os, uint32_t tab) const override;
     };
 
 } // namespace AST

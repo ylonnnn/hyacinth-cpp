@@ -12,7 +12,7 @@ namespace AST
     {
     }
 
-    void Identifier::print(std::ostream &os, uint8_t tab) const
+    void Identifier::print(std::ostream &os, uint32_t tab) const
     {
         std::string indentation = utils::tab(tab - 1, 4),
                     inner_indentation = utils::tab(tab, 4);

@@ -44,7 +44,7 @@ namespace Core
 
         virtual void print(std::ostream &os, uint32_t tab) const;
 
-        // virtual void display_symbol_table(std::ostream &os, uint8_t tab)
+        // virtual void display_symbol_table(std::ostream &os, uint32_t tab)
         // const;
 
         // void declare_type(std::unique_ptr<BaseType> type);

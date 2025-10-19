@@ -11,7 +11,7 @@ namespace AST
         Expr() = default;
         virtual ~Expr() = default;
 
-        virtual void print(std::ostream &os, uint8_t tab) const = 0;
+        virtual void print(std::ostream &os, uint32_t tab) const = 0;
     };
 
 } // namespace AST

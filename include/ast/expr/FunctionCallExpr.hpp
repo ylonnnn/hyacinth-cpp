@@ -19,7 +19,7 @@ namespace AST
 
         // void set_fn_symbol(Core::FunctionSymbol *fn_symbol);
 
-        void print(std::ostream &os, uint8_t tab) const override;
+        void print(std::ostream &os, uint32_t tab) const override;
     };
 
 } // namespace AST

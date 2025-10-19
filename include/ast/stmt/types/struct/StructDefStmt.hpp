@@ -17,7 +17,7 @@ namespace AST
                     std::unique_ptr<Type> &&type,
                     std::unique_ptr<Expr> &&default_value = nullptr);
 
-        void print(std::ostream &os, uint8_t tab) const override;
+        void print(std::ostream &os, uint32_t tab) const override;
     };
 
     struct StructDefinitionStmt : StructDeclarationStmt
@@ -28,7 +28,7 @@ namespace AST
             Lexer::Token &identifier,
             std::unordered_map<std::string_view, StructField> &&fields);
 
-        void print(std::ostream &os, uint8_t tab) const override;
+        void print(std::ostream &os, uint32_t tab) const override;
     };
 
 } // namespace AST

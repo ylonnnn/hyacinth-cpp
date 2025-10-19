@@ -15,7 +15,7 @@ namespace AST
         Path(std::vector<std::unique_ptr<Identifier>> &&segments);
         virtual ~Path() = default;
 
-        void print(std::ostream &os, uint8_t tab) const override;
+        void print(std::ostream &os, uint32_t tab) const override;
     };
 
 } // namespace AST

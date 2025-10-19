@@ -5,7 +5,7 @@
 
 namespace utils
 {
-    std::string tab(uint8_t tab_count, uint8_t size)
+    std::string tab(uint32_t tab_count, uint32_t size)
     {
         return std::string(tab_count * size, ' ');
     }

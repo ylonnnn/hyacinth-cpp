@@ -17,7 +17,7 @@ namespace AST
         nodes.reserve(64);
     }
 
-    void Program::print(std::ostream &os, uint8_t tab) const
+    void Program::print(std::ostream &os, uint32_t tab) const
     {
         std::string indentation = utils::tab(tab - 1, 4),
                     inner_indentation = utils::tab(tab, 4);

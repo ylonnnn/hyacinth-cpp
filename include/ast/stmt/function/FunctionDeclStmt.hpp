@@ -16,7 +16,7 @@ namespace AST
                           std::unique_ptr<Type> &&type,
                           std::unique_ptr<Expr> &&default_value = nullptr);
 
-        void print(std::ostream &os, uint8_t tab) const override;
+        void print(std::ostream &os, uint32_t tab) const override;
     };
 
     struct FunctionDeclarationStmt : DeclarationStmt
@@ -33,7 +33,7 @@ namespace AST
             DeclarationAccessibility accessibility =
                 DeclarationAccessibility::Private);
 
-        virtual void print(std::ostream &os, uint8_t tab) const override;
+        virtual void print(std::ostream &os, uint32_t tab) const override;
     };
 
 } // namespace AST

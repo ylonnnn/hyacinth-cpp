@@ -24,7 +24,7 @@ namespace AST
 
         bool is_mutable() const;
 
-        void print(std::ostream &os, uint8_t tab) const override;
+        void print(std::ostream &os, uint32_t tab) const override;
     };
 
 } // namespace AST

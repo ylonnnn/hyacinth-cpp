@@ -13,7 +13,7 @@ namespace AST
     {
     }
 
-    void FunctionParameter::print(std::ostream &os, uint8_t tab) const
+    void FunctionParameter::print(std::ostream &os, uint32_t tab) const
     {
         std::string indentation = utils::tab(tab - 1, 4),
                     inner_indentation = utils::tab(tab, 4);
@@ -52,7 +52,7 @@ namespace AST
                                : this->parameters.back()->end_position;
     }
 
-    void FunctionDeclarationStmt::print(std::ostream &os, uint8_t tab) const
+    void FunctionDeclarationStmt::print(std::ostream &os, uint32_t tab) const
     {
         std::string indentation = utils::tab(tab - 1, 4),
                     inner_indentation = utils::tab(tab, 4);

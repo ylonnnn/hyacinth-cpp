@@ -15,7 +15,7 @@ namespace AST
                    std::unique_ptr<Expr> &&right);
         ~BinaryExpr() override = default;
 
-        void print(std::ostream &os, uint8_t tab) const override;
+        void print(std::ostream &os, uint32_t tab) const override;
     };
 
 } // namespace AST

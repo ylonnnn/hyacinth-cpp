@@ -20,7 +20,7 @@ namespace AST
     //     fn_symbol_ = fn_symbol;
     // }
 
-    void FunctionCallExpr::print(std::ostream &os, uint8_t tab) const
+    void FunctionCallExpr::print(std::ostream &os, uint32_t tab) const
     {
         std::string indentation = utils::tab(tab - 1, 4),
                     inner_indentation = utils::tab(tab, 4);

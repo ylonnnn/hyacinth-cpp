@@ -38,7 +38,7 @@ namespace AST
         return str;
     }
 
-    void PrefixedType::print(std::ostream &os, uint8_t tab) const
+    void PrefixedType::print(std::ostream &os, uint32_t tab) const
     {
         std::string indentation = utils::tab(tab - 1, 4),
                     inner_indentation = utils::tab(tab, 4);

@@ -55,7 +55,7 @@ namespace utils
         constexpr TextStyle Hidden = "\033[8m";
     } // namespace Styles
 
-    std::string tab(uint8_t tab_count, uint8_t size = 2);
+    std::string tab(uint32_t tab_count, uint32_t size = 2);
 
     size_t visible_size(const std::string &str);
 

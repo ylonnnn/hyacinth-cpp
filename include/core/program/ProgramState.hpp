@@ -5,7 +5,7 @@
 
 namespace Core
 {
-    enum ProgramState : uint8_t
+    enum ProgramState : uint32_t
     {
         PFS_MAIN = (1 << 0),
         PFS_VALID = (1 << 1),

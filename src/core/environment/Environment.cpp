@@ -17,7 +17,7 @@ namespace Core
         utils::todo("implement default Environment::print()");
     }
 
-    // void Environment::display_symbol_table(std::ostream &os, uint8_t tab)
+    // void Environment::display_symbol_table(std::ostream &os, uint32_t tab)
     // const
     // {
     //     std::string indentation = utils::tab(tab - 1, 4),

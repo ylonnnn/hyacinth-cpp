@@ -16,7 +16,7 @@ namespace AST
                                 DeclarationAccessibility accessibility =
                                     DeclarationAccessibility::Private);
 
-        virtual void print(std::ostream &os, uint8_t tab) const override;
+        virtual void print(std::ostream &os, uint32_t tab) const override;
     };
 
 } // namespace AST

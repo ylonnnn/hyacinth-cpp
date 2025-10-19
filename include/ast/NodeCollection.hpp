@@ -23,7 +23,7 @@ namespace AST
 
         virtual ~NodeCollection() override = default;
 
-        virtual void print(std::ostream &os, uint8_t tab) const override
+        virtual void print(std::ostream &os, uint32_t tab) const override
         {
             std::string indentation = utils::tab(tab - 1),
                         tabs = utils::tab(tab);

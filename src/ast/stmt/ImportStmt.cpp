@@ -12,7 +12,7 @@ namespace AST
     {
     }
 
-    void ImportStmt::print(std::ostream &os, [[maybe_unused]] uint8_t tab) const
+    void ImportStmt::print(std::ostream &os, [[maybe_unused]] uint32_t tab) const
     {
         std::string indentation = utils::tab(tab - 1, 4),
                     inner_indentation = utils::tab(tab, 4);

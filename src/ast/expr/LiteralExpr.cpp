@@ -10,7 +10,7 @@ namespace AST
     }
 
     void LiteralExpr::print(std::ostream &os,
-                            [[maybe_unused]] uint8_t tab) const
+                            [[maybe_unused]] uint32_t tab) const
     {
         os << "LiteralExpr { value: " << value << " }";
     }

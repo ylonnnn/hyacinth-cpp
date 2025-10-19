@@ -12,7 +12,7 @@ namespace AST
         virtual ~Type() = default;
 
         virtual std::string to_string() const = 0;
-        virtual void print(std::ostream &os, uint8_t tab) const = 0;
+        virtual void print(std::ostream &os, uint32_t tab) const = 0;
     };
 
 } // namespace AST

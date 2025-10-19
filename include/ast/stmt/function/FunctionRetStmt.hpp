@@ -12,7 +12,7 @@ namespace AST
         FunctionReturnStmt(Core::Position &position,
                            std::unique_ptr<Expr> &&value = nullptr);
 
-        void print(std::ostream &os, uint8_t tab) const override;
+        void print(std::ostream &os, uint32_t tab) const override;
     };
 
 } // namespace AST

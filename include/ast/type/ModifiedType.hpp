@@ -19,7 +19,7 @@ namespace AST
         ModifiedType(ModifierType type, std::unique_ptr<Type> &&base);
 
         std::string to_string() const override;
-        void print(std::ostream &os, uint8_t tab) const override;
+        void print(std::ostream &os, uint32_t tab) const override;
     };
 
 } // namespace AST

@@ -22,7 +22,7 @@ namespace AST
 
         // void set_value(std::shared_ptr<Core::Value> value);
 
-        virtual void print(std::ostream &os, uint8_t tab) const = 0;
+        virtual void print(std::ostream &os, uint32_t tab) const = 0;
 
         friend std::ostream &operator<<(std::ostream &os, const Node &node);
     };

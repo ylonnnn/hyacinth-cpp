@@ -12,7 +12,7 @@ namespace AST
         SimpleType(std::unique_ptr<Path> &&base);
 
         std::string to_string() const override;
-        void print(std::ostream &os, uint8_t tab) const override;
+        void print(std::ostream &os, uint32_t tab) const override;
     };
 
 } // namespace AST

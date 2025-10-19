@@ -28,7 +28,7 @@ namespace AST
 
         bool is_definition() const;
 
-        virtual void print(std::ostream &os, uint8_t tab) const override = 0;
+        virtual void print(std::ostream &os, uint32_t tab) const override = 0;
 
       protected:
         bool is_definition_ = false;
