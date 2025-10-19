@@ -2,6 +2,7 @@
 
 #include "analyzer/Analyzer.hpp"
 #include "analyzer/impl/Stmt.hpp"
+#include "ast/stmt/variable/VariableDefStmt.hpp"
 
 #define STMT_DISPATCH(T) DISPATCH(T, AST::Stmt)
 
@@ -16,7 +17,17 @@ namespace Semantic
             // ExprStmt
             STMT_DISPATCH(AST::ExprStmt),
 
-            // FunctionReturnStmt
+            // Variable
+            STMT_DISPATCH(AST::VariableDeclarationStmt),
+            {typeid(AST::VariableDefinitionStmt),
+             [](Analyzer &analyzer, AST::Stmt &node)
+             {
+                 return AnalyzerImpl<AST::VariableDeclarationStmt>::analyze(
+                     analyzer,
+                     static_cast<AST::VariableDefinitionStmt &>(node));
+             }},
+
+            // Function
             STMT_DISPATCH(AST::FunctionReturnStmt),
     };
 

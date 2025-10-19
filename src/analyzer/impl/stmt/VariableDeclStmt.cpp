@@ -1,0 +1,279 @@
+#include "ast/stmt/variable/VariableDeclStmt.hpp"
+#include "ast/expr/LiteralExpr.hpp"
+#include "ast/stmt/variable/VariableDefStmt.hpp"
+// #include "core/symbol/VariableSymbol.hpp"
+// #include "core/type/Type.hpp"
+// #include "core/type/primitive/Void.hpp"
+// #include "core/value/Value.hpp"
+#include "analyzer/Analyzer.hpp"
+#include "analyzer/impl/Stmt.hpp"
+#include "utils/dev.hpp"
+
+namespace Semantic
+{
+    AnalysisResult AnalyzerImpl<AST::VariableDeclarationStmt>::analyze(
+        Analyzer &analyzer, AST::VariableDeclarationStmt &node)
+    {
+        // Core::Environment *current = analyzer.current_env();
+        AnalysisResult result = {
+            nullptr, Core::ResultStatus::Success, nullptr, {}};
+
+        utils::todo("implement AST::VariableDeclarationStmt ");
+
+        // auto variable = std::make_unique<Core::VariableSymbol>(
+        //     node.name().value,
+        //     node.accessibility() == AST::DeclarationAccessibility::Public
+        //         ? Core::SymbolAccessibility::Public
+        //         : Core::SymbolAccessibility::Private,
+        //     node.position(), node.is_mutable(), nullptr,
+        //     std::make_shared<Core::Value>(Core::null{}), &node);
+
+        // validate_duplication(analyzer, variable, result);
+
+        // if (!analyze_type(analyzer, variable, result))
+        //     return result;
+
+        // if (node.is_definition())
+        //     analyze_value(analyzer, variable, result);
+        // else
+        // {
+        //     if (node.type() == nullptr)
+        //         result.error(
+        //                     &node,
+        //                     Diagnostic::ErrorTypes::Type::InvalidVariableType,
+        //                     std::string("Variables must either have explicit
+        //                     ") +
+        //                         Diagnostic::ERR_GEN + "TYPE" +
+        //                         utils::Styles::Reset + " or " +
+        //                         Diagnostic::ERR_GEN + "VALUE" +
+        //                         utils::Styles::Reset + ".",
+        //                     "No explicit type nor value provided");
+
+        //             return result;
+        // }
+
+        // current->declare_variable(std::move(variable));
+
+        return result;
+    }
+
+    // static void validate_duplication(Analyzer &analyzer,
+    //                                  std::unique_ptr<Core::VariableSymbol>
+    //                                  &var, AnalysisResult &result)
+    // {
+    //     Core::Environment *current = analyzer.current_env();
+    //     AST::VariableDeclarationStmt *node = var->node;
+
+    //     std::string identifier(node->name().value);
+    //     auto declared = current->resolve_symbol(
+    //         identifier,
+    //         static_cast<size_t>(Core::ResolutionType::Current));
+
+    //     if (declared == nullptr)
+    //     {
+    //         Core::BaseType *d_resolved =
+    //             current->parent()->resolve_type(identifier);
+    //         if (d_resolved == nullptr)
+    //             return;
+
+    //         if (d_resolved->builtin())
+    //         {
+    //             auto n_node = AST::LiteralExpr(node->name());
+    //             result.error(
+    //                 &n_node,
+    //                 Diagnostic::ErrorTypes::Semantic::IllegalShadowing,
+    //                 std::string("Illegal shadowing of built-in type
+    //                 \"") +
+    //                     Diagnostic::ERR_GEN + identifier +
+    //                     utils::Styles::Reset + "\".",
+    //                 "Cannot shadow built-in types");
+    //         }
+
+    //         return;
+    //     }
+
+    //     std::string name(declared->name);
+    //     auto defined = declared->defined_at != nullptr,
+    //          is_def = node->is_definition();
+
+    //     auto error = [&](const std::string &message) -> void
+    //     {
+    //         auto err_node = AST::LiteralExpr(node->name());
+    //         auto diagnostic =
+    //         std::make_unique<Diagnostic::ErrorDiagnostic>(
+    //             &err_node,
+    //             Diagnostic::ErrorTypes::Semantic::Duplication,
+    //             std::move(message),
+    //             "Identifier \"" + name + "\" is already used");
+
+    //         diagnostic->add_detail(std::make_unique<Diagnostic::NoteDiagnostic>(
+    //             declared->node,
+    //             defined ? Diagnostic::NoteType::Definition
+    //                     : Diagnostic::NoteType::Declaration,
+    //             std::string("A symbol identified as \"") +
+    //                 Diagnostic::NOTE_GEN + name +
+    //                 utils::Styles::Reset +
+    //                 "\" is already declared.",
+    //             "Declared here"));
+
+    //         result.error(std::move(diagnostic));
+    //     };
+
+    //     if (defined || is_def)
+    //     {
+    //         error(std::string("Cannot re-declare symbol \"") +
+    //               Diagnostic::ERR_GEN + name + utils::Styles::Reset +
+    //               "\".");
+
+    //         return;
+    //     }
+    // }
+
+    // static bool analyze_type(Analyzer &analyzer,
+    //                          std::unique_ptr<Core::VariableSymbol>
+    //                          &var, AnalysisResult &result)
+    // {
+    //     Core::Environment *current = analyzer.current_env();
+
+    //     AST::Type *ast_type = var->node->type();
+    //     if (ast_type == nullptr)
+    //         return true;
+
+    //     std::cout << *ast_type << "\n";
+    //     std::cout << typeid(*ast_type).name() << "\n";
+    //     if (typeid(*ast_type) == typeid(AST::ScopedType))
+    //     {
+    //         std::cout << "scoped\n";
+    //     }
+
+    //     Core::TypeResolutionResult t_res =
+    //     current->resolve_ast_type(*ast_type);
+    //     result.adapt(t_res.status, std::move(t_res.diagnostics));
+
+    //     Core::Type *type = t_res.data;
+
+    //     result.data = type;
+    //     var->type = t_res.data;
+
+    //     if (typeid(*type->type) == typeid(Core::Void))
+    //     {
+    //         result.error(ast_type,
+    //                      Diagnostic::ErrorTypes::Type::InvalidVariableType,
+    //                      std::string("Type \"") + Diagnostic::ERR_GEN
+    //                      +
+    //                          ast_type->to_string() +
+    //                          utils::Styles::Reset +
+    //                          "\" can only be used as a function
+    //                          return type.",
+    //                      "Only functions can have return types of
+    //                      this type");
+
+    //         return false;
+    //     }
+
+    //     return true;
+    // }
+
+    // static void analyze_value([[maybe_unused]] Analyzer &analyzer,
+    //                           std::unique_ptr<Core::VariableSymbol>
+    //                           &var, AnalysisResult &result)
+    // {
+    //     if (var->node == nullptr)
+    //         return;
+
+    //     auto &stmt = static_cast<AST::VariableDefinitionStmt
+    //     &>(*var->node);
+
+    //     AST::Type *ast_type = stmt.type();
+    //     AST::Expr &value = stmt.value();
+
+    //     auto error = [&]() -> void
+    //     {
+    //         assert(ast_type == nullptr);
+
+    //         auto diagnostic =
+    //         std::make_unique<Diagnostic::ErrorDiagnostic>(
+    //             &value, Diagnostic::ErrorTypes::Type::Mismatch,
+    //             std::string("Expected value of type ") +
+    //             Diagnostic::ERR_GEN
+    //             +
+    //                 ast_type->to_string() + utils::Styles::Reset +
+    //                 ".",
+    //             std::string(""));
+
+    //         diagnostic->add_detail(result.data->make_suggestion(&value));
+
+    //         result.error(std::move(diagnostic));
+    //     };
+
+    //     AnalysisResult v_res = analyzer.analyze(stmt.value());
+    //     result.adapt(v_res.status, std::move(v_res.diagnostics));
+
+    //     // Define
+    //     var->define(const_cast<Core::Position *>(&stmt.position()));
+    //     var->value = std::move(v_res.value);
+
+    //     var->node->set_value(var->value);
+
+    //     // If type is not specified, it is inferred
+    //     // No type validation required
+    //     if (ast_type == nullptr)
+    //     {
+    //         result.data = v_res.data;
+    //         var->type = v_res.data;
+
+    //         return;
+    //     }
+
+    //     if (!result.data->assignable_with(*var->type) ||
+    //         (var->value != nullptr &&
+    //         !result.data->assignable(*var->value))) error();
+    // }
+
+    // AnalysisResult
+    // AnalyzerImpl<AST::VariableDeclarationStmt>::analyze(
+    //     Analyzer &analyzer, AST::VariableDeclarationStmt &node)
+    // {
+    //     Core::Environment *current = analyzer.current_env();
+    //     AnalysisResult result = {
+    //         nullptr, Core::ResultStatus::Success, nullptr, {}};
+
+    //     auto variable = std::make_unique<Core::VariableSymbol>(
+    //         node.name().value,
+    //         node.accessibility() ==
+    //         AST::DeclarationAccessibility::Public
+    //             ? Core::SymbolAccessibility::Public
+    //             : Core::SymbolAccessibility::Private,
+    //         node.position(), node.is_mutable(), nullptr,
+    //         std::make_shared<Core::Value>(Core::null{}), &node);
+
+    //     validate_duplication(analyzer, variable, result);
+
+    //     if (!analyze_type(analyzer, variable, result))
+    //         return result;
+
+    //     if (node.is_definition())
+    //         analyze_value(analyzer, variable, result);
+    //     else
+    //     {
+    //         if (node.type() == nullptr)
+    //             result.error(
+    //                 &node,
+    //                 Diagnostic::ErrorTypes::Type::InvalidVariableType,
+    //                 std::string("Variables must either have explicit
+    //                 ") +
+    //                     Diagnostic::ERR_GEN + "TYPE" +
+    //                     utils::Styles::Reset + " or " +
+    //                     Diagnostic::ERR_GEN + "VALUE" +
+    //                     utils::Styles::Reset + ".",
+    //                 "No explicit type nor value provided");
+
+    //         return result;
+    //     }
+
+    //     current->declare_variable(std::move(variable));
+
+    //     return result;
+    // }
+
+} // namespace Semantic
