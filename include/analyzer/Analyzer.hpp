@@ -20,7 +20,8 @@ namespace Semantic
     // TODO: Update void * to actual Type
     struct AnalysisResult : Core::Result<void *>
     {
-        std::shared_ptr<Core::Value> value = nullptr;
+        // For Constant Folding
+        Core::Value *value = nullptr;
         // Core::Symbol *symbol = nullptr;
 
         AnalysisResult(std::shared_ptr<Core::Value> value,

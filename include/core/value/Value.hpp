@@ -1,11 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <memory>
 #include <string>
 #include <unordered_map>
 #include <variant>
-#include <vector>
 
 namespace Core
 {
@@ -22,9 +20,10 @@ namespace Core
 
     struct integer
     {
-        bool is_signed;
+        uint64_t value;
+        bool is_neg;
 
-        integer(uint64_t value, bool is_sigend);
+        integer(uint64_t value, bool is_neg);
 
         template <typename T,
                   typename = std::enable_if_t<std::is_same_v<T, int64_t> ||
@@ -32,16 +31,11 @@ namespace Core
         T as()
         {
             if constexpr (std::is_same_v<T, int64_t>)
-                return static_cast<int64_t>(value_);
+                return static_cast<int64_t>(value);
 
             else
-                return value_;
+                return value;
         }
-
-        uint64_t &value();
-
-      private:
-        uint64_t value_;
     };
 
     struct object
