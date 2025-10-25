@@ -7,8 +7,16 @@
 
 namespace Core
 {
-    struct null
+    struct value_base_type
     {
+        virtual size_t hash() const = 0;
+    };
+
+    struct null : value_base_type
+    {
+        size_t hash() const override;
+
+        operator std::string() const;
     };
 
     struct integer;
@@ -18,7 +26,7 @@ namespace Core
 
     using Value = std::variant<null, integer, double, bool, char, std::string>;
 
-    struct integer
+    struct integer : value_base_type
     {
         uint64_t value;
         bool is_neg;
@@ -36,15 +44,24 @@ namespace Core
             else
                 return value;
         }
+
+        size_t hash() const override;
+
+        operator std::string() const;
     };
 
-    struct object
+    struct object : value_base_type
     {
-        void set(const std::string &key, Value &&value);
+        void set(const std::string &key, Value &value);
         Value *get(const std::string &key);
+        const Value *get(const std::string &key) const;
+
+        size_t hash() const override;
+
+        operator std::string() const;
 
       private:
-        std::unordered_map<std::string, Value> entries_;
+        std::unordered_map<std::string, Value *> entries_;
     };
 
     // struct Type;

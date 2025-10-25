@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 // #include "core/symbol/Symbol.hpp"
 // #include "core/symbol/VariableSymbol.hpp"
