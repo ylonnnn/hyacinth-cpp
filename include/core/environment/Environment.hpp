@@ -6,24 +6,20 @@
 
 // #include "core/symbol/Symbol.hpp"
 // #include "core/symbol/VariableSymbol.hpp"
+#include "core/type/Type.hpp"
 #include "core/value/Value.hpp"
 
 namespace Core
 {
-    enum class EnvironmentResolutionType
+    namespace EnvironmentResolutionType
     {
-        Current = 1,
-        Parent = 2,
-        Root = -1,
-    };
+        constexpr size_t Current = 1, Parent = 2, Root = SIZE_MAX;
+    }
 
     struct Environment
     {
         Environment *parent = nullptr;
         std::vector<std::unique_ptr<Environment>> children;
-
-        // std::unordered_map<std::string, std::unique_ptr<Environment>>
-        // children_;
 
         // TypeTable types;
         // std::unordered_map<std::string_view, std::unique_ptr<Symbol>>
@@ -31,6 +27,9 @@ namespace Core
 
         Environment(Environment *parent = nullptr);
         virtual ~Environment() = default;
+
+        void initialize();
+        void initialize_types();
 
         template <
             typename T = Environment, typename... Args,
@@ -43,12 +42,23 @@ namespace Core
             return *children.back();
         }
 
+        void declare_type(std::unique_ptr<BaseType> &&type);
+
+        virtual BaseType *
+        resolve_type(const std::string &name,
+                     size_t depth = EnvironmentResolutionType::Root);
+        virtual const BaseType *
+        resolve_type(const std::string &name,
+                     size_t depth = EnvironmentResolutionType::Root) const;
+
         virtual void print(std::ostream &os, uint32_t tab) const;
+
+      private:
+        std::unordered_map<std::string, std::unique_ptr<BaseType>> types_;
 
         // virtual void display_symbol_table(std::ostream &os, uint32_t tab)
         // const;
 
-        // void declare_type(std::unique_ptr<BaseType> type);
         // void declare_symbol(std::unique_ptr<Symbol> symbol);
         // void declare_variable(std::unique_ptr<VariableSymbol> variable);
 

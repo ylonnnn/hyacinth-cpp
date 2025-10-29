@@ -4,11 +4,11 @@
 #include <type_traits>
 
 #include "ast/Node.hpp"
-#include "core/environment/Environment.hpp"
 #include "core/program/Program.hpp"
 #include "core/result/Result.hpp"
 // #include "core/type/Type.hpp"
 // #include "core/value/Value.hpp"
+#include "core/type/Type.hpp"
 #include "diagnostic/Diagnostic.hpp"
 
 #define DISPATCH(T, TN)                                                        \
@@ -18,14 +18,14 @@
 namespace Semantic
 {
     // TODO: Update void * to actual Type
-    struct AnalysisResult : Core::Result<void *>
+    struct AnalysisResult : Core::Result<Core::InstantiatedType *>
     {
         // For Constant Folding
         Core::Value *value = nullptr;
         // Core::Symbol *symbol = nullptr;
 
-        AnalysisResult(std::shared_ptr<Core::Value> value,
-                       Core::ResultStatus status, void *data,
+        AnalysisResult(Core::Value *value, Core::ResultStatus status,
+                       Core::InstantiatedType *data,
                        Diagnostic::DiagnosticList diagnostics);
     };
 

@@ -1,15 +1,63 @@
 #include "core/environment/Environment.hpp"
+#include "core/type/builtin/numeric/Integer.hpp"
 #include "utils/dev.hpp"
 
 namespace Core
 {
     Environment::Environment(Environment *parent) : parent(parent)
     {
+        initialize();
+    }
+
+    void Environment::initialize()
+    {
         children.reserve(8);
 
-        // types_.reserve(16);
+        types_.reserve(16);
         // symbols_.reserve(16);
         // variables_.reserve(16);
+    }
+
+    void Environment::initialize_types()
+    {
+        declare_type(std::make_unique<IntegerType>(*this, true));
+        declare_type(std::make_unique<IntegerType>(*this, false));
+    }
+
+    void Environment::declare_type(std::unique_ptr<BaseType> &&type)
+    {
+        types_.try_emplace(type->name, std::move(type));
+    }
+
+    BaseType *Environment::resolve_type(const std::string &name, size_t depth)
+    {
+        if (depth == 0)
+            return nullptr;
+
+        auto it = types_.find(name);
+        if (it != types_.end())
+            return it->second.get();
+
+        if (parent == nullptr)
+            return nullptr;
+
+        return parent->resolve_type(name, depth - 1);
+    }
+
+    const BaseType *Environment::resolve_type(const std::string &name,
+                                              size_t depth) const
+    {
+        if (depth == 0)
+            return nullptr;
+
+        auto it = types_.find(name);
+        if (it != types_.end())
+            return it->second.get();
+
+        if (parent == nullptr)
+            return nullptr;
+
+        return parent->resolve_type(name, depth - 1);
     }
 
     void Environment::print(std::ostream &os, uint32_t tab) const

@@ -147,7 +147,7 @@ namespace Lexer
     void Tokenizer::read_digit_seq(LexerResult &result, uint32_t base)
     {
         bool allow_sep = false;
-        auto pos = [&]() -> Core::Position
+        auto pos = [this]() -> Core::Position
         { return program.position_at(row, col, offset); };
 
         for (char c = peek(); !eof(); c = peek())

@@ -45,8 +45,8 @@ namespace Parser
             PrattHandler{
                 .type = TokenType::Identifier,
                 .bp = {primary_bp, primary_bp},
-                .nud = [&](Parser &parser,
-                           ParseResult &result) -> std::unique_ptr<AST::Path>
+                .nud = [](Parser &parser,
+                          ParseResult &result) -> std::unique_ptr<AST::Path>
                 {
                     std::vector<std::unique_ptr<AST::Identifier>> segments;
                     segments.push_back(
@@ -59,19 +59,16 @@ namespace Parser
 
         // Grouping & Function Call
         float func_call_bp = static_cast<int32_t>(BindingPower::FunctionCall);
-        add_handler(TokenType::LeftParen,
-                    PrattHandler{
-                        .type = TokenType::LeftParen,
-                        .bp = {func_call_bp, default_bp},
-                        .nud = make_group_handler(
-                            TokenType::RightParen,
-                            [&](Parser &parser) -> ParseResult
-                            {
-                                std::cout << "expr group handler\n";
-                                return Common::Pratt.parse_base(parser, 0);
-                            }),
-                        .led = parse_func_call,
-                    });
+        add_handler(
+            TokenType::LeftParen,
+            PrattHandler{
+                .type = TokenType::LeftParen,
+                .bp = {func_call_bp, default_bp},
+                .nud = make_group_handler(
+                    TokenType::RightParen, [](Parser &parser) -> ParseResult
+                    { return Common::Pratt.parse_base(parser, 0); }),
+                .led = parse_func_call,
+            });
 
         // // Compound
         // add_nud(Delimeter::BraceOpen, parse_array);
@@ -117,7 +114,7 @@ namespace Parser
                         PrattHandler{
                             .type = type,
                             .bp = {unary_bp, unary_bp},
-                            .nud = [&](Parser &parser, ParseResult &result)
+                            .nud = [](Parser &parser, ParseResult &result)
                                 -> std::unique_ptr<AST::UnaryExpr>
                             { return parse_unary(parser, result); },
                             .led = nullptr,
@@ -135,11 +132,11 @@ namespace Parser
                 PrattHandler{
                     .type = type,
                     .bp = {unary_bp, unary_bp},
-                    .nud = [&](Parser &parser, ParseResult &result)
+                    .nud = [](Parser &parser, ParseResult &result)
                         -> std::unique_ptr<AST::UnaryExpr>
                     { return parse_unary(parser, result); },
-                    .led = [&](Parser &parser, std::unique_ptr<AST::Node> &left,
-                               float right_bp, ParseResult &result)
+                    .led = [](Parser &parser, std::unique_ptr<AST::Node> &left,
+                              float right_bp, ParseResult &result)
                         -> std::unique_ptr<AST::UnaryExpr>
                     { return parse_unary(parser, left, right_bp, result); },
                 });
@@ -236,7 +233,7 @@ namespace Parser
                     PrattHandler{
                         .type = TokenType::Ampersand,
                         .bp = {bitwise_bp + 1.0f, unary_bp},
-                        .nud = [&](Parser &parser, ParseResult &result)
+                        .nud = [](Parser &parser, ParseResult &result)
                             -> std::unique_ptr<AST::UnaryExpr>
                         { return parse_unary(parser, result); },
                         .led = parse_binary,
@@ -310,20 +307,16 @@ namespace Parser
                          });
 
         // Grouping
-        add_type_handler(TokenType::LeftParen,
-                         PrattHandler{
-                             .type = TokenType::LeftParen,
-                             .bp = {default_tbp, default_tbp},
-                             .nud = make_group_handler(
-                                 TokenType::RightParen,
-                                 [&](Parser &parser) -> ParseResult
-                                 {
-                                     std::cout << "type group handler\n";
-                                     return Common::Pratt.parse_base(parser, 0,
-                                                                     true);
-                                 }),
-                             .led = nullptr,
-                         });
+        add_type_handler(
+            TokenType::LeftParen,
+            PrattHandler{
+                .type = TokenType::LeftParen,
+                .bp = {default_tbp, default_tbp},
+                .nud = make_group_handler(
+                    TokenType::RightParen, [](Parser &parser) -> ParseResult
+                    { return Common::Pratt.parse_base(parser, 0, true); }),
+                .led = nullptr,
+            });
 
         // Array
         float array_tbp = static_cast<int32_t>(TypeBindingPower::Array);

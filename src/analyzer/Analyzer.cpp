@@ -1,5 +1,6 @@
 #include "analyzer/Analyzer.hpp"
 #include "core/environment/Environment.hpp"
+#include "core/type/Type.hpp"
 // #include "core/type/compound/Array.hpp"
 // #include "core/type/primitive/Boolean.hpp"
 // #include "core/type/primitive/Character.hpp"
@@ -10,11 +11,13 @@
 
 namespace Semantic
 {
-    AnalysisResult::AnalysisResult(std::shared_ptr<Core::Value> value,
-                                   Core::ResultStatus status, void *data,
+    AnalysisResult::AnalysisResult(Core::Value *value,
+                                   Core::ResultStatus status,
+                                   Core::InstantiatedType *data,
                                    Diagnostic::DiagnosticList diagnostics)
-        : Core::Result<void *>(status, data, std::move(diagnostics)),
-          value(std::move(value))
+        : Core::Result<Core::InstantiatedType *>(status, data,
+                                                 std::move(diagnostics)),
+          value(value)
     {
     }
 

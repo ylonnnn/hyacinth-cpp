@@ -4,8 +4,8 @@
 
 namespace Core
 {
-    struct BaseType;
     struct InstantiatedType;
+    struct BaseType;
 
     enum class TypeParameterType
     {
@@ -18,6 +18,12 @@ namespace Core
         TypeParameterType param_type;
         std::string name;
         InstantiatedType *type;
+
+        TypeParameter(TypeParameterType param_type, std::string &&name,
+                      InstantiatedType *type)
+            : param_type(param_type), name(std::move(name)), type(type)
+        {
+        }
     };
 
 } // namespace Core

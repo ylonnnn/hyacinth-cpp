@@ -1,13 +1,42 @@
-#include "core/type/Type.hpp"
 #include <type_traits>
 #include <variant>
 
+#include "core/type/Type.hpp"
+
 namespace Core
 {
+    TypeResult::TypeResult(ResultStatus status, InstantiatedType *data,
+                           Diagnostic::DiagnosticList &&diagnostics)
+        : Result<InstantiatedType *>(status, data, std::move(diagnostics))
+    {
+    }
+
     BaseType::BaseType(Environment &environment, std::string &&name)
         : environment(environment), name(std::move(name))
     {
         hash();
+
+        default_operations();
+    }
+
+    void BaseType::default_operations()
+    {
+        // To allow implementations with no default operations as leaving this
+        // as a pure virtual turns derived classes to virtual when a virtual
+        // method is not overriden
+    }
+
+    BaseType::T *
+    BaseType::create_instance(std::vector<TypeArgument> &&arguments)
+    {
+        return TYPE_POOL.add<T>(
+            std::make_unique<T>(*this, std::move(arguments)));
+    }
+
+    void BaseType::add_parameter(TypeParameterType param_type,
+                                 std::string &&name, InstantiatedType *type)
+    {
+        parameters.emplace_back(param_type, std::move(name), type);
     }
 
     size_t BaseType::hash()

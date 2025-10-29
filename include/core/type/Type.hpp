@@ -2,31 +2,38 @@
 
 #include <string>
 
-#include "core/environment/Environment.hpp"
 #include "core/result/Result.hpp"
 #include "core/type/TypeParameter.hpp"
+#include "core/type/TypePool.hpp"
 #include "core/value/Value.hpp"
 
 namespace Core
 {
-    struct InstantiatedType;
-
     using TypeArgument = std::variant<InstantiatedType *, Value *>;
 
     struct TypeResult : Result<InstantiatedType *>
     {
-        InstantiatedType *data = nullptr;
-
         TypeResult(ResultStatus status, InstantiatedType *data,
                    Diagnostic::DiagnosticList &&diagnostics);
     };
 
     struct BaseType
     {
+        using T = InstantiatedType;
+
         Environment &environment;
         std::string name;
 
+        std::vector<TypeParameter> parameters;
+
         BaseType(Environment &environment, std::string &&name);
+
+        virtual void default_operations();
+
+        virtual T *create_instance(std::vector<TypeArgument> &&arguments);
+
+        void add_parameter(TypeParameterType param_type, std::string &&name,
+                           InstantiatedType *type);
 
         virtual TypeResult
         assignable(const std::vector<TypeArgument> &arguments,

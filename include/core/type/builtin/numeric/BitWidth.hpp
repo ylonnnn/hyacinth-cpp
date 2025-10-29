@@ -1,0 +1,29 @@
+#pragma once
+
+#include "core/type/Type.hpp"
+
+namespace Core
+{
+    struct BitWidthType : BaseType
+    {
+        BitWidthType(Environment &environment);
+
+        TypeResult assignable(const std::vector<TypeArgument> &arguments,
+                              Value *value) const override;
+
+        // std::unique_ptr<Diagnostic::NoteDiagnostic> make_suggestion(
+        //     AST::Node *node,
+        //     const std::vector<TypeArgument> &arguments) const override;
+
+        // Type *
+        // from_value([[maybe_unused]] const Core::Value &value) const override
+        // {
+        //     return nullptr;
+        // };
+
+      protected:
+        uint64_t min_;
+        uint64_t max_;
+    };
+
+} // namespace Core
