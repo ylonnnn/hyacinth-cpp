@@ -9,14 +9,18 @@ namespace Core
 
     null::operator std::string() const { return "null"; }
 
+    integer::integer(uint64_t value, bool is_negative) : value(value), is_negative(is_negative)
+    {
+    }
+
     integer::operator std::string() const
     {
-        return std::to_string(is_neg ? static_cast<int64_t>(value) : value);
+        return std::to_string(is_negative ? static_cast<int64_t>(value) : value);
     }
 
     size_t integer::hash() const
     {
-        return is_neg ? std::hash<int64_t>{}(static_cast<int64_t>(value))
+        return is_negative ? std::hash<int64_t>{}(static_cast<int64_t>(value))
                       : std::hash<uint64_t>{}(value);
     }
 

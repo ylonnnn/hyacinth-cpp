@@ -10,10 +10,10 @@ namespace Core
     {
         ValuePool();
 
-        Value *add(Value &&value);
+        Value *add(std::unique_ptr<Value> &&value);
 
       private:
-        std::vector<Value> pool_;
+        std::vector<std::unique_ptr<Value>> pool_;
     };
 
     extern ValuePool VALUE_POOL;

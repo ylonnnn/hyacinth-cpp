@@ -6,7 +6,8 @@
 // #include "core/symbol/LibSymbol.hpp"
 // #include "core/type/compound/Array.hpp"
 // #include "core/type/primitive/Integer.hpp"
-#include "lexer/Token.hpp"
+#include "core/symbol/PetalSymbol.hpp"
+#include "core/symbol/TypeSymbol.hpp"
 #include "utils/dev.hpp"
 
 namespace Semantic
@@ -19,12 +20,39 @@ namespace Semantic
 
         utils::todo("implement AST::Path analyzer");
 
+        Core::EnvironmentStack &env_stack = analyzer.env_stack;
+        Core::Environment *top = env_stack.current();
+
         for (auto &segment : node.segments)
         {
             AnalysisResult s_res =
                 AnalyzerImpl<AST::Identifier>::analyze(analyzer, *segment);
-            result.adapt(s_res.status, std::move(s_res.diagnostics));
+            result.adapt(s_res);
+
+            Core::Symbol *sym = result.symbol;
+            if (sym == nullptr)
+            {
+                utils::todo("throw error: unknown symbol '{}' from '{path}'");
+                break;
+            }
+
+            if (typeid(*sym) == typeid(Core::PetalSymbol))
+            {
+                auto p_sym = static_cast<Core::PetalSymbol *>(sym);
+                env_stack.enter(*p_sym->environment);
+            }
+
+            else if (typeid(*sym) == typeid(Core::TypeSymbol))
+            {
+                utils::todo(
+                    "implement Core::TypeSymbol path resolver. For static "
+                    "member access (e.g. std::vector<int<{8}>>::iterator)");
+                break;
+            }
         }
+
+        while (env_stack.current() != top)
+            env_stack.exit();
 
         return result;
     }

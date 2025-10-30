@@ -43,9 +43,13 @@ namespace Semantic
 
         result.symbol =
             current->resolve_symbol(std::string(node.identifier.value));
+        if (result.symbol == nullptr)
+        {
+            utils::todo("throw error: unknown symbol '{}'");
+            return result;
+        }
 
-        // TODO: Use Identifier::arguments
-        if (typeid(result.symbol) == typeid(Core::TypeSymbol))
+        if (typeid(*result.symbol) == typeid(Core::TypeSymbol))
         {
             auto t_sym = static_cast<Core::TypeSymbol *>(result.symbol);
             result.data = t_sym->base.create_instance(std::move(arguments));

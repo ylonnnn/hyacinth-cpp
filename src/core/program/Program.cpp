@@ -4,9 +4,10 @@
 #include <iostream>
 #include <string>
 
-// #include "core/program/DependencyEnvironment.hpp"
+#include "analyzer/Analyzer.hpp"
 #include "core/environment/Environment.hpp"
 #include "core/position/Position.hpp"
+#include "core/program/DependencyEnvironment.hpp"
 #include "core/program/Program.hpp"
 #include "core/program/ProgramState.hpp"
 #include "core/result/Result.hpp"
@@ -30,9 +31,9 @@ namespace Core
         using Result<std::unique_ptr<AST::Program>>::Result;
     };
 
-    Program::Program(const std::string &path, ProgramState state) : state(state)
-    // dependencies_(std::make_unique<DependencyEnvironment>()),
-    // environment_(std::make_unique<Environment>(dependencies_.get()))
+    Program::Program(const std::string &path, ProgramState state)
+        : state(state), dependencies(std::make_unique<DependencyEnvironment>()),
+          environment(std::make_unique<Environment>(dependencies.get()))
     {
         if (!fs::exists(path))
             utils::terminate("Unknown file provided: " + path);
@@ -172,41 +173,41 @@ namespace Core
         return parse_result;
     }
 
-    // Semantic::AnalysisResult
-    // Program::analyze(std::unique_ptr<AST::Program> &program)
-    // {
-    //     if (analyzed_)
-    //         return {nullptr, Core::ResultStatus::Success, nullptr, {}};
+    Semantic::AnalysisResult
+    Program::analyze(std::unique_ptr<AST::Program> &program)
+    {
+        if (analyzed())
+            return {nullptr, Core::ResultStatus::Success, nullptr, {}};
 
-    //     auto start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
 
-    //     Semantic::Analyzer analyzer(*this);
-    //     Semantic::AnalysisResult analysis_result =
-    //     analyzer.analyze(*program);
+        Semantic::Analyzer analyzer(*this);
+        Semantic::AnalysisResult analysis_result = analyzer.analyze(*program);
 
-    //     analyzed_ = true;
+        state |= PFS_ANALYZED;
 
-    //     std::cout << "[SemanticAnalysis] "
-    //               << std::chrono::duration_cast<std::chrono::microseconds>(
-    //                      std::chrono::high_resolution_clock::now() - start)
-    //                      .count()
-    //               << "\n";
+        std::cout << "[SemanticAnalysis] "
+                  << std::chrono::duration_cast<std::chrono::microseconds>(
+                         std::chrono::high_resolution_clock::now() - start)
+                         .count()
+                  << "\n";
 
-    //     return analysis_result;
-    // }
+        return analysis_result;
+    }
 
-    // Semantic::AnalysisResult Program::analyze(ProgramResult &result)
-    // {
-    //     Semantic::AnalysisResult analysis_result = analyze(result.data);
+    Semantic::AnalysisResult Program::analyze(ProgramResult &result)
+    {
+        bool is_analyzed = analyzed();
+        Semantic::AnalysisResult analysis_result = analyze(result.data);
 
-    //     if (analyzed_)
-    //         return analysis_result;
+        if (is_analyzed)
+            return analysis_result;
 
-    //     result.adapt(analysis_result.status,
-    //                  std::move(analysis_result.diagnostics));
+        result.adapt(analysis_result.status,
+                     std::move(analysis_result.diagnostics));
 
-    //     return analysis_result;
-    // }
+        return analysis_result;
+    }
 
     // Interpreter::InterpretationResult
     // Program::interpret(std::unique_ptr<AST::Program> &program)
@@ -306,7 +307,10 @@ namespace Core
 
         node = std::move(result.data);
 
-        // // Semantic Analysis
+        // Semantic Analysis
+        if (succeeded)
+            succeeded = analyze(node).status == Core::ResultStatus::Success;
+
         // if (succeeded)
         // {
         //     Semantic::AnalysisResult analysis_result = analyze(node_);

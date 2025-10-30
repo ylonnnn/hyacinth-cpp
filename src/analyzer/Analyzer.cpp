@@ -23,6 +23,15 @@ namespace Semantic
     {
     }
 
+    void AnalysisResult::adapt(AnalysisResult &result)
+    {
+        Core::Result<Core::InstantiatedType *>::adapt(
+            result.status, std::move(result.diagnostics), result.data);
+
+        value = result.value;
+        symbol = result.symbol;
+    }
+
     Analyzer::Analyzer(Core::Program &program) : program(program)
     {
         initialize();
@@ -39,7 +48,7 @@ namespace Semantic
     {
         Core::Environment *root = env_stack.root();
 
-        auto add_type = [&root](std::unique_ptr<Core::BaseType> &&type) -> void
+        auto add_type = [root](std::unique_ptr<Core::BaseType> &&type) -> void
         {
             root->add_symbol(std::make_unique<Core::TypeSymbol>(
                 type->name, nullptr, Core::SymbolAccessibility::Public, *type));

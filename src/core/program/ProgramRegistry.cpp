@@ -17,7 +17,6 @@ namespace Core
 
     Program &ProgramRegistry::file(const std::string &path)
     {
-
         auto program =
             std::make_unique<Program>(path, static_cast<ProgramState>(0));
         program->registry_ = this;

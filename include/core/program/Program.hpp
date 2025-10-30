@@ -57,7 +57,7 @@ namespace Core
         Lexer::Lexer *lexer = nullptr;
         std::unique_ptr<AST::Program> node;
 
-        // std::unique_ptr<DependencyEnvironment> dependencies;
+        std::unique_ptr<DependencyEnvironment> dependencies;
         std::unique_ptr<Environment> environment;
 
         Program(const std::string &path, ProgramState state = PFS_MAIN);
@@ -78,9 +78,9 @@ namespace Core
         Lexer::LexerResult lex(ProgramResult &result);
         Parser::ProgramParseResult parse();
         Parser::ProgramParseResult parse(ProgramResult &result);
-        // Semantic::AnalysisResult
-        // analyze(std::unique_ptr<AST::Program> &program);
-        // Semantic::AnalysisResult analyze(ProgramResult &result);
+        Semantic::AnalysisResult
+        analyze(std::unique_ptr<AST::Program> &program);
+        Semantic::AnalysisResult analyze(ProgramResult &result);
         // Interpreter::InterpretationResult
         // interpret(std::unique_ptr<AST::Program> &program);
         // Interpreter::InterpretationResult interpret(ProgramResult &result);

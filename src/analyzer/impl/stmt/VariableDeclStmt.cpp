@@ -41,8 +41,6 @@ namespace Semantic
                 return;
 
             utils::todo("throw error: identifier '{}' is already used");
-            utils::todo(
-                "detail: identifier '{}' is used here (provide context)");
 
             auto is_defined = declared->def_node != nullptr,
                  is_definition = node->is_definition();
@@ -66,71 +64,58 @@ namespace Semantic
             if (ast_type == nullptr)
                 return true;
 
-            // TODO: Analyze Types
+            AnalysisResult t_res =
+                AnalyzerImpl<AST::Type>::analyze(analyzer, *ast_type);
+
+            result.adapt(t_res);
+            varsym->type = result.data;
 
             return true;
 
-            //     Core::TypeResolutionResult t_res =
-            //     current->resolve_ast_type(*ast_type);
-            //     result.adapt(t_res.status, std::move(t_res.diagnostics));
-
-            //     Core::Type *type = t_res.data;
-
-            //     result.data = type;
-            //     var->type = t_res.data;
-
-            //     if (typeid(*type->type) == typeid(Core::Void))
-            //     {
-            //         result.error(ast_type,
-            //                      Diagnostic::ErrorTypes::Type::InvalidVariableType,
-            //                      std::string("Type \"") + Diagnostic::ERR_GEN
-            //                      +
-            //                          ast_type->to_string() +
-            //                          utils::Styles::Reset +
-            //                          "\" can only be used as a function
-            //                          return type.",
-            //                      "Only functions can have return types of
-            //                      this type");
-
-            //         return false;
-            //     }
-
-            //     return true;
+            // result.error(ast_type,
+            // Diagnostic::ErrorTypes::Type::InvalidVariableType,
+            //              std::string("Type \"") + Diagnostic::ERR_GEN
+            //              +
+            //                  ast_type->to_string() +
+            //                  utils::Styles::Reset +
+            //                  "\" can only be used as a function
+            //                  return type.",
+            //              "Only functions can have return types of
+            //              this type");
         }
 
         void analyze_value([[maybe_unused]] Analyzer &analyzer,
                            Core::VariableSymbol *varsym, AnalysisResult &result)
         {
-            //     if (var->node == nullptr)
-            //         return;
+            auto ptr =
+                dynamic_cast<AST::VariableDefinitionStmt *>(varsym->decl_node);
+            if (ptr == nullptr)
+                return;
 
-            //     auto &stmt = static_cast<AST::VariableDefinitionStmt
-            //     &>(*var->node);
+            AnalysisResult v_res =
+                AnalyzerImpl<AST::Expr>::analyze(analyzer, *ptr->value);
 
-            //     AST::Type *ast_type = stmt.type();
-            //     AST::Expr &value = stmt.value();
+            result.adapt(v_res);
+            Core::Value *val = result.value;
 
-            //     auto error = [&]() -> void
-            //     {
-            //         assert(ast_type == nullptr);
+            // Validate type
+            if (varsym->type != nullptr)
+            {
+                Core::TypeResult vv_res = varsym->type->assignable(val);
+                result.adapt(vv_res.status, std::move(vv_res.diagnostics));
 
-            //         auto diagnostic =
-            //         std::make_unique<Diagnostic::ErrorDiagnostic>(
-            //             &value, Diagnostic::ErrorTypes::Type::Mismatch,
-            //             std::string("Expected value of type ") +
-            //             Diagnostic::ERR_GEN
-            //             +
-            //                 ast_type->to_string() + utils::Styles::Reset +
-            //                 ".",
-            //             std::string(""));
+                if (result.status == Core::ResultStatus::Fail)
+                    return;
+            }
 
-            //         diagnostic->add_detail(result.data->make_suggestion(&value));
+            // Otherwise, infer type
+            else
+            {
+                utils::todo("implement type inference");
+                return;
+            }
 
-            //         result.error(std::move(diagnostic));
-            //     };
-
-            //     AnalysisResult v_res = analyzer.analyze(stmt.value());
-            //     result.adapt(v_res.status, std::move(v_res.diagnostics));
+            varsym->value = v_res.value;
 
             //     // Define
             //     var->define(const_cast<Core::Position *>(&stmt.position()));
@@ -162,7 +147,7 @@ namespace Semantic
         AnalysisResult result = {
             nullptr, Core::ResultStatus::Success, nullptr, {}};
 
-        utils::todo("implement AST::VariableDeclarationStmt ");
+        Core::Environment *current = analyzer.env_stack.current();
 
         auto varsym = std::make_unique<Core::VariableSymbol>(
             node.name.value,
@@ -171,6 +156,9 @@ namespace Semantic
                 : Core::SymbolAccessibility::Private,
             &node, node.is_mutable(), nullptr, nullptr);
 
+        if (node.is_definition())
+            varsym->define(&node);
+
         Core::VariableSymbol *varptr = varsym.get();
 
         VariableAnalyzer::verify_duplication(analyzer, varptr, result);
@@ -178,13 +166,19 @@ namespace Semantic
         if (!VariableAnalyzer::analyze_type(analyzer, varptr, result))
             return result;
 
-        // if (node.is_definition())
-        //     analyze_value(analyzer, variable, result);
-        // else
-        // {
-        //     if (node.type() == nullptr)
-        //         result.error(
-        //                     &node,
+        // If the node is a variable definition
+        if (node.is_definition())
+            VariableAnalyzer::analyze_value(analyzer, varptr, result);
+
+        // For variable declaration with no type annotation provided
+        else if (node.type != nullptr)
+        {
+            utils::todo("throw error: cannot declare a variable with no type "
+                        "annotation");
+
+            return result;
+        }
+
         //                     Diagnostic::ErrorTypes::Type::InvalidVariableType,
         //                     std::string("Variables must either have
         //                     explicit
@@ -198,7 +192,7 @@ namespace Semantic
         //             return result;
         // }
 
-        // current->declare_variable(std::move(variable));
+        current->add_symbol(std::move(varsym));
 
         return result;
     }

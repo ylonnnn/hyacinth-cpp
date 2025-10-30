@@ -30,9 +30,9 @@ namespace Core
     struct integer : value_base_type
     {
         uint64_t value;
-        bool is_neg;
+        bool is_negative;
 
-        integer(uint64_t value, bool is_neg);
+        integer(uint64_t value, bool is_negative);
 
         template <typename T,
                   typename = std::enable_if_t<std::is_same_v<T, int64_t> ||
@@ -66,6 +66,12 @@ namespace Core
         std::unordered_map<std::string, Value *> entries_;
     };
 
+    enum class ValueType
+    {
+        RValue,
+        LValue,
+    };
+
     struct InstantiatedType;
     struct Value
     {
@@ -73,6 +79,7 @@ namespace Core
 
         std::unique_ptr<T> value;
         InstantiatedType *type = nullptr;
+        ValueType val_type = ValueType::RValue;
 
         Value(std::unique_ptr<T> &&value, InstantiatedType *type);
 

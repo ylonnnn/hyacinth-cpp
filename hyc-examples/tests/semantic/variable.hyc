@@ -1,0 +1,2 @@
+var test: int<{8}> = 300;
+var test1: std::string= "duplicate";

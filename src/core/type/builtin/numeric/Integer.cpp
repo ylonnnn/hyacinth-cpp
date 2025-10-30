@@ -232,7 +232,7 @@ namespace Core
         };
 
         integer &val = *ptr;
-        if (val.is_neg && !is_signed)
+        if (val.is_negative && !is_signed)
         {
             error_suggest();
             return result;
@@ -242,6 +242,8 @@ namespace Core
         uint64_t max = bw == 64
                            ? UINT64_MAX
                            : (1ull << (is_signed ? bw - 1 : bw)) - is_signed;
+
+        std::cout << "min: " << min << " | max: " << max << "\n";
 
         if (is_signed)
         {

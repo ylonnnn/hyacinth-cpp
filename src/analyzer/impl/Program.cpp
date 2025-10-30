@@ -11,7 +11,14 @@ namespace Semantic
             nullptr, Core::ResultStatus::Success, nullptr, {}};
         result.diagnostics.reserve(32);
 
-        utils::todo("implement program node/statement analyzer");
+        // utils::todo("implement program node/statement analyzer");
+        for (auto &node : node.nodes)
+        {
+            AnalysisResult n_res =
+                AnalyzerImpl<AST::Stmt>::analyze(analyzer, *node);
+            result.adapt(n_res.status, std::move(n_res.diagnostics));
+        }
+
         // for (auto &node : node.nodes()) {
         //     AnalysisResult gls_res =
         //         AnalyzerImpl<AST::GlobalNode>::analyze(analyzer, *node);

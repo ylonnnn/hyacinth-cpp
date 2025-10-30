@@ -4,6 +4,7 @@
 #include "analyzer/impl/Expr.hpp"
 #include "ast/expr/LiteralExpr.hpp"
 #include "utils/dev.hpp"
+#include "utils/value.hpp"
 
 namespace Semantic
 {
@@ -14,15 +15,9 @@ namespace Semantic
         AnalysisResult result = {
             nullptr, Core::ResultStatus::Success, nullptr, {}};
 
-        utils::todo("implement AST::LiteralExpr analyzer");
-        // result.value =
-        //     std::make_shared<Core::Value>(utils::parse_val(node.value()));
-        // if (result.value)
-        //     result.data =
-        //         Core::Type::from_value(&analyzer.environment(),
-        //         *result.value);
-
-        // node.set_value(result.value);
+        result.value = utils::parse_val(node.value);
+        if (result.value != nullptr)
+            utils::todo("implement type inference from value");
 
         return result;
     }

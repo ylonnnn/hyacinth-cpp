@@ -37,7 +37,7 @@ namespace AST
         if (type != nullptr)
             type->print(os, tab + 1);
         else
-            os << "<Deduced>";
+            os << "<Inferred>";
 
         os << "\n" << inner_indentation << "value: ";
 

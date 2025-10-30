@@ -28,6 +28,9 @@ namespace Semantic
         AnalysisResult(Core::Value *value, Core::ResultStatus status,
                        Core::InstantiatedType *data,
                        Diagnostic::DiagnosticList diagnostics);
+
+        using Core::Result<Core::InstantiatedType *>::adapt;
+        void adapt(AnalysisResult &result);
     };
 
     template <typename T,
