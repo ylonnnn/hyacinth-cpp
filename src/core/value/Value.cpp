@@ -1,6 +1,7 @@
-#include "core/value/Value.hpp"
 #include <cstddef>
 #include <functional>
+
+#include "core/value/Value.hpp"
 
 namespace Core
 {
@@ -51,6 +52,46 @@ namespace Core
     {
         // TODO: object::operator std::string()
         return "{}";
+    }
+
+    Value::Value(std::unique_ptr<Value::T> &&value, InstantiatedType *type)
+        : value(std::move(value)), type(type)
+    {
+    }
+
+    size_t Value::hash() const
+    {
+        return std::visit(
+            [](auto &val) -> size_t
+            {
+                using T = std::decay_t<decltype(val)>;
+
+                if constexpr (std::is_base_of_v<value_base_type, T>)
+                    return val.hash();
+                else
+                    return std::hash<T>{}(val);
+            },
+            *value);
+    }
+
+    std::string Value::to_string() const
+    {
+        return std::visit(
+            [](auto &val) -> std::string
+            {
+                using T = std::decay_t<decltype(val)>;
+
+                if constexpr (std::is_convertible_v<T, std::string>)
+                    return std::string(val);
+                else
+                    return std::to_string(val);
+            },
+            *value);
+    }
+
+    std::ostream &operator<<(std::ostream &os, const Value &val)
+    {
+        return os << val.to_string();
     }
 
 } // namespace Core

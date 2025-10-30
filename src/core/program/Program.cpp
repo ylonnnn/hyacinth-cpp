@@ -4,8 +4,8 @@
 #include <iostream>
 #include <string>
 
-// #include "core/environment/Environment.hpp"
 // #include "core/program/DependencyEnvironment.hpp"
+#include "core/environment/Environment.hpp"
 #include "core/position/Position.hpp"
 #include "core/program/Program.hpp"
 #include "core/program/ProgramState.hpp"

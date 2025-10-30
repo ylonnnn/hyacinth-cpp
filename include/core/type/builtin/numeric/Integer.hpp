@@ -19,7 +19,7 @@ namespace Core
 
         void default_operations() override;
 
-        TypeResult assignable(const std::vector<TypeArgument> &arguments,
+        TypeResult assignable(const std::vector<GenericArgument> &arguments,
                               Value *value) const override;
 
       private:
@@ -27,17 +27,17 @@ namespace Core
 
         // bool
         // assignable(const Core::Value &value,
-        //            const std::vector<TypeArgument> &arguments) const
+        //            const std::vector<GenericArgument> &arguments) const
         //            override;
 
         // std::unique_ptr<Diagnostic::NoteDiagnostic> make_suggestion(
         //     AST::Node *node,
-        //     const std::vector<TypeArgument> &arguments) const override;
+        //     const std::vector<GenericArgument> &arguments) const override;
 
         // bool is_signed() const;
 
         // Type *
-        // construct_wrapper(std::vector<TypeArgument> &&arguments) const
+        // construct_wrapper(std::vector<GenericArgument> &&arguments) const
         // override; Type *construct_wrapper(uint8_t bit_width) const override;
 
         // Type *from_value(const Core::Value &value) const override;

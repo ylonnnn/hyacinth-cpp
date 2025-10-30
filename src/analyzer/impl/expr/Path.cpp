@@ -19,6 +19,13 @@ namespace Semantic
 
         utils::todo("implement AST::Path analyzer");
 
+        for (auto &segment : node.segments)
+        {
+            AnalysisResult s_res =
+                AnalyzerImpl<AST::Identifier>::analyze(analyzer, *segment);
+            result.adapt(s_res.status, std::move(s_res.diagnostics));
+        }
+
         return result;
     }
 

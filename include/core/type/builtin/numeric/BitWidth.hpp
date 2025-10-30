@@ -8,12 +8,12 @@ namespace Core
     {
         BitWidthType(Environment &environment);
 
-        TypeResult assignable(const std::vector<TypeArgument> &arguments,
+        TypeResult assignable(const std::vector<GenericArgument> &arguments,
                               Value *value) const override;
 
         // std::unique_ptr<Diagnostic::NoteDiagnostic> make_suggestion(
         //     AST::Node *node,
-        //     const std::vector<TypeArgument> &arguments) const override;
+        //     const std::vector<GenericArgument> &arguments) const override;
 
         // Type *
         // from_value([[maybe_unused]] const Core::Value &value) const override

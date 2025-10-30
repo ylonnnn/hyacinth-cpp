@@ -7,7 +7,7 @@ namespace Core
     struct NumericInstantiated : InstantiatedType
     {
         NumericInstantiated(BaseType &base,
-                            std::vector<TypeArgument> &&arguments);
+                            std::vector<GenericArgument> &&arguments);
     };
 
     struct NumericBase : BaseType
@@ -18,14 +18,14 @@ namespace Core
 
         virtual void default_operations() override = 0;
 
-        T *create_instance(std::vector<TypeArgument> &&arguments) override;
+        T *create_instance(std::vector<GenericArgument> &&arguments) override;
 
         virtual TypeResult
-        assignable(const std::vector<TypeArgument> &arguments,
+        assignable(const std::vector<GenericArgument> &arguments,
                    Value *value) const override = 0;
 
         // Type *construct_wrapper(
-        //     std::vector<TypeArgument> &&arguments) const override = 0;
+        //     std::vector<GenericArgument> &&arguments) const override = 0;
         // virtual Type *construct_wrapper(uint8_t bit_width) const = 0;
 
         // virtual Type *higher_bit_width(Type *a, Type *b) const;

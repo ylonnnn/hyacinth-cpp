@@ -6,6 +6,7 @@
 
 // #include "core/symbol/Symbol.hpp"
 // #include "core/symbol/VariableSymbol.hpp"
+#include "core/symbol/Symbol.hpp"
 #include "core/type/Type.hpp"
 #include "core/value/Value.hpp"
 
@@ -29,7 +30,6 @@ namespace Core
         virtual ~Environment() = default;
 
         void initialize();
-        void initialize_types();
 
         template <
             typename T = Environment, typename... Args,
@@ -42,7 +42,9 @@ namespace Core
             return *children.back();
         }
 
-        void declare_type(std::unique_ptr<BaseType> &&type);
+        void add_type(std::unique_ptr<BaseType> &&type);
+
+        void add_symbol(std::unique_ptr<Symbol> &&symbol);
 
         virtual BaseType *
         resolve_type(const std::string &name,
@@ -51,10 +53,18 @@ namespace Core
         resolve_type(const std::string &name,
                      size_t depth = EnvironmentResolutionType::Root) const;
 
+        virtual Symbol *
+        resolve_symbol(const std::string &name,
+                       size_t depth = EnvironmentResolutionType::Root);
+        virtual const Symbol *
+        resolve_symbol(const std::string &name,
+                       size_t depth = EnvironmentResolutionType::Root) const;
+
         virtual void print(std::ostream &os, uint32_t tab) const;
 
       private:
         std::unordered_map<std::string, std::unique_ptr<BaseType>> types_;
+        std::unordered_map<std::string, std::unique_ptr<Symbol>> symbols_;
 
         // virtual void display_symbol_table(std::ostream &os, uint32_t tab)
         // const;

@@ -27,7 +27,7 @@ namespace Core
     }
 
     BaseType::T *
-    BaseType::create_instance(std::vector<TypeArgument> &&arguments)
+    BaseType::create_instance(std::vector<GenericArgument> &&arguments)
     {
         return TYPE_POOL.add<T>(
             std::make_unique<T>(*this, std::move(arguments)));
@@ -57,7 +57,7 @@ namespace Core
     }
 
     InstantiatedType::InstantiatedType(BaseType &base,
-                                       std::vector<TypeArgument> &&arguments)
+                                       std::vector<GenericArgument> &&arguments)
         : base(base), arguments(std::move(arguments))
     {
         hash();
@@ -92,7 +92,7 @@ namespace Core
                                                    value_base_type, T>)
                                 hash_val += val.hash();
                         },
-                        **ptr);
+                        *(*ptr)->value);
                 }
             }
 
@@ -138,7 +138,7 @@ namespace Core
                             else
                                 str += std::to_string(val);
                         },
-                        **ptr);
+                        *(*ptr)->value);
                 }
 
                 else if (auto ptr = std::get_if<InstantiatedType *>(&argument))
@@ -165,7 +165,7 @@ namespace Core
         return const_cast<std::string *>(&str_info_.second);
     }
 
-    // Type::Type(BaseType *base, std::vector<TypeArgument> &&arguments)
+    // Type::Type(BaseType *base, std::vector<GenericArgument> &&arguments)
     //     : base(base), arguments(std::move(arguments))
     // {
     //     if (base != nullptr)
@@ -259,7 +259,7 @@ namespace Core
 //     {
 //     }
 
-//     TypeArgument TypeParameter::resolve(Environment &environment,
+//     GenericArgument TypeParameter::resolve(Environment &environment,
 //                                         AST::Type &type)
 //     {
 //         switch (param_type)
@@ -339,17 +339,17 @@ namespace Core
 //         parameters_.push_back(std::move(parameter));
 //     }
 
-//     std::pair<bool, TypeArgument> BaseType::resolve_argument(size_t
+//     std::pair<bool, GenericArgument> BaseType::resolve_argument(size_t
 //     param_idx,
 //                                                              AST::Type &type)
 //     {
-//         std::pair<bool, TypeArgument> result = {false, nullptr};
+//         std::pair<bool, GenericArgument> result = {false, nullptr};
 
 //         if (param_idx >= parameters_.size())
 //             return result;
 
 //         TypeParameter &param = parameters_[param_idx];
-//         TypeArgument resolved = param.resolve(*environment_, type);
+//         GenericArgument resolved = param.resolve(*environment_, type);
 
 //         if (auto ptr = std::get_if<Type *>(&resolved))
 //         {
@@ -386,7 +386,8 @@ namespace Core
 //     }
 
 //     Type *
-//     BaseType::construct_wrapper(std::vector<TypeArgument> &&arguments) const
+//     BaseType::construct_wrapper(std::vector<GenericArgument> &&arguments)
+//     const
 //     {
 //         return Type::get_or_create<>(const_cast<BaseType *>(this),
 //                                      std::move(arguments));
@@ -433,7 +434,7 @@ namespace Core
 //             // return TypeResolutionStatus::ArgumentCountMismatch;
 //         }
 
-//         std::vector<TypeArgument> _arguments{};
+//         std::vector<GenericArgument> _arguments{};
 //         _arguments.reserve(arg_count);
 
 //         for (size_t i = 0; i < arg_count; i++)
@@ -448,7 +449,8 @@ namespace Core
 //                 continue;
 
 //             auto diagnostic = std::make_unique<Diagnostic::ErrorDiagnostic>(
-//                 &type, Diagnostic::ErrorTypes::Type::InvalidTypeArgumentType,
+//                 &type,
+//                 Diagnostic::ErrorTypes::Type::InvalidGenericArgumentType,
 //                 std::string("Invalid type argument \"") + Diagnostic::ERR_GEN
 //                 +
 //                     type.to_string() + utils::Styles::Reset +

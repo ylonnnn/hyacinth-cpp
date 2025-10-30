@@ -6,7 +6,7 @@
 namespace Core
 {
     NumericInstantiated::NumericInstantiated(
-        BaseType &base, std::vector<TypeArgument> &&arguments)
+        BaseType &base, std::vector<GenericArgument> &&arguments)
         : InstantiatedType(base, std::move(arguments))
     {
     }
@@ -17,7 +17,7 @@ namespace Core
     }
 
     NumericInstantiated *
-    NumericBase::create_instance(std::vector<TypeArgument> &&arguments)
+    NumericBase::create_instance(std::vector<GenericArgument> &&arguments)
     {
         return TYPE_POOL.add<T>(
             std::make_unique<T>(*this, std::move(arguments)));
@@ -28,7 +28,7 @@ namespace Core
     //     if (a == nullptr || b == nullptr)
     //         return nullptr;
 
-    //     const TypeArgument &bw = a->arguments[0], &bw_ = b->arguments[0];
+    //     const GenericArgument &bw = a->arguments[0], &bw_ = b->arguments[0];
     //     if (bw.valueless_by_exception() || bw_.valueless_by_exception())
     //         return nullptr;
 

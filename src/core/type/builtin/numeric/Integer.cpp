@@ -18,7 +18,7 @@ namespace Core
     //     if (arguments.empty() || type.arguments.empty())
     //         return this->type->assignable_with(*type.type);
 
-    //     const TypeArgument &bw = type.arguments[0], &bw_ = arguments[0];
+    //     const GenericArgument &bw = type.arguments[0], &bw_ = arguments[0];
     //     if (bw.valueless_by_exception() || bw_.valueless_by_exception())
     //         return false;
 
@@ -197,7 +197,7 @@ namespace Core
     }
 
     TypeResult
-    IntegerType::assignable(const std::vector<TypeArgument> &arguments,
+    IntegerType::assignable(const std::vector<GenericArgument> &arguments,
                             Value *value) const
     {
         TypeResult result{ResultStatus::Success, nullptr, {}};
@@ -206,7 +206,7 @@ namespace Core
         if (!arguments.empty())
         {
             if (auto ptr = std::get_if<Value *>(&arguments[0]))
-                if (auto val_ptr = std::get_if<integer>(&**ptr))
+                if (auto val_ptr = std::get_if<integer>((*ptr)->value.get()))
                     bw = val_ptr->as<uint64_t>();
         }
 
@@ -216,7 +216,7 @@ namespace Core
                 "throw error: expected value of type '{}', received '{}'");
         };
 
-        auto ptr = std::get_if<integer>(value);
+        auto ptr = std::get_if<integer>(value->value.get());
         if (ptr == nullptr)
         {
             error();
@@ -267,7 +267,7 @@ namespace Core
     }
 
     // Type *
-    // IntegerType::construct_wrapper(std::vector<TypeArgument> &&arguments)
+    // IntegerType::construct_wrapper(std::vector<GenericArgument> &&arguments)
     // const
     // {
     //     return Type::get_or_create<Wrapper>(const_cast<IntegerType *>(this),
@@ -317,7 +317,7 @@ namespace Core
     // }
 
     // std::unique_ptr<Diagnostic::NoteDiagnostic> IntegerType::make_suggestion(
-    //     AST::Node *node, const std::vector<TypeArgument> &arguments) const
+    //     AST::Node *node, const std::vector<GenericArgument> &arguments) const
     // {
     //     size_t bw = 32;
 

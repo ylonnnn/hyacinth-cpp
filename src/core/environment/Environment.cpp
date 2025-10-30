@@ -1,5 +1,4 @@
 #include "core/environment/Environment.hpp"
-#include "core/type/builtin/numeric/Integer.hpp"
 #include "utils/dev.hpp"
 
 namespace Core
@@ -18,15 +17,14 @@ namespace Core
         // variables_.reserve(16);
     }
 
-    void Environment::initialize_types()
-    {
-        declare_type(std::make_unique<IntegerType>(*this, true));
-        declare_type(std::make_unique<IntegerType>(*this, false));
-    }
-
-    void Environment::declare_type(std::unique_ptr<BaseType> &&type)
+    void Environment::add_type(std::unique_ptr<BaseType> &&type)
     {
         types_.try_emplace(type->name, std::move(type));
+    }
+
+    void Environment::add_symbol(std::unique_ptr<Symbol> &&symbol)
+    {
+        symbols_.try_emplace(std::string(symbol->name), std::move(symbol));
     }
 
     BaseType *Environment::resolve_type(const std::string &name, size_t depth)
@@ -34,30 +32,35 @@ namespace Core
         if (depth == 0)
             return nullptr;
 
-        auto it = types_.find(name);
-        if (it != types_.end())
+        if (auto it = types_.find(name); it != types_.end())
             return it->second.get();
 
-        if (parent == nullptr)
-            return nullptr;
-
-        return parent->resolve_type(name, depth - 1);
+        return parent == nullptr ? nullptr
+                                 : parent->resolve_type(name, depth - 1);
     }
 
     const BaseType *Environment::resolve_type(const std::string &name,
                                               size_t depth) const
     {
+        return const_cast<Environment *>(this)->resolve_type(name, depth);
+    }
+
+    Symbol *Environment::resolve_symbol(const std::string &name, size_t depth)
+    {
         if (depth == 0)
             return nullptr;
 
-        auto it = types_.find(name);
-        if (it != types_.end())
+        if (auto it = symbols_.find(name); it != symbols_.end())
             return it->second.get();
 
-        if (parent == nullptr)
-            return nullptr;
+        return parent == nullptr ? nullptr
+                                 : parent->resolve_symbol(name, depth - 1);
+    }
 
-        return parent->resolve_type(name, depth - 1);
+    const Symbol *Environment::resolve_symbol(const std::string &name,
+                                              size_t depth) const
+    {
+        return const_cast<Environment *>(this)->resolve_symbol(name, depth);
     }
 
     void Environment::print(std::ostream &os, uint32_t tab) const

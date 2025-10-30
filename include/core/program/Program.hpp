@@ -58,7 +58,7 @@ namespace Core
         std::unique_ptr<AST::Program> node;
 
         // std::unique_ptr<DependencyEnvironment> dependencies;
-        // std::unique_ptr<Environment> environment;
+        std::unique_ptr<Environment> environment;
 
         Program(const std::string &path, ProgramState state = PFS_MAIN);
         ~Program();

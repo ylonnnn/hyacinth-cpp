@@ -4,10 +4,12 @@
 #include <type_traits>
 
 #include "ast/Node.hpp"
+#include "core/environment/EnvironmentStack.hpp"
 #include "core/program/Program.hpp"
 #include "core/result/Result.hpp"
 // #include "core/type/Type.hpp"
 // #include "core/value/Value.hpp"
+#include "core/symbol/Symbol.hpp"
 #include "core/type/Type.hpp"
 #include "diagnostic/Diagnostic.hpp"
 
@@ -17,12 +19,11 @@
 
 namespace Semantic
 {
-    // TODO: Update void * to actual Type
     struct AnalysisResult : Core::Result<Core::InstantiatedType *>
     {
         // For Constant Folding
         Core::Value *value = nullptr;
-        // Core::Symbol *symbol = nullptr;
+        Core::Symbol *symbol = nullptr;
 
         AnalysisResult(Core::Value *value, Core::ResultStatus status,
                        Core::InstantiatedType *data,
@@ -44,11 +45,11 @@ namespace Semantic
     struct Analyzer
     {
         Core::Program &program;
-        // std::stack<typename Tp>
-        // Core::Environment &environment, *current_env_ = nullptr;
+        Core::EnvironmentStack env_stack;
 
         Analyzer(Core::Program &program);
 
+        void initialize();
         void initialize_types();
 
         template <typename T,

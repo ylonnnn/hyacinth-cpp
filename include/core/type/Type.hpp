@@ -2,15 +2,13 @@
 
 #include <string>
 
+#include "core/argument/Argument.hpp"
 #include "core/result/Result.hpp"
 #include "core/type/TypeParameter.hpp"
 #include "core/type/TypePool.hpp"
-#include "core/value/Value.hpp"
 
 namespace Core
 {
-    using TypeArgument = std::variant<InstantiatedType *, Value *>;
-
     struct TypeResult : Result<InstantiatedType *>
     {
         TypeResult(ResultStatus status, InstantiatedType *data,
@@ -30,13 +28,13 @@ namespace Core
 
         virtual void default_operations();
 
-        virtual T *create_instance(std::vector<TypeArgument> &&arguments);
+        virtual T *create_instance(std::vector<GenericArgument> &&arguments);
 
         void add_parameter(TypeParameterType param_type, std::string &&name,
                            InstantiatedType *type);
 
         virtual TypeResult
-        assignable(const std::vector<TypeArgument> &arguments,
+        assignable(const std::vector<GenericArgument> &arguments,
                    Value *value) const = 0;
 
         size_t hash();
@@ -49,9 +47,10 @@ namespace Core
     struct InstantiatedType
     {
         BaseType &base;
-        std::vector<TypeArgument> arguments;
+        std::vector<GenericArgument> arguments;
 
-        InstantiatedType(BaseType &base, std::vector<TypeArgument> &&arguments);
+        InstantiatedType(BaseType &base,
+                         std::vector<GenericArgument> &&arguments);
 
         TypeResult assignable(Value *value) const;
 

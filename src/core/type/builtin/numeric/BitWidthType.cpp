@@ -9,12 +9,12 @@ namespace Core
     }
 
     TypeResult
-    BitWidthType::assignable(const std::vector<TypeArgument> &arguments,
+    BitWidthType::assignable(const std::vector<GenericArgument> &arguments,
                              Value *value) const
     {
         TypeResult result{ResultStatus::Success, nullptr, {}};
 
-        auto ptr = std::get_if<integer>(value);
+        auto ptr = std::get_if<integer>(value->value.get());
         if (value == nullptr || ptr == nullptr)
         {
             utils::todo("throw error: expected value of type bit width, "

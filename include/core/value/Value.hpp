@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <variant>
@@ -11,6 +12,8 @@ namespace Core
     {
         virtual size_t hash() const = 0;
     };
+
+    struct Value;
 
     struct null : value_base_type
     {
@@ -23,8 +26,6 @@ namespace Core
     struct object;
     struct callable;
     // struct array; // ?
-
-    using Value = std::variant<null, integer, double, bool, char, std::string>;
 
     struct integer : value_base_type
     {
@@ -53,6 +54,7 @@ namespace Core
     struct object : value_base_type
     {
         void set(const std::string &key, Value &value);
+
         Value *get(const std::string &key);
         const Value *get(const std::string &key) const;
 
@@ -62,6 +64,22 @@ namespace Core
 
       private:
         std::unordered_map<std::string, Value *> entries_;
+    };
+
+    struct InstantiatedType;
+    struct Value
+    {
+        using T = std::variant<null, integer, double, bool, char, std::string>;
+
+        std::unique_ptr<T> value;
+        InstantiatedType *type = nullptr;
+
+        Value(std::unique_ptr<T> &&value, InstantiatedType *type);
+
+        size_t hash() const;
+        std::string to_string() const;
+
+        friend std::ostream &operator<<(std::ostream &os, const Value &val);
     };
 
     // struct Type;
