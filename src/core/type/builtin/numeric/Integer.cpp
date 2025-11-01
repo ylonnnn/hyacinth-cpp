@@ -32,8 +32,6 @@ namespace Core
         Core::PositionRange *range = value->range;
         auto str_type = *to_string();
 
-        std::cout << range << " | " << signal << "\n";
-
         if (range != nullptr)
             switch (signal)
             {

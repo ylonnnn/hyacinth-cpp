@@ -197,8 +197,20 @@ namespace Lexer
     {
         //
         char c = peek();
-        uint32_t base = 10, s_row = row, s_col = col;
+        if (c == '\0')
+            return;
+
         size_t s_offset = offset;
+        uint32_t base = 10, s_row = row, s_col = col;
+
+        if (c == '-')
+        {
+            consume();
+            c = peek();
+
+            if (c == '\0')
+                return;
+        }
 
         // Prefix-ed (0b, 0o, 0x)
         if (c == '0')
@@ -506,7 +518,11 @@ namespace Lexer
 
                     if (std::isdigit(p))
                     {
+                        --offset;
+                        --col;
+
                         read_num(result);
+
                         continue;
                     }
 
