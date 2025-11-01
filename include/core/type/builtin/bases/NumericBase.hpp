@@ -8,6 +8,8 @@ namespace Core
     {
         NumericInstantiated(BaseType &base,
                             std::vector<GenericArgument> &&arguments);
+
+        virtual TypeResult assignable(Value *value) const override = 0;
     };
 
     struct NumericBase : BaseType
@@ -15,14 +17,7 @@ namespace Core
         using T = NumericInstantiated;
 
         NumericBase(Core::Environment &environment, std::string &&name);
-
-        virtual void default_operations() override = 0;
-
-        T *create_instance(std::vector<GenericArgument> &&arguments) override;
-
-        virtual TypeResult
-        assignable(const std::vector<GenericArgument> &arguments,
-                   Value *value) const override = 0;
+        virtual ~NumericBase() = default;
 
         // Type *construct_wrapper(
         //     std::vector<GenericArgument> &&arguments) const override = 0;

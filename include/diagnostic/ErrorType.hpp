@@ -17,6 +17,16 @@ namespace Diagnostic
         InvalidNumericLiteralDigit,
 
         MissingValue,
+
+        // Semantic
+        InvalidVariableDeclaration,
+        UnknownSymbol,
+
+        IllegalShadowing,
+        IdentifierConflict,
+        IllegalVariableRedeclaration,
+
+        TypeMismatch,
     };
 
 }

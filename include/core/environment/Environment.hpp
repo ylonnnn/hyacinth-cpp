@@ -4,11 +4,8 @@
 #include <unordered_map>
 #include <vector>
 
-// #include "core/symbol/Symbol.hpp"
-// #include "core/symbol/VariableSymbol.hpp"
 #include "core/symbol/Symbol.hpp"
 #include "core/type/Type.hpp"
-#include "core/value/Value.hpp"
 
 namespace Core
 {

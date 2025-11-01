@@ -1,2 +1,2 @@
-var test: int<{8}> = 300;
-var test1: std::string= "duplicate";
+var test: int<{8}>;
+var test: uint<{16}> = -1;

@@ -6,6 +6,7 @@
 // #include "core/operation/Operation.hpp"
 #include "core/type/Type.hpp"
 #include "core/type/TypeParameter.hpp"
+#include "core/type/TypePool.hpp"
 #include "core/type/builtin/bases/NumericBase.hpp"
 #include "core/type/builtin/numeric/Integer.hpp"
 #include "core/value/Value.hpp"
@@ -13,6 +14,57 @@
 
 namespace Core
 {
+    IntegerInstantiated::IntegerInstantiated(
+        BaseType &base, std::vector<GenericArgument> &&arguments)
+        : NumericInstantiated(base, std::move(arguments))
+    {
+    }
+
+    TypeResult IntegerInstantiated::assignable(Value *value) const
+    {
+        TypeResult result{ResultStatus::Success, nullptr, {}};
+
+        // TODO: Retrieve type of value
+
+        Diagnostic::Diagnostic *diagnostic = nullptr;
+        IntegerType::Signal signal = base.assignable(arguments, value, result);
+
+        Core::PositionRange *range = value->range;
+        auto str_type = *to_string();
+
+        std::cout << range << " | " << signal << "\n";
+
+        if (range != nullptr)
+            switch (signal)
+            {
+                case IntegerType::Mismatch:
+                    diagnostic =
+                        result.error(Core::PositionRange(*range),
+                                     Diagnostic::ErrorType::TypeMismatch,
+                                     "expected value of type '" + str_type +
+                                         "', received '{type}'.");
+
+                // TODO: Implement some sort of difference
+                case IntegerType::Underflow:
+                    [[fallthrough]];
+                case IntegerType::Overflow:
+                    diagnostic =
+                        result.error(Core::PositionRange(*range),
+                                     Diagnostic::ErrorType::TypeMismatch,
+                                     "cannot assign value of type '{}' as it "
+                                     "expects values of type '" +
+                                         str_type + "'.");
+
+                case IntegerType::Assignable:
+                    break; // Assignable
+
+                default:
+                    return result;
+            }
+
+        return result;
+    }
+
     // bool IntegerType::Wrapper::assignable_with(const Type &type) const
     // {
     //     if (arguments.empty() || type.arguments.empty())
@@ -196,11 +248,16 @@ namespace Core
         //          __rel)});
     }
 
-    TypeResult
-    IntegerType::assignable(const std::vector<GenericArgument> &arguments,
-                            Value *value) const
+    IntegerType::T *
+    IntegerType::create_instance(std::vector<GenericArgument> &&arguments)
     {
-        TypeResult result{ResultStatus::Success, nullptr, {}};
+        return TYPE_POOL.add(std::make_unique<T>(*this, std::move(arguments)));
+    }
+
+    IntegerType::Signal
+    IntegerType::assignable(const std::vector<GenericArgument> &arguments,
+                            Value *value, TypeResult &result) const
+    {
         size_t bw = 32;
 
         if (!arguments.empty())
@@ -210,34 +267,11 @@ namespace Core
                     bw = val_ptr->as<uint64_t>();
         }
 
-        auto error = [&result, &todo = utils::todo]() -> void
-        {
-            utils::todo(
-                "throw error: expected value of type '{}', received '{}'");
-        };
-
         auto ptr = std::get_if<integer>(value->value.get());
         if (ptr == nullptr)
-        {
-            error();
-
-            return result;
-        }
-
-        auto error_suggest = [&result, &error, &todo = utils::todo]() -> void
-        {
-            error();
-            utils::todo("suggest: values within {min} to {max} are the "
-                        "expected values");
-        };
+            return Mismatch;
 
         integer &val = *ptr;
-        if (val.is_negative && !is_signed)
-        {
-            error_suggest();
-            return result;
-        }
-
         int64_t min = is_signed ? -(1ll << (bw - 1)) : 0;
         uint64_t max = bw == 64
                            ? UINT64_MAX
@@ -248,24 +282,23 @@ namespace Core
         if (is_signed)
         {
             auto i64 = val.as<int64_t>();
-            if (min < i64 || i64 > static_cast<int64_t>(max))
-            {
-                error_suggest();
-                return result;
-            }
+            return i64 < min                         ? Underflow
+                   : i64 > static_cast<int64_t>(max) ? Overflow
+                                                     : Assignable;
         }
 
         else
         {
+            if (val.is_negative)
+                return Underflow;
+
             auto u64 = val.as<uint64_t>();
-            if (static_cast<uint64_t>(min) < u64 || u64 > max)
-            {
-                error_suggest();
-                return result;
-            }
+            return u64 < static_cast<uint64_t>(min) ? Underflow
+                   : u64 > max                      ? Overflow
+                                                    : Assignable;
         }
 
-        return result;
+        return Assignable;
     }
 
     // Type *

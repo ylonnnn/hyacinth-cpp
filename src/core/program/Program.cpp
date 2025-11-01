@@ -309,7 +309,13 @@ namespace Core
 
         // Semantic Analysis
         if (succeeded)
-            succeeded = analyze(node).status == Core::ResultStatus::Success;
+        {
+            Semantic::AnalysisResult analysis_result = analyze(node);
+            result.adapt(analysis_result.status,
+                         std::move(analysis_result.diagnostics));
+
+            succeeded = result.status == Core::ResultStatus::Success;
+        }
 
         // if (succeeded)
         // {

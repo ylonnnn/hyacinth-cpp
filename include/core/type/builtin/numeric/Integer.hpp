@@ -7,8 +7,22 @@
 
 namespace Core
 {
+    struct IntegerInstantiated : NumericInstantiated
+    {
+        IntegerInstantiated(BaseType &base,
+                            std::vector<GenericArgument> &&arguments);
+
+        TypeResult assignable(Value *value) const override;
+    };
+
     struct IntegerType : NumericBase
     {
+        using T = IntegerInstantiated;
+        static constexpr Signal Mismatch = 0, // Type Mismatch
+            Underflow = 1,                    // Value Underflow
+            Overflow = 2,                     // Value Overflow
+            Assignable = 3;                   // Assignable
+
         bool is_signed;
 
         //   Wrapper *int_w_ = nullptr;
@@ -19,8 +33,10 @@ namespace Core
 
         void default_operations() override;
 
-        TypeResult assignable(const std::vector<GenericArgument> &arguments,
-                              Value *value) const override;
+        T *create_instance(std::vector<GenericArgument> &&arguments) override;
+
+        Signal assignable(const std::vector<GenericArgument> &arguments,
+                          Value *value, TypeResult &result) const override;
 
       private:
         BitWidthType bw_type_;

@@ -8,6 +8,7 @@
 #include "analyzer/Analyzer.hpp"
 #include "analyzer/impl/Stmt.hpp"
 #include "ast/type/Type.hpp"
+#include "core/symbol/TypeSymbol.hpp"
 #include "core/symbol/VariableSymbol.hpp"
 #include "utils/dev.hpp"
 
@@ -27,29 +28,54 @@ namespace Semantic
             std::string ident(node->name.value);
 
             // Built-in Type Verification
-            if (root->resolve_type(ident) != nullptr)
+            if (auto symbol = root->resolve_symbol(ident); symbol != nullptr)
             {
-                utils::todo(
-                    "throw error: illegal shadowing of built-in type '{}'");
+                // If the symbol is not a type symbol
+                if (typeid(*symbol) != typeid(Core::TypeSymbol))
+                    return;
+
+                // If the declaration node of the symbol exists, it is not
+                // built-in
+                if (symbol->decl_node != nullptr)
+                    return;
+
+                result.error(Core::PositionRange(node->name.range),
+                             Diagnostic::ErrorType::IllegalShadowing,
+                             "illegal shadowing of built-in type '" +
+                                 std::string(symbol->name) + "'.");
+
                 return;
             }
 
             Core::Symbol *declared = current->resolve_symbol(
                 ident, Core::EnvironmentResolutionType::Current);
 
+            std::cout << "declared: " << declared << "\n";
             if (declared == nullptr)
                 return;
 
-            utils::todo("throw error: identifier '{}' is already used");
+            result.error(Core::PositionRange(node->name.range),
+                         Diagnostic::ErrorType::IdentifierConflict,
+                         "identifier '" + ident + "' is already used.");
 
             auto is_defined = declared->def_node != nullptr,
                  is_definition = node->is_definition();
 
             if (is_defined || is_definition)
             {
-                utils::todo("throw error: cannot re-declare variable '{}'");
-                utils::todo("detail: variable '{}' is already declared here "
-                            "(provide context)");
+                auto decl = declared->decl_node;
+                std::cout << "re-declaration\n";
+
+                result
+                    .error(Core::PositionRange(node->name.range),
+                           Diagnostic::ErrorType::IllegalVariableRedeclaration,
+                           "cannot re-declare variable '" + ident + "'.")
+                    ->add_detail(
+                        Diagnostic::DiagnosticSeverity::Note,
+                        static_cast<uint32_t>(Diagnostic::NoteType::Info),
+                        Core::PositionRange{decl->position,
+                                            *decl->end_position},
+                        "variable '" + ident + "' is already declared here");
 
                 return;
             }
@@ -171,10 +197,12 @@ namespace Semantic
             VariableAnalyzer::analyze_value(analyzer, varptr, result);
 
         // For variable declaration with no type annotation provided
-        else if (node.type != nullptr)
+        else if (node.type == nullptr)
         {
-            utils::todo("throw error: cannot declare a variable with no type "
-                        "annotation");
+            result.error(Core::PositionRange{node.position, *node.end_position},
+                         Diagnostic::ErrorType::InvalidVariableDeclaration,
+                         "cannot declare a variable with neither explicit type "
+                         "annotation nor value initializer.");
 
             return result;
         }
@@ -192,6 +220,7 @@ namespace Semantic
         //             return result;
         // }
 
+        std::cout << varsym->name << " added\n";
         current->add_symbol(std::move(varsym));
 
         return result;

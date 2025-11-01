@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/position/Position.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -80,8 +81,11 @@ namespace Core
         std::unique_ptr<T> value;
         InstantiatedType *type = nullptr;
         ValueType val_type = ValueType::RValue;
+        Core::PositionRange *range = nullptr;
 
-        Value(std::unique_ptr<T> &&value, InstantiatedType *type);
+        Value(std::unique_ptr<T> &&value, InstantiatedType *type,
+              ValueType val_type = ValueType::RValue,
+              Core::PositionRange *range = nullptr);
 
         size_t hash() const;
         std::string to_string() const;

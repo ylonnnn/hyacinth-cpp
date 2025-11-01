@@ -1,7 +1,5 @@
-#include <algorithm>
-
-#include "core/type/Type.hpp"
 #include "core/type/builtin/bases/NumericBase.hpp"
+#include "core/type/Type.hpp"
 
 namespace Core
 {
@@ -14,13 +12,6 @@ namespace Core
     NumericBase::NumericBase(Core::Environment &environment, std::string &&name)
         : BaseType(environment, std::move(name))
     {
-    }
-
-    NumericInstantiated *
-    NumericBase::create_instance(std::vector<GenericArgument> &&arguments)
-    {
-        return TYPE_POOL.add<T>(
-            std::make_unique<T>(*this, std::move(arguments)));
     }
 
     // Type *NumericBase::higher_bit_width(Type *a, Type *b) const

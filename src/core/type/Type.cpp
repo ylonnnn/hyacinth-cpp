@@ -66,7 +66,10 @@ namespace Core
 
     TypeResult InstantiatedType::assignable(Value *value) const
     {
-        return base.assignable(arguments, value);
+        TypeResult result{ResultStatus::Success, nullptr, {}};
+        base.assignable(arguments, value, result);
+
+        return result;
     }
 
     size_t InstantiatedType::hash(bool rehash)

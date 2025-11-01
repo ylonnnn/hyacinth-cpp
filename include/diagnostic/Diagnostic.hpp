@@ -25,6 +25,9 @@ namespace Diagnostic
                    Core::PositionRange &&range, std::string &&message);
 
         Diagnostic &add_detail(std::unique_ptr<Diagnostic> &&detail);
+        Diagnostic &add_detail(DiagnosticSeverity severity, uint32_t code,
+                               Core::PositionRange &&range,
+                               std::string &&message);
     };
 
     using DiagnosticList = Diagnostic::DiagnosticList;

@@ -6,10 +6,15 @@ namespace Core
 {
     struct BitWidthType : BaseType
     {
+        static constexpr Signal Mismatch = 0, // Type Mismatch
+            Assignable = 1;                   // Assignable
+
         BitWidthType(Environment &environment);
 
-        TypeResult assignable(const std::vector<GenericArgument> &arguments,
-                              Value *value) const override;
+        T *create_instance(std::vector<GenericArgument> &&arguments) override;
+
+        Signal assignable(const std::vector<GenericArgument> &arguments,
+                          Value *value, TypeResult &result) const override;
 
         // std::unique_ptr<Diagnostic::NoteDiagnostic> make_suggestion(
         //     AST::Node *node,

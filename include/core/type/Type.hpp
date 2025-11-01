@@ -18,6 +18,7 @@ namespace Core
     struct BaseType
     {
         using T = InstantiatedType;
+        using Signal = uint32_t;
 
         Environment &environment;
         std::string name;
@@ -25,6 +26,7 @@ namespace Core
         std::vector<TypeParameter> parameters;
 
         BaseType(Environment &environment, std::string &&name);
+        virtual ~BaseType() = default;
 
         virtual void default_operations();
 
@@ -33,9 +35,8 @@ namespace Core
         void add_parameter(TypeParameterType param_type, std::string &&name,
                            InstantiatedType *type);
 
-        virtual TypeResult
-        assignable(const std::vector<GenericArgument> &arguments,
-                   Value *value) const = 0;
+        virtual Signal assignable(const std::vector<GenericArgument> &arguments,
+                                  Value *value, TypeResult &result) const = 0;
 
         size_t hash();
         size_t *hash() const;
@@ -52,7 +53,7 @@ namespace Core
         InstantiatedType(BaseType &base,
                          std::vector<GenericArgument> &&arguments);
 
-        TypeResult assignable(Value *value) const;
+        virtual TypeResult assignable(Value *value) const;
 
         size_t hash(bool rehash = false);
         size_t *hash() const;

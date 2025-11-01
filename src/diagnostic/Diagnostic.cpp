@@ -18,4 +18,15 @@ namespace Diagnostic
         return *this;
     }
 
+    Diagnostic &Diagnostic::add_detail(DiagnosticSeverity severity,
+                                       uint32_t code,
+                                       Core::PositionRange &&range,
+                                       std::string &&message)
+    {
+        details.push_back(std::make_unique<Diagnostic>(
+            severity, code, std::move(range), std::move(message)));
+
+        return *this;
+    }
+
 } // namespace Diagnostic

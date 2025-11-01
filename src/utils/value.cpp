@@ -58,7 +58,8 @@ namespace utils
     {
         return Core::VALUE_POOL.add(std::make_unique<Core::Value>(
             parse_val_t(token),
-            /* TODO: Infer type of values */ nullptr));
+            /* TODO: Infer type of values */ nullptr, Core::ValueType::RValue,
+            &token.range));
     }
 
 } // namespace utils
