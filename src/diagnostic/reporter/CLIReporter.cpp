@@ -37,7 +37,8 @@ namespace Diagnostic
 
     std::string
     CLIReporter::point_position_range(DiagnosticSeverity severity,
-                                      const Core::PositionRange &range) const
+                                      const Core::PositionRange &range,
+                                      const std::string &prefix) const
     {
         auto &[start, end] = range;
 
@@ -58,7 +59,7 @@ namespace Diagnostic
             std::string line(lines[i]), l_no = std::to_string(start.row + i);
 
             size_t prefix_len = (tab_size * 3) + 1 + l_no.size();
-            formatted += tab + utils::Colors::Cyan + l_no + tab +
+            formatted += prefix + tab + utils::Colors::Cyan + l_no + tab +
                          utils::Colors::BrightBlack + "|" +
                          utils::Styles::Reset + tab;
 
@@ -76,15 +77,16 @@ namespace Diagnostic
                 line.insert(l_start, color);
             }
 
-            formatted += line + "\n" + utils::tab(prefix_len + l_start, 1) +
-                         color + std::string((l_end - l_start) + 1, '^') + "\n";
+            formatted += line + "\n" + prefix +
+                         utils::tab(prefix_len + l_start, 1) + color +
+                         std::string((l_end - l_start) + 1, '^') + "\n";
         }
 
         return formatted;
     }
 
-    std::string
-    CLIReporter::format_diagnostic(const Diagnostic &diagnostic) const
+    std::string CLIReporter::format_diagnostic(const Diagnostic &diagnostic,
+                                               uint32_t indentation) const
     {
         auto &[severity, code, message, range, details] = diagnostic;
         auto &[row, col, offset, program] = range.start;
@@ -94,15 +96,25 @@ namespace Diagnostic
         std::string p_path = program.path.string(),
                     cwp = current.string().substr(parent.string().size()),
                     location = p_path.substr(p_path.find(cwp)) + ":" +
-                               std::to_string(row) + ":" + std::to_string(col);
-
-        utils::todo("implement: format for diagnostic.details");
+                               std::to_string(row) + ":" + std::to_string(col),
+                    indent_str = std::string(indentation * 4, ' ');
 
         std::string formatted =
-            utils::Colors::BrightBlack + location + ": " + color_of(severity) +
-            severity_to_string(severity) + "<" + format_code(severity, code) +
-            "> " + utils::Styles::Reset + message + "\n" +
-            point_position_range(severity, range);
+            utils::Colors::BrightBlack + indent_str + location + ": " +
+            color_of(severity) + severity_to_string(severity) + "<" +
+            format_code(severity, code) + "> " + utils::Styles::Reset +
+            message + "\n" + point_position_range(severity, range, indent_str);
+
+        for (const auto &detail : diagnostic.details)
+        {
+            if (detail == nullptr) [[unlikely]]
+                continue;
+
+            std::string indent_str((indentation + 1) * 4, ' '), pnl = "|\n";
+
+            formatted += utils::Colors::White + indent_str +
+                         format_diagnostic(*detail, indentation + 1);
+        }
 
         return formatted;
     }

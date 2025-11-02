@@ -14,12 +14,12 @@ namespace Diagnostic
         std::string format_code(DiagnosticSeverity severity,
                                 uint32_t code) const;
 
-        std::string
-        point_position_range(DiagnosticSeverity severity,
-                             const Core::PositionRange &range) const;
+        std::string point_position_range(DiagnosticSeverity severity,
+                                         const Core::PositionRange &range,
+                                         const std::string &prefix = "") const;
 
-        std::string
-        format_diagnostic(const Diagnostic &diagnostic) const override;
+        std::string format_diagnostic(const Diagnostic &diagnostic,
+                                      uint32_t indentation = 0) const override;
 
         DiagnosticReportStatusResult report() const override;
 

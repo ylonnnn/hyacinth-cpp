@@ -15,7 +15,8 @@ namespace Diagnostic
         DiagnosticReporter(DiagnosticList &&diagnostics);
 
         virtual std::string
-        format_diagnostic(const Diagnostic &diagnostic) const = 0;
+        format_diagnostic(const Diagnostic &diagnostic,
+                          uint32_t indentation = 0) const = 0;
 
         virtual DiagnosticReportStatusResult report() const = 0;
     };
