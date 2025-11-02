@@ -38,6 +38,10 @@ namespace Core
         virtual Signal assignable(const std::vector<GenericArgument> &arguments,
                                   Value *value, TypeResult &result) const = 0;
 
+        virtual std::unique_ptr<Diagnostic::Diagnostic>
+        make_suggestion(const std::vector<GenericArgument> &arguments,
+                        Value *value) const = 0;
+
         size_t hash();
         size_t *hash() const;
 

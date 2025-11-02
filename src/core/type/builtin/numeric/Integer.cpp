@@ -41,6 +41,7 @@ namespace Core
                                      Diagnostic::ErrorType::TypeMismatch,
                                      "expected value of type '" + str_type +
                                          "', received '{type}'.");
+                    break;
 
                 // TODO: Implement some sort of difference
                 case IntegerType::Underflow:
@@ -52,6 +53,7 @@ namespace Core
                                      "cannot assign value of type '{}' as it "
                                      "expects values of type '" +
                                          str_type + "'.");
+                    break;
 
                 case IntegerType::Assignable:
                     break; // Assignable
@@ -59,6 +61,9 @@ namespace Core
                 default:
                     return result;
             }
+
+        if (diagnostic != nullptr)
+            diagnostic->add_detail(base.make_suggestion(arguments, value));
 
         return result;
     }
@@ -275,8 +280,6 @@ namespace Core
                            ? UINT64_MAX
                            : (1ull << (is_signed ? bw - 1 : bw)) - is_signed;
 
-        std::cout << "min: " << min << " | max: " << max << "\n";
-
         if (is_signed)
         {
             auto i64 = val.as<int64_t>();
@@ -297,6 +300,35 @@ namespace Core
         }
 
         return Assignable;
+    }
+
+    std::unique_ptr<Diagnostic::Diagnostic>
+    IntegerType::make_suggestion(const std::vector<GenericArgument> &arguments,
+                                 Value *value) const
+    {
+        if (value == nullptr || value->range == nullptr)
+            return nullptr;
+
+        size_t bw = 32;
+
+        if (!arguments.empty())
+        {
+            if (auto ptr = std::get_if<Value *>(&arguments[0]))
+                if (auto val_ptr = std::get_if<integer>((*ptr)->value.get()))
+                    bw = val_ptr->as<uint64_t>();
+        }
+
+        int64_t min = is_signed ? -(1ll << (bw - 1)) : 0;
+        uint64_t max = bw == 64
+                           ? UINT64_MAX
+                           : (1ull << (is_signed ? bw - 1 : bw)) - is_signed;
+
+        return std::make_unique<Diagnostic::Diagnostic>(
+            Diagnostic::DiagnosticSeverity::Note,
+            static_cast<uint32_t>(Diagnostic::NoteType::Suggestion),
+            Core::PositionRange(*value->range),
+            "expects values within " + std::to_string(min) + " to " +
+                std::to_string(max) + ".");
     }
 
     // Type *

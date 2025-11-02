@@ -38,17 +38,26 @@ namespace Core
 
         if (val < min_ || val > max_)
         {
-            // TODO: Use make_suggestion()
-            error()->add_detail(
-                Diagnostic::DiagnosticSeverity::Note,
-                static_cast<uint32_t>(Diagnostic::NoteType::Suggestion),
-                Core::PositionRange(*value->range),
-                "values within {min} to {max} are the only values expected.");
-
+            error()->add_detail(make_suggestion(arguments, value));
             return Mismatch;
         }
 
         return Assignable;
+    }
+
+    std::unique_ptr<Diagnostic::Diagnostic>
+    BitWidthType::make_suggestion(const std::vector<GenericArgument> &arguments,
+                                  Value *value) const
+    {
+        if (value == nullptr || value->range == nullptr)
+            return nullptr;
+
+        return std::make_unique<Diagnostic::Diagnostic>(
+            Diagnostic::DiagnosticSeverity::Note,
+            static_cast<uint32_t>(Diagnostic::NoteType::Suggestion),
+            Core::PositionRange(*value->range),
+            "expects values within " + std::to_string(min_) + " to " +
+                std::to_string(max_) + ".");
     }
 
 } // namespace Core

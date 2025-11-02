@@ -38,6 +38,10 @@ namespace Core
         Signal assignable(const std::vector<GenericArgument> &arguments,
                           Value *value, TypeResult &result) const override;
 
+        std::unique_ptr<Diagnostic::Diagnostic>
+        make_suggestion(const std::vector<GenericArgument> &arguments,
+                        Value *value) const override;
+
       private:
         BitWidthType bw_type_;
 
