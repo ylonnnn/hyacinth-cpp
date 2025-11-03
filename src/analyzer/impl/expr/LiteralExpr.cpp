@@ -1,9 +1,6 @@
-#include <iostream>
-
+#include "ast/expr/LiteralExpr.hpp"
 #include "analyzer/Analyzer.hpp"
 #include "analyzer/impl/Expr.hpp"
-#include "ast/expr/LiteralExpr.hpp"
-#include "utils/dev.hpp"
 #include "utils/value.hpp"
 
 namespace Semantic
@@ -17,7 +14,8 @@ namespace Semantic
 
         result.value = utils::parse_val(node.value);
         if (result.value != nullptr)
-            utils::todo("implement type inference from value");
+            result.data = Core::BaseType::infer(*analyzer.env_stack.current(),
+                                                *result.value);
 
         return result;
     }

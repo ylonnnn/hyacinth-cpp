@@ -1,6 +1,7 @@
 #include <type_traits>
 #include <variant>
 
+#include "core/environment/Environment.hpp"
 #include "core/type/Type.hpp"
 
 namespace Core
@@ -54,6 +55,32 @@ namespace Core
             return nullptr;
 
         return const_cast<size_t *>(&hash_info_.second);
+    }
+
+    BaseType::T *BaseType::infer(Environment &environment, Value &value)
+    {
+        if (value.type != nullptr)
+            return value.type;
+
+        if (value.value == nullptr)
+            return nullptr;
+
+        return std::visit(
+            [&environment, &value](auto &val) -> T *
+            {
+                using T = std::decay_t<decltype(val)>;
+                std::string t_name;
+
+                if constexpr (std::is_same_v<T, Core::integer>)
+                    t_name = val.is_negative ? "int" : "uint";
+
+                BaseType *resolved = environment.resolve_type(t_name);
+                if (resolved == nullptr)
+                    return nullptr;
+
+                return resolved->infer(value);
+            },
+            *value.value);
     }
 
     InstantiatedType::InstantiatedType(BaseType &base,

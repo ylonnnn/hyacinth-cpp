@@ -20,6 +20,8 @@ namespace Core
         make_suggestion(const std::vector<GenericArgument> &arguments,
                         Value *value) const override;
 
+        T *infer(Value &value) override;
+
         // std::unique_ptr<Diagnostic::NoteDiagnostic> make_suggestion(
         //     AST::Node *node,
         //     const std::vector<GenericArgument> &arguments) const override;

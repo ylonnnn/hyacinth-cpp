@@ -38,6 +38,9 @@ namespace Core
         Signal assignable(const std::vector<GenericArgument> &arguments,
                           Value *value, TypeResult &result) const override;
 
+        T *infer(Value &value) override;
+        uint32_t bit_width_of(Value &value) const;
+
         std::unique_ptr<Diagnostic::Diagnostic>
         make_suggestion(const std::vector<GenericArgument> &arguments,
                         Value *value) const override;

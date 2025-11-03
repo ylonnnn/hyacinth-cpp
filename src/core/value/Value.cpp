@@ -26,6 +26,8 @@ namespace Core
                            : std::hash<uint64_t>{}(value);
     }
 
+    object::object(InstantiatedType *type) : type(type) {}
+
     void object::set(const std::string &key, Value &value)
     {
         entries_.insert_or_assign(key, &value);

@@ -9,6 +9,8 @@
 
 namespace Core
 {
+    struct InstantiatedType;
+
     struct value_base_type
     {
         virtual size_t hash() const = 0;
@@ -54,6 +56,9 @@ namespace Core
 
     struct object : value_base_type
     {
+        InstantiatedType *type = nullptr;
+        object(InstantiatedType *type);
+
         void set(const std::string &key, Value &value);
 
         Value *get(const std::string &key);
@@ -73,7 +78,6 @@ namespace Core
         LValue,
     };
 
-    struct InstantiatedType;
     struct Value
     {
         using T = std::variant<null, integer, double, bool, char, std::string>;

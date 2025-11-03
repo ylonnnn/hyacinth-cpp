@@ -45,6 +45,8 @@ namespace Core
         return Assignable;
     }
 
+    BitWidthType::T *BitWidthType::infer(Value &value) { return nullptr; }
+
     std::unique_ptr<Diagnostic::Diagnostic>
     BitWidthType::make_suggestion(const std::vector<GenericArgument> &arguments,
                                   Value *value) const

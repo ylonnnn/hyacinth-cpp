@@ -137,7 +137,16 @@ namespace Semantic
             // Otherwise, infer type
             else
             {
-                utils::todo("implement type inference");
+                varsym->type =
+                    Core::BaseType::infer(*analyzer.env_stack.current(), *val);
+
+                // TODO: Remove this
+                std::cout << "varsym->type: ";
+                if (varsym->type != nullptr)
+                    std::cout << varsym->type->to_string() << "\n";
+                else
+                    std::cout << "nullptr\n";
+
                 return;
             }
 

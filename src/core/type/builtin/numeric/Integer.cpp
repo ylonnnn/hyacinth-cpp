@@ -10,7 +10,7 @@
 #include "core/type/builtin/bases/NumericBase.hpp"
 #include "core/type/builtin/numeric/Integer.hpp"
 #include "core/value/Value.hpp"
-#include "utils/dev.hpp"
+#include "core/value/ValuePool.hpp"
 
 namespace Core
 {
@@ -302,6 +302,20 @@ namespace Core
         return Assignable;
     }
 
+    IntegerType::T *IntegerType::infer(Value &value)
+    {
+        auto ptr = std::get_if<Core::integer>(value.value.get());
+        if (ptr == nullptr)
+            return nullptr;
+
+        Core::integer &v_int = *ptr;
+        uint64_t bw = bit_width_of(value);
+
+        return create_instance({VALUE_POOL.add(std::make_unique<Value>(
+            std::make_unique<Value::T>(Core::integer(bw, false)),
+            bw_type_.create_instance({})))});
+    }
+
     std::unique_ptr<Diagnostic::Diagnostic>
     IntegerType::make_suggestion(const std::vector<GenericArgument> &arguments,
                                  Value *value) const
@@ -329,6 +343,46 @@ namespace Core
             Core::PositionRange(*value->range),
             "expects values within " + std::to_string(min) + " to " +
                 std::to_string(max) + ".");
+    }
+
+    uint32_t IntegerType::bit_width_of(Value &value) const
+    {
+        uint32_t bw = 32;
+        auto ptr = std::get_if<Core::integer>(value.value.get());
+
+        if (ptr == nullptr)
+            return bw;
+
+        Core::integer &val = *ptr;
+        bw = 0;
+
+        auto in_range = [&](uint8_t bw) -> bool
+        {
+            int64_t min = is_signed ? -(1ll << (bw - 1)) : 0;
+            uint64_t max =
+                bw == 64 ? UINT64_MAX
+                         : (1ull << (is_signed ? bw - 1 : bw)) - is_signed;
+
+            if (is_signed)
+            {
+                auto i64 = val.as<int64_t>();
+                return i64 >= min && i64 <= static_cast<int64_t>(max);
+            }
+
+            else
+            {
+                if (val.is_negative)
+                    return Underflow;
+
+                auto u64 = val.as<uint64_t>();
+                return u64 >= static_cast<uint64_t>(min) && u64 <= max;
+            }
+        };
+
+        while (!in_range(++bw))
+            ;
+
+        return bw;
     }
 
     // Type *
