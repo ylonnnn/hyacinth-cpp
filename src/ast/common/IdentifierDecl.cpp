@@ -10,6 +10,8 @@ namespace AST
         : Node(identifier.range.start), mut_state(mut_state),
           identifier(identifier), type(std::move(type))
     {
+        end_position = &identifier.range.end;
+
         if (type != nullptr)
             end_position = type->end_position;
     }

@@ -15,8 +15,8 @@ namespace AST
     {
         is_definition_ = true;
 
-        if (value != nullptr)
-            end_position = value->end_position;
+        if (this->value != nullptr)
+            end_position = this->value->end_position;
     }
 
     void VariableDefinitionStmt::print(std::ostream &os, uint32_t tab) const

@@ -308,7 +308,6 @@ namespace Core
         if (ptr == nullptr)
             return nullptr;
 
-        Core::integer &v_int = *ptr;
         uint64_t bw = bit_width_of(value);
 
         return create_instance({VALUE_POOL.add(std::make_unique<Value>(
