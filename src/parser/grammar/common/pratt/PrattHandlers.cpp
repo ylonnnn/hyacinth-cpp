@@ -3,7 +3,6 @@
 #include "ast/NodeCollection.hpp"
 #include "ast/common/Identifier.hpp"
 #include "ast/expr/Path.hpp"
-#include "diagnostic/helpers.hpp"
 #include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/common/pratt/Pratt.hpp"
 #include "parser/grammar/common/pratt/PrattHandlers.hpp"
@@ -26,8 +25,8 @@ namespace Parser
             ParseResult p_res = handler(parser);
             result.adapt(p_res.status, std::move(p_res.diagnostics));
 
-            parser.expect_or_error(
-                cl_pair, result, ParserTokenConsumptionType::UponSuccess);
+            parser.expect_or_error(cl_pair, result,
+                                   ParserTokenConsumptionType::UponSuccess);
 
             return std::move(p_res.data);
         };
@@ -253,7 +252,7 @@ namespace Parser
 
         // Validate ]
         parser.expect_or_error(Lexer::TokenType::RightBracket, result,
-                                     ParserTokenConsumptionType::Preserve);
+                               ParserTokenConsumptionType::Preserve);
 
         auto nud = make_type_pref_nud_handler(TypeBindingPower::Array,
                                               AST::PrefixedTypeKind::Array);
@@ -268,7 +267,7 @@ namespace Parser
                 kind](Parser &parser,
                       ParseResult &result) -> std::unique_ptr<AST::PrefixedType>
         {
-            parser.lexer.consume();
+            Core::Position &ts_pos = parser.lexer.next()->range.start;
 
             ParseResult b_res = Common::Pratt.parse_base(
                 parser, static_cast<int32_t>(bp), true);
@@ -278,7 +277,11 @@ namespace Parser
             if (base == nullptr)
                 return nullptr;
 
-            return std::make_unique<AST::PrefixedType>(kind, std::move(base));
+            auto type =
+                std::make_unique<AST::PrefixedType>(kind, std::move(base));
+            type->set_position(ts_pos);
+
+            return type;
         };
     }
 
@@ -290,6 +293,7 @@ namespace Parser
                       ParseResult &) -> std::unique_ptr<AST::SuffixedType>
         {
             parser.lexer.consume();
+
             auto base = utils::dynamic_ptr_cast<AST::Type>(left);
             if (base == nullptr)
                 return nullptr;
@@ -305,7 +309,7 @@ namespace Parser
                 type](Parser &parser,
                       ParseResult &result) -> std::unique_ptr<AST::ModifiedType>
         {
-            parser.lexer.consume();
+            Core::Position &ts_pos = parser.lexer.next()->range.start;
 
             ParseResult b_res = Common::Pratt.parse_base(
                 parser, static_cast<int32_t>(bp), true);
@@ -315,7 +319,11 @@ namespace Parser
             if (base == nullptr)
                 return nullptr;
 
-            return std::make_unique<AST::ModifiedType>(type, std::move(base));
+            auto m_type =
+                std::make_unique<AST::ModifiedType>(type, std::move(base));
+            m_type->set_position(ts_pos);
+
+            return m_type;
         };
     }
 

@@ -17,6 +17,8 @@ namespace AST
     ModifiedType::ModifiedType(ModifierType type, std::unique_ptr<Type> &&base)
         : Node(base->position), type(type), base(std::move(base))
     {
+        if (this->base != nullptr)
+            end_position = this->base->end_position;
     }
 
     std::string ModifiedType::to_string() const

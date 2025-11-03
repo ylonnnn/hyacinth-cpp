@@ -11,6 +11,9 @@ namespace AST
           IdentifierDecl(name, mut_state, std::move(type)), name(name)
     {
         end_position = IdentifierDecl::end_position;
+
+        if (this->type != nullptr)
+            end_position = this->type->end_position;
     }
 
     void VariableDeclarationStmt::print(std::ostream &os, uint32_t tab) const

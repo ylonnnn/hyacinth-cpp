@@ -18,6 +18,13 @@ namespace AST
 
     const Core::Program &Node::program() const { return position.program; }
 
+    void Node::set_position(const Core::Position &pos)
+    {
+        position.row = pos.row;
+        position.col = pos.col;
+        position.offset = pos.offset;
+    }
+
     // void Node::set_value(std::shared_ptr<Core::Value> value) { value_ =
     // value; }
 

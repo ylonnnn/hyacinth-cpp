@@ -6,6 +6,14 @@ namespace AST
     Path::Path(std::vector<std::unique_ptr<Identifier>> &&segments)
         : Node(segments.front()->position), segments(std::move(segments))
     {
+        if (!this->segments.empty())
+            end_position = this->segments.back()->end_position;
+    }
+
+    void Path::add_segment(std::unique_ptr<Identifier> &&segment)
+    {
+        end_position = segment->end_position;
+        segments.push_back(std::move(segment));
     }
 
     void Path::print(std::ostream &os, uint32_t tab) const

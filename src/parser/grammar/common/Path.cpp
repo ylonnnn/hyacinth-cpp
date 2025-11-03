@@ -101,7 +101,6 @@ namespace Parser
             if (auto diagnostic =
                     parser.expect_or_error(TokenType::Greater, false))
             {
-                std::cout << *lexer.peek() << "\n";
                 // If the next token is ">>" instead of a single ">"
                 if (parser.expect(TokenType::GreaterGreater, false))
                 {
@@ -127,6 +126,8 @@ namespace Parser
                 --args_depth;
             }
         }
+
+        node->end_position = &lexer.current().range.end;
 
         return node;
     }
@@ -160,6 +161,7 @@ namespace Parser
             return;
 
         left->segments.push_back(std::move(ident));
+        left->add_segment(std::move(ident));
     }
 
     ParseResult PathRule::parse(Parser &parser)

@@ -20,6 +20,8 @@ namespace AST
         Core::Program &program();
         const Core::Program &program() const;
 
+        void set_position(const Core::Position &pos);
+
         // void set_value(std::shared_ptr<Core::Value> value);
 
         virtual void print(std::ostream &os, uint32_t tab) const = 0;

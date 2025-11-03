@@ -18,6 +18,8 @@ namespace AST
                                std::unique_ptr<Type> &&base)
         : Node(base->position), kind(kind), base(std::move(base))
     {
+        if (this->base != nullptr)
+            end_position = this->base->end_position;
     }
 
     std::string SuffixedType::to_string() const

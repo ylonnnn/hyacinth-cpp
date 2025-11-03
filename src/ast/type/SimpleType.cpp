@@ -6,6 +6,8 @@ namespace AST
     SimpleType::SimpleType(std::unique_ptr<Path> &&base)
         : Node(base->position), base(std::move(base))
     {
+        if (this->base != nullptr)
+            end_position = this->base->end_position;
     }
 
     std::string SimpleType::to_string() const
@@ -14,6 +16,11 @@ namespace AST
         for (const auto &segment : base->segments)
         {
             str += segment->identifier.value;
+
+            auto &arguments = segment->arguments;
+            if (arguments.size())
+                str += "<...>";
+
             if (segment != base->segments.back())
                 str += "::";
         }
