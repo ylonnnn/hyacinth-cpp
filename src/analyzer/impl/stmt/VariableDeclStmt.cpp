@@ -24,39 +24,44 @@ namespace Semantic
                               *current = analyzer.env_stack.current();
 
             AST::VariableDeclarationStmt *node = varsym->decl_node;
-
             std::string ident(node->name.value);
 
             // Built-in Type Verification
-            if (auto symbol = root->resolve_symbol(ident); symbol != nullptr)
+            auto bi_type_ver = [root, &ident, &result, &node]() -> bool
             {
+                auto symbol = root->resolve_symbol(ident);
+                if (symbol == nullptr)
+                    return true;
+
                 // If the symbol is not a type symbol
                 if (typeid(*symbol) != typeid(Core::TypeSymbol))
-                    return;
+                    return true;
 
                 // If the declaration node of the symbol exists, it is not
                 // built-in
                 if (symbol->decl_node != nullptr)
-                    return;
+                    return true;
 
                 result.error(Core::PositionRange(node->name.range),
                              Diagnostic::ErrorType::IllegalShadowing,
                              "illegal shadowing of built-in type '" +
                                  std::string(symbol->name) + "'.");
 
-                return;
-            }
+                return false;
+            };
 
             Core::Symbol *declared = current->resolve_symbol(
                 ident, Core::EnvironmentResolutionType::Current);
 
-            std::cout << "declared: " << declared << "\n";
-            if (declared == nullptr)
+            // If the symbol is not declared, or if the declaration shadows a
+            // built-in type, return and let the other handlers handle it
+            if (declared == nullptr || !bi_type_ver())
                 return;
 
-            result.error(Core::PositionRange(node->name.range),
-                         Diagnostic::ErrorType::IdentifierConflict,
-                         "identifier '" + ident + "' is already used.");
+            // result.error(Core::PositionRange(node->name.range),
+            //              Diagnostic::ErrorType::IdentifierConflict,
+            //              "identifier '" + ident + "' is already
+            //              used.");
 
             auto is_defined = declared->def_node != nullptr,
                  is_definition = node->is_definition();
