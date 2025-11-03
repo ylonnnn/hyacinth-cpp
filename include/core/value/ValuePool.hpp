@@ -16,6 +16,11 @@ namespace Core
         std::vector<std::unique_ptr<Value>> pool_;
     };
 
+    Value *create_value(std::unique_ptr<Value::T> &&value,
+                        InstantiatedType *type,
+                        ValueType val_type = ValueType::RValue,
+                        Core::PositionRange *range = nullptr);
+
     extern ValuePool VALUE_POOL;
 
 } // namespace Core

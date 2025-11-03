@@ -14,8 +14,7 @@ namespace Semantic
 
         result.value = utils::parse_val(node.value);
         if (result.value != nullptr)
-            result.data = Core::BaseType::infer(*analyzer.env_stack.current(),
-                                                *result.value);
+            result.data = result.value->type;
 
         return result;
     }

@@ -36,23 +36,17 @@ namespace Core
             switch (signal)
             {
                 case IntegerType::Mismatch:
-                    diagnostic =
-                        result.error(Core::PositionRange(*range),
-                                     Diagnostic::ErrorType::TypeMismatch,
-                                     "expected value of type '" + str_type +
-                                         "', received '{type}'.");
-                    break;
+                    [[fallthrough]];
 
                 // TODO: Implement some sort of difference
                 case IntegerType::Underflow:
                     [[fallthrough]];
                 case IntegerType::Overflow:
-                    diagnostic =
-                        result.error(Core::PositionRange(*range),
-                                     Diagnostic::ErrorType::TypeMismatch,
-                                     "cannot assign value of type '{}' as it "
-                                     "expects values of type '" +
-                                         str_type + "'.");
+                    diagnostic = result.error(
+                        Core::PositionRange(*range),
+                        Diagnostic::ErrorType::TypeMismatch,
+                        "expected value of type '" + str_type +
+                            "', received '" + value->type->to_string() + "'.");
                     break;
 
                 case IntegerType::Assignable:

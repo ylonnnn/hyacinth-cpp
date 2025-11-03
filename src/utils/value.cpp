@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 
+#include "core/type/Type.hpp"
 #include "core/value/ValuePool.hpp"
 #include "lexer/Token.hpp"
 #include "utils/value.hpp"
@@ -56,10 +57,16 @@ namespace utils
 
     Core::Value *parse_val(Lexer::Token &token)
     {
-        return Core::VALUE_POOL.add(std::make_unique<Core::Value>(
-            parse_val_t(token),
-            /* TODO: Infer type of values */ nullptr, Core::ValueType::RValue,
-            &token.range));
+        Core::PositionRange &range = token.range;
+        std::unique_ptr<Core::Value::T> val = parse_val_t(token);
+
+        Core::Value *value = Core::create_value(
+            std::move(val), nullptr, Core::ValueType::RValue, &range);
+
+        value->type =
+            Core::BaseType::infer(*range.start.program.environment, *value);
+
+        return value;
     }
 
 } // namespace utils
