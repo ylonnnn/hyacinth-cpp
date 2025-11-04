@@ -10,6 +10,7 @@
 #include "ast/type/Type.hpp"
 #include "core/symbol/TypeSymbol.hpp"
 #include "core/symbol/VariableSymbol.hpp"
+#include "core/value/Value.hpp"
 #include "utils/dev.hpp"
 
 namespace Semantic
@@ -129,6 +130,9 @@ namespace Semantic
             result.adapt(v_res);
             Core::Value *val = result.value;
 
+            if (val == nullptr)
+                return;
+
             // Validate type
             if (varsym->type != nullptr)
             {
@@ -146,16 +150,15 @@ namespace Semantic
                     Core::BaseType::infer(*analyzer.env_stack.current(), *val);
 
                 // TODO: Remove this
-                std::cout << "varsym->type: ";
+                std::cout << varsym->name << ": varsym->type: ";
                 if (varsym->type != nullptr)
                     std::cout << varsym->type->to_string() << "\n";
                 else
                     std::cout << "nullptr\n";
-
-                return;
             }
 
             varsym->value = v_res.value;
+            varsym->value->val_type = Core::ValueType::LValue;
 
             //     // Define
             //     var->define(const_cast<Core::Position *>(&stmt.position()));

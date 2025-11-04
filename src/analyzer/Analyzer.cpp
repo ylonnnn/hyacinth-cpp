@@ -2,6 +2,7 @@
 #include "core/environment/Environment.hpp"
 #include "core/symbol/TypeSymbol.hpp"
 #include "core/type/Type.hpp"
+#include "core/type/builtin/numeric/Float.hpp"
 #include "core/type/builtin/numeric/Integer.hpp"
 // #include "core/type/compound/Array.hpp"
 // #include "core/type/primitive/Boolean.hpp"
@@ -55,8 +56,12 @@ namespace Semantic
             root->add_type(std::move(type));
         };
 
+        // int<{}>, uint<{}>
         add_type(std::make_unique<Core::IntegerType>(*root, true));
         add_type(std::make_unique<Core::IntegerType>(*root, false));
+
+        // float<{}>
+        add_type(std::make_unique<Core::FloatType>(*root));
     }
 
     // Return Type Only

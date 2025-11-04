@@ -18,8 +18,6 @@ namespace Semantic
         AnalysisResult result{
             nullptr, Core::ResultStatus::Success, nullptr, {}};
 
-        utils::todo("implement AST::Path analyzer");
-
         Core::EnvironmentStack &env_stack = analyzer.env_stack;
         Core::Environment *top = env_stack.current();
 
@@ -31,10 +29,7 @@ namespace Semantic
 
             Core::Symbol *sym = result.symbol;
             if (sym == nullptr)
-            {
-                utils::todo("throw error: unknown symbol '{}' from '{path}'");
                 break;
-            }
 
             if (typeid(*sym) == typeid(Core::PetalSymbol))
             {

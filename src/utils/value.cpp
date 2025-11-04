@@ -33,7 +33,8 @@ namespace utils
                 value.erase(std::remove(value.begin(), value.end(), '_'),
                             value.end());
 
-                return std::make_unique<Core::Value::T>(std::stod(value));
+                return std::make_unique<Core::Value::T>(
+                    double(std::stod(value)));
             }
 
             case TokenType::Bool:

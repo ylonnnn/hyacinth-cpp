@@ -74,6 +74,9 @@ namespace Core
                 if constexpr (std::is_same_v<T, Core::integer>)
                     t_name = val.is_negative ? "int" : "uint";
 
+                else if constexpr (std::is_same_v<T, double>)
+                    t_name = "float";
+
                 BaseType *resolved = environment.resolve_type(t_name);
                 if (resolved == nullptr)
                     return nullptr;

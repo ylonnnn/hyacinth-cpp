@@ -24,8 +24,6 @@ namespace Core
     {
         TypeResult result{ResultStatus::Success, nullptr, {}};
 
-        // TODO: Retrieve type of value
-
         Diagnostic::Diagnostic *diagnostic = nullptr;
         IntegerType::Signal signal = base.assignable(arguments, value, result);
 

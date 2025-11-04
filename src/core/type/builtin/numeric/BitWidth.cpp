@@ -23,7 +23,8 @@ namespace Core
             return result.error(Core::PositionRange(*value->range),
                                 Diagnostic::ErrorType::TypeMismatch,
                                 "expected value of type '" + std::string(name) +
-                                    "', received '{}'");
+                                    "', received '" + value->type->to_string() +
+                                    "'.");
         };
 
         auto ptr = std::get_if<integer>(value->value.get());

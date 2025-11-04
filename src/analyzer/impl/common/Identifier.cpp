@@ -1,6 +1,7 @@
 #include "analyzer/impl/Common.hpp"
 #include "core/symbol/TypeSymbol.hpp"
 #include "core/symbol/VariableSymbol.hpp"
+#include "core/value/Value.hpp"
 #include "utils/dev.hpp"
 
 namespace Semantic
@@ -63,6 +64,9 @@ namespace Semantic
         else if (typeid(*sym) == typeid(Core::VariableSymbol))
         {
             auto v_sym = static_cast<Core::VariableSymbol *>(sym);
+
+            std::cout << v_sym->name << ": ";
+            std::cout << v_sym->value << " | " << v_sym->type << "\n";
 
             result.value = v_sym->value;
             result.data = v_sym->type;

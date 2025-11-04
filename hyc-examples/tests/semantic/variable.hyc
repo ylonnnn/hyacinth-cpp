@@ -1,1 +1,6 @@
-var test: uint<{8}> = 1024;
+var test: uint<{8}> = 256;
+var f8: float<{8}> = 3.0;
+var f16: float<{16}> = 123.40;
+var f_something = 123123123.03101203129192391912391239192391923912234;
+var test_f = f_something;
+var test_nonexistent = nonexistent;
