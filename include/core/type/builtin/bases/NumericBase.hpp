@@ -7,7 +7,8 @@ namespace Core
     struct NumericInstantiated : InstantiatedType
     {
         NumericInstantiated(BaseType &base,
-                            std::vector<GenericArgument> &&arguments);
+                            std::vector<GenericArgument> &&arguments,
+                            Core::PositionRange *range = nullptr);
 
         virtual TypeResult assignable(Value *value) const override = 0;
     };

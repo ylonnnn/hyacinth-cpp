@@ -11,7 +11,8 @@ namespace Core
 
         BitWidthType(Environment &environment);
 
-        T *create_instance(std::vector<GenericArgument> &&arguments) override;
+        T *create_instance(std::vector<GenericArgument> &&arguments,
+                           Core::PositionRange *range = nullptr) override;
 
         Signal assignable(const std::vector<GenericArgument> &arguments,
                           Value *value, TypeResult &result) const override;

@@ -19,9 +19,11 @@ namespace Core
     }
 
     FloatBitWidthType::T *
-    FloatBitWidthType::create_instance(std::vector<GenericArgument> &&arguments)
+    FloatBitWidthType::create_instance(std::vector<GenericArgument> &&arguments,
+                                       Core::PositionRange *range)
     {
-        return TYPE_POOL.add(std::make_unique<T>(*this, std::move(arguments)));
+        return TYPE_POOL.add(
+            std::make_unique<T>(*this, std::move(arguments), range));
     }
 
     FloatBitWidthType::Signal
@@ -73,8 +75,9 @@ namespace Core
     }
 
     FloatInstantiated::FloatInstantiated(
-        BaseType &base, std::vector<GenericArgument> &&arguments)
-        : NumericInstantiated(base, std::move(arguments))
+        BaseType &base, std::vector<GenericArgument> &&arguments,
+        Core::PositionRange *range)
+        : NumericInstantiated(base, std::move(arguments), range)
     {
     }
 
@@ -131,9 +134,11 @@ namespace Core
     void FloatType::default_operations() {}
 
     FloatType::T *
-    FloatType::create_instance(std::vector<GenericArgument> &&arguments)
+    FloatType::create_instance(std::vector<GenericArgument> &&arguments,
+                               Core::PositionRange *range)
     {
-        return TYPE_POOL.add(std::make_unique<T>(*this, std::move(arguments)));
+        return TYPE_POOL.add(
+            std::make_unique<T>(*this, std::move(arguments), range));
     }
 
     int8_t FloatType::can_fit(Value &value, uint64_t t_exponent,
@@ -236,7 +241,8 @@ namespace Core
 
         return create_instance(
             {create_value(std::make_unique<Value::T>(Core::integer(bw, false)),
-                          bw_type_.create_instance({}))});
+                          bw_type_.create_instance({}))},
+            value.range);
     }
 
     std::unique_ptr<Diagnostic::Diagnostic>

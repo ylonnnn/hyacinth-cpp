@@ -1,9 +1,10 @@
 #pragma once
 
+#include <array>
+
 #include "core/type/Type.hpp"
 #include "core/type/builtin/bases/NumericBase.hpp"
 #include "core/type/builtin/numeric/BitWidth.hpp"
-#include <array>
 
 namespace Core
 {
@@ -11,7 +12,8 @@ namespace Core
     {
         FloatBitWidthType(Environment &environment);
 
-        T *create_instance(std::vector<GenericArgument> &&arguments) override;
+        T *create_instance(std::vector<GenericArgument> &&arguments,
+                           Core::PositionRange *range = nullptr) override;
 
         Signal assignable(const std::vector<GenericArgument> &arguments,
                           Value *value, TypeResult &result) const override;
@@ -26,7 +28,8 @@ namespace Core
     struct FloatInstantiated : NumericInstantiated
     {
         FloatInstantiated(BaseType &base,
-                          std::vector<GenericArgument> &&arguments);
+                          std::vector<GenericArgument> &&arguments,
+                          Core::PositionRange *range = nullptr);
 
         TypeResult assignable(Value *value) const override;
     };
@@ -44,7 +47,8 @@ namespace Core
 
         void default_operations() override;
 
-        T *create_instance(std::vector<GenericArgument> &&arguments) override;
+        T *create_instance(std::vector<GenericArgument> &&arguments,
+                           Core::PositionRange *range = nullptr) override;
 
         /**
          * Checks whether the value provided can fit with the given target

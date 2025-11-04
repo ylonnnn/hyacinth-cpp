@@ -9,9 +9,11 @@ namespace Core
     }
 
     BitWidthType::T *
-    BitWidthType::create_instance(std::vector<GenericArgument> &&arguments)
+    BitWidthType::create_instance(std::vector<GenericArgument> &&arguments,
+                                  Core::PositionRange *range)
     {
-        return TYPE_POOL.add(std::make_unique<T>(*this, std::move(arguments)));
+        return TYPE_POOL.add(
+            std::make_unique<T>(*this, std::move(arguments), range));
     }
 
     BitWidthType::Signal

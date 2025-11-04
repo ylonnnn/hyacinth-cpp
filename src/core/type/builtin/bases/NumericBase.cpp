@@ -4,8 +4,9 @@
 namespace Core
 {
     NumericInstantiated::NumericInstantiated(
-        BaseType &base, std::vector<GenericArgument> &&arguments)
-        : InstantiatedType(base, std::move(arguments))
+        BaseType &base, std::vector<GenericArgument> &&arguments,
+        Core::PositionRange *range)
+        : InstantiatedType(base, std::move(arguments), range)
     {
     }
 

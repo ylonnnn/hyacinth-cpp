@@ -30,10 +30,12 @@ namespace Core
 
         virtual void default_operations();
 
-        virtual T *create_instance(std::vector<GenericArgument> &&arguments);
+        virtual T *create_instance(std::vector<GenericArgument> &&arguments,
+                                   Core::PositionRange *range = nullptr);
 
         void add_parameter(TypeParameterType param_type, std::string &&name,
                            InstantiatedType *type);
+        void resolve_arguments(const std::vector<GenericArgument> &arguments);
 
         virtual Signal assignable(const std::vector<GenericArgument> &arguments,
                                   Value *value, TypeResult &result) const = 0;
@@ -56,9 +58,11 @@ namespace Core
     {
         BaseType &base;
         std::vector<GenericArgument> arguments;
+        Core::PositionRange *range = nullptr;
 
         InstantiatedType(BaseType &base,
-                         std::vector<GenericArgument> &&arguments);
+                         std::vector<GenericArgument> &&arguments,
+                         Core::PositionRange *range = nullptr);
 
         virtual TypeResult assignable(Value *value) const;
 

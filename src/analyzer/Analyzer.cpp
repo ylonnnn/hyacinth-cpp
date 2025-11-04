@@ -4,6 +4,7 @@
 #include "core/type/Type.hpp"
 #include "core/type/builtin/numeric/Float.hpp"
 #include "core/type/builtin/numeric/Integer.hpp"
+#include "core/type/wrapper/ArrayType.hpp"
 // #include "core/type/compound/Array.hpp"
 // #include "core/type/primitive/Boolean.hpp"
 // #include "core/type/primitive/Character.hpp"
@@ -48,6 +49,9 @@ namespace Semantic
     void Analyzer::initialize_types()
     {
         Core::Environment *root = env_stack.root();
+
+        // Initialize Type Wrappers (e.g. []T, *T, &T, T?, etc)
+        Core::ArrayType::instance(root);
 
         auto add_type = [root](std::unique_ptr<Core::BaseType> &&type) -> void
         {

@@ -28,16 +28,23 @@ namespace Core
     }
 
     BaseType::T *
-    BaseType::create_instance(std::vector<GenericArgument> &&arguments)
+    BaseType::create_instance(std::vector<GenericArgument> &&arguments,
+                              Core::PositionRange *range)
     {
         return TYPE_POOL.add<T>(
-            std::make_unique<T>(*this, std::move(arguments)));
+            std::make_unique<T>(*this, std::move(arguments), range));
     }
 
     void BaseType::add_parameter(TypeParameterType param_type,
                                  std::string &&name, InstantiatedType *type)
     {
         parameters.emplace_back(param_type, std::move(name), type);
+    }
+
+    void
+    BaseType::resolve_arguments(const std::vector<GenericArgument> &arguments)
+    {
+        size_t param_n = parameters.size(), arg_n = arguments.size();
     }
 
     size_t BaseType::hash()
@@ -87,8 +94,9 @@ namespace Core
     }
 
     InstantiatedType::InstantiatedType(BaseType &base,
-                                       std::vector<GenericArgument> &&arguments)
-        : base(base), arguments(std::move(arguments))
+                                       std::vector<GenericArgument> &&arguments,
+                                       Core::PositionRange *range)
+        : base(base), arguments(std::move(arguments)), range(range)
     {
         hash();
         to_string();

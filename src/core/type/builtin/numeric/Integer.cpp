@@ -15,8 +15,9 @@
 namespace Core
 {
     IntegerInstantiated::IntegerInstantiated(
-        BaseType &base, std::vector<GenericArgument> &&arguments)
-        : NumericInstantiated(base, std::move(arguments))
+        BaseType &base, std::vector<GenericArgument> &&arguments,
+        Core::PositionRange *range)
+        : NumericInstantiated(base, std::move(arguments), range)
     {
     }
 
@@ -244,9 +245,11 @@ namespace Core
     }
 
     IntegerType::T *
-    IntegerType::create_instance(std::vector<GenericArgument> &&arguments)
+    IntegerType::create_instance(std::vector<GenericArgument> &&arguments,
+                                 Core::PositionRange *range)
     {
-        return TYPE_POOL.add(std::make_unique<T>(*this, std::move(arguments)));
+        return TYPE_POOL.add(
+            std::make_unique<T>(*this, std::move(arguments), range));
     }
 
     IntegerType::Signal
@@ -302,9 +305,11 @@ namespace Core
 
         uint64_t bw = bit_width_of(value);
 
-        return create_instance({VALUE_POOL.add(std::make_unique<Value>(
-            std::make_unique<Value::T>(Core::integer(bw, false)),
-            bw_type_.create_instance({})))});
+        return create_instance(
+            {VALUE_POOL.add(std::make_unique<Value>(
+                std::make_unique<Value::T>(Core::integer(bw, false)),
+                bw_type_.create_instance({})))},
+            value.range);
     }
 
     std::unique_ptr<Diagnostic::Diagnostic>
