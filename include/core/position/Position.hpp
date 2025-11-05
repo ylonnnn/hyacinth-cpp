@@ -1,28 +1,50 @@
 #pragma once
 
-#include "core/program/Program.hpp"
 #include <iostream>
+#include <variant>
+
+#include "core/program/Program.hpp"
 
 namespace Core
 {
     struct Position
     {
         size_t row, col, offset;
-        Program &program;
-    };
 
-    struct PositionRefRange
-    {
-        Position &start, &end;
+        /**
+         * Reference wrappers to allow movability and non-nullability
+         */
+        std::reference_wrapper<Program> program;
     };
 
     struct PositionRange
     {
-        Position start, end;
+        using Pos = std::variant<Position, Position *>;
+
+        PositionRange(Pos start, Pos end);
+
+        Position &start();
+        const Position &start() const;
+
+        void start(Position &start);
+        void start(Position &&start);
+
+        Position &end();
+        const Position &end() const;
+
+        void end(const Position &end);
+
+      private:
+        /**
+         * Variant of Position and Position * to support custom created
+         * positions or hold existing ones
+         */
+        Pos start_, end_;
     };
 
     /**
-     * NOTE: `start` and `end` are exclusive
+     * NOTE: `start` and `end` are exclusive unless the difference between the
+     * two positions is less than 1
      */
     static inline PositionRange range_between(const Position &start,
                                               const Position &end)
@@ -38,10 +60,7 @@ namespace Core
             --end_.col;
         }
 
-        return PositionRange{
-            .start = start_,
-            .end = end_,
-        };
+        return PositionRange(start_, end_);
     }
 
     static inline std::ostream &operator<<(std::ostream &os,
