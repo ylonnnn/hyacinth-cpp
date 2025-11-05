@@ -41,10 +41,96 @@ namespace Core
         parameters.emplace_back(param_type, std::move(name), type);
     }
 
-    void
-    BaseType::resolve_arguments(const std::vector<GenericArgument> &arguments)
+    TypeResult
+    BaseType::validate_arguments(const std::vector<GenericArgument> &arguments,
+                                 const Core::PositionRange &range)
     {
+        TypeResult result{ResultStatus::Success, nullptr, {}};
+
         size_t param_n = parameters.size(), arg_n = arguments.size();
+
+        // TODO: Check for parameters with default values as they are optional
+        // parameters
+        if (param_n != arg_n)
+        {
+            result.error(range, Diagnostic::ErrorType::InvalidArgumentCount,
+                         "expected " + std::to_string(param_n) +
+                             " arguments, received " + std::to_string(arg_n) +
+                             ".");
+
+            return result;
+        }
+
+        for (size_t i = 0; i < param_n; ++i)
+        {
+            TypeParameter &param = parameters[i];
+            const GenericArgument &arg = arguments[i];
+
+            bool is_val = std::visit(
+                [](auto &val) -> bool
+                {
+                    return std::is_same_v<std::decay_t<decltype(val)>,
+                                          Core::Value *>;
+                },
+                arg);
+
+            // Type Parameter
+            if (param.param_type == TypeParameterType::Type)
+            {
+                if (is_val)
+                {
+                    auto ptr = std::get_if<Core::Value *>(&arg);
+                    if (ptr == nullptr)
+                        return result;
+
+                    Core::Value *value = *ptr;
+                    if (value->range == nullptr)
+                        return result;
+
+                    result.error(
+                        *value->range, Diagnostic::ErrorType::InvalidArgument,
+                        "expects type argument " + param.type->to_string() +
+                            +" for " + param.name + ", received " +
+                            value->to_string() + ".");
+
+                    return result;
+                }
+
+                // TODO: Type-Type Assignability Check
+            }
+
+            // Value Parameter
+            else
+            {
+                if (!is_val)
+                {
+                    auto ptr = std::get_if<Core::InstantiatedType *>(&arg);
+                    if (ptr == nullptr)
+                        return result;
+
+                    Core::InstantiatedType *type = *ptr;
+                    if (type->range == nullptr)
+                        return result;
+
+                    result.error(
+                        *type->range, Diagnostic::ErrorType::InvalidArgument,
+                        "expects value argument of type " +
+                            param.type->to_string() + +" for " + param.name +
+                            ", received " + type->to_string() + ".");
+
+                    return result;
+                }
+
+                auto ptr = std::get_if<Core::Value *>(&arg);
+                if (ptr == nullptr)
+                    return result;
+
+                TypeResult vt_res = param.type->assignable(*ptr);
+                result.adapt(vt_res.status, std::move(vt_res.diagnostics));
+            }
+        }
+
+        return result;
     }
 
     size_t BaseType::hash()

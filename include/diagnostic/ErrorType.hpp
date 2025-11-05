@@ -27,6 +27,8 @@ namespace Diagnostic
         IllegalVariableRedeclaration,
 
         TypeMismatch,
+        InvalidArgumentCount,
+        InvalidArgument,
     };
 
 }

@@ -28,9 +28,8 @@ namespace Semantic
         switch (node.kind)
         {
             case AST::PrefixedTypeKind::Array:
-            {
-                // Core::ArrayType::instance()->create_instance();
-            }
+                result.data = Core::ArrayType::instance()->create_instance(
+                    {type}, &node.range);
 
             default:
                 break;

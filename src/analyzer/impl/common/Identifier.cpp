@@ -58,6 +58,14 @@ namespace Semantic
         if (typeid(*sym) == typeid(Core::TypeSymbol))
         {
             auto t_sym = static_cast<Core::TypeSymbol *>(sym);
+
+            Core::TypeResult t_res =
+                t_sym->base.validate_arguments(arguments, node.range);
+            result.adapt(t_res.status, std::move(t_res.diagnostics));
+
+            if (t_res.status == Core::ResultStatus::Fail)
+                return result;
+
             result.data =
                 t_sym->base.create_instance(std::move(arguments), &node.range);
         }
@@ -65,9 +73,6 @@ namespace Semantic
         else if (typeid(*sym) == typeid(Core::VariableSymbol))
         {
             auto v_sym = static_cast<Core::VariableSymbol *>(sym);
-
-            std::cout << v_sym->name << ": ";
-            std::cout << v_sym->value << " | " << v_sym->type << "\n";
 
             result.value = v_sym->value;
             result.data = v_sym->type;

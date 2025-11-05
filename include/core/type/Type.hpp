@@ -35,7 +35,9 @@ namespace Core
 
         void add_parameter(TypeParameterType param_type, std::string &&name,
                            InstantiatedType *type);
-        void resolve_arguments(const std::vector<GenericArgument> &arguments);
+        TypeResult
+        validate_arguments(const std::vector<GenericArgument> &arguments,
+                           const Core::PositionRange &range);
 
         virtual Signal assignable(const std::vector<GenericArgument> &arguments,
                                   Value *value, TypeResult &result) const = 0;
