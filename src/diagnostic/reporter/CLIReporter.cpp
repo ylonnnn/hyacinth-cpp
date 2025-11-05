@@ -87,13 +87,11 @@ namespace Diagnostic
     std::string CLIReporter::format_diagnostic(const Diagnostic &diagnostic,
                                                uint32_t indentation) const
     {
-        auto &[severity, code, message, range, details] = diagnostic;
+        auto &[severity, code, message, details, _] = diagnostic;
+        auto &range = diagnostic.range();
         auto &[row, col, offset, program] = range.start();
 
         fs::path current = fs::current_path(), parent = current.parent_path();
-
-        std::cout << row << " | " << col << " | " << offset << "\n";
-        std::cout << "program: " << &program.get() << "\n";
 
         std::string p_path = program.get().path.string(),
                     cwp = current.string().substr(parent.string().size()),

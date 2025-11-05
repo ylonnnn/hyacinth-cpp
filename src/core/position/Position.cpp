@@ -10,13 +10,13 @@ namespace Core
     Position &PositionRange::start()
     {
         return std::visit(
-            [](auto &&arg) -> Position &
+            [](auto &val) -> Position &
             {
-                using T = std::decay_t<decltype(arg)>;
+                using T = std::decay_t<decltype(val)>;
                 if constexpr (std::is_same_v<T, Position *>)
-                    return *arg;
+                    return *val;
                 else
-                    return arg;
+                    return val;
             },
             start_);
     }
@@ -33,13 +33,13 @@ namespace Core
     Position &PositionRange::end()
     {
         return std::visit(
-            [](auto &&arg) -> Position &
+            [](auto &&val) -> Position &
             {
-                using T = std::decay_t<decltype(arg)>;
+                using T = std::decay_t<decltype(val)>;
                 if constexpr (std::is_same_v<T, Position *>)
-                    return *arg;
+                    return *val;
                 else
-                    return arg;
+                    return val;
             },
             end_);
     }

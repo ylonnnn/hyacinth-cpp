@@ -357,11 +357,6 @@ namespace Core
 
         // Diagnostics
 
-        for (auto &d : result.diagnostics)
-        {
-            std::cout << d->range.start() << "\n";
-        }
-
         Diagnostic::CLIReporter reporter(std::move(result.diagnostics));
         Diagnostic::DiagnosticReportStatusResult status = reporter.report();
 

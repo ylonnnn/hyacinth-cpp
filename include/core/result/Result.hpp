@@ -70,9 +70,9 @@ namespace Core
             return diagnostics.back().get();
         }
 
-        virtual Diagnostic::Diagnostic *error(const Core::PositionRange &range,
-                                              Diagnostic::ErrorType type,
-                                              std::string &&message)
+        virtual Diagnostic::Diagnostic *
+        error(Diagnostic::Diagnostic::PosRange range,
+              Diagnostic::ErrorType type, std::string &&message)
         {
             status = ResultStatus::Fail;
             diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
@@ -89,9 +89,9 @@ namespace Core
             return diagnostics.back().get();
         }
 
-        virtual Diagnostic::Diagnostic *warn(const Core::PositionRange &range,
-                                             Diagnostic::WarningType type,
-                                             std::string &&message)
+        virtual Diagnostic::Diagnostic *
+        warn(Diagnostic::Diagnostic::PosRange range,
+             Diagnostic::WarningType type, std::string &&message)
         {
             diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
                 Diagnostic::DiagnosticSeverity::Warning,
@@ -107,9 +107,9 @@ namespace Core
             return diagnostics.back().get();
         }
 
-        virtual Diagnostic::Diagnostic *note(const Core::PositionRange &range,
-                                             Diagnostic::NoteType type,
-                                             std::string &&message)
+        virtual Diagnostic::Diagnostic *
+        note(Diagnostic::Diagnostic::PosRange range, Diagnostic::NoteType type,
+             std::string &&message)
         {
             diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
                 Diagnostic::DiagnosticSeverity::Note,

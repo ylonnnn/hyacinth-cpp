@@ -36,9 +36,9 @@ namespace Parser
         return diagnostics.back().get();
     }
 
-    Diagnostic::Diagnostic *ParseResult::error(const Core::PositionRange &range,
-                                               Diagnostic::ErrorType type,
-                                               std::string &&message)
+    Diagnostic::Diagnostic *
+    ParseResult::error(Diagnostic::Diagnostic::PosRange range,
+                       Diagnostic::ErrorType type, std::string &&message)
     {
         status = Core::ResultStatus::Fail;
         if (parser.is(ParserState::Panic))
@@ -64,7 +64,7 @@ namespace Parser
     }
 
     Diagnostic::Diagnostic *
-    ParseResult::force_error(const Core::PositionRange &range,
+    ParseResult::force_error(Diagnostic::Diagnostic::PosRange range,
                              Diagnostic::ErrorType type,
                              const std::string &message)
     {
