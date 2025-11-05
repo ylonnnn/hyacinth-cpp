@@ -113,7 +113,7 @@ namespace Core
             .row = row,
             .col = col,
             .offset = offset,
-            .program = *this,
+            .program = std::ref(*this),
         };
     }
 

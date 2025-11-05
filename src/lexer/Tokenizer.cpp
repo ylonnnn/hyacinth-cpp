@@ -125,8 +125,8 @@ namespace Lexer
 
         lexer.tokens.emplace_back(
             source.substr(start, len),
-            Core::PositionRange{program.position_at(row, col - len, start),
-                                program.position_at(row, col - 1, end)},
+            Core::PositionRange(program.position_at(row, col - len, start),
+                                program.position_at(row, col - 1, end)),
             type);
     }
 
