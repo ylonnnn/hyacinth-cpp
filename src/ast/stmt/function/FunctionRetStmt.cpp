@@ -9,7 +9,7 @@ namespace AST
         : Node(position), return_value(std::move(value))
     {
         if (return_value != nullptr)
-            end_position = return_value->end_position;
+            range.end(return_value->range.end());
     }
 
     void FunctionReturnStmt::print(std::ostream &os, uint32_t tab) const

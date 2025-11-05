@@ -4,9 +4,9 @@
 namespace AST
 {
     LiteralExpr::LiteralExpr(Lexer::Token &value)
-        : Node(value.range.start), value(value)
+        : Node(value.range.start()), value(value)
     {
-        end_position = &value.range.end;
+        range.end(value.range.end());
     }
 
     void LiteralExpr::print(std::ostream &os,

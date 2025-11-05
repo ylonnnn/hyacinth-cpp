@@ -8,12 +8,12 @@ namespace AST
         std::vector<std::unique_ptr<FunctionParameter>> &&parameters,
         std::unique_ptr<BlockStmt> &&body,
         DeclarationAccessibility accessibility)
-        : Node(identifier.range.start),
+        : Node(identifier.range.start()),
           FunctionDeclarationStmt(identifier, std::move(return_type),
                                   std::move(parameters), accessibility)
     {
         this->body = std::move(body);
-        end_position = this->body->end_position;
+        range.end(this->body->range.end());
     }
 
     void FunctionDefinitionStmt::print(std::ostream &os, uint32_t tab) const

@@ -21,7 +21,7 @@ namespace Semantic
         if (type == nullptr)
         {
             // result.error(Core::PositionRange{  base.position,
-            // *base.end_position}, Diagnostic::ErrorType::UnknownSymbol, "");
+            // *base.range.end}, Diagnostic::ErrorType::UnknownSymbol, "");
             return result;
         }
 

@@ -7,7 +7,7 @@ namespace AST
 {
     Identifier::Identifier(Lexer::Token &identifier,
                            std::vector<IdentifierArgument> &&arguments)
-        : Node(identifier.range.start), identifier(identifier),
+        : Node(identifier.range.start()), identifier(identifier),
           arguments(std::move(arguments))
     {
     }

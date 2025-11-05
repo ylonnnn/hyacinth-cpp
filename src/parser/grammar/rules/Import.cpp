@@ -85,7 +85,7 @@ namespace Parser
         // }
         Core::Position *e_pos = nullptr;
         if (auto cl = parser.expect_or_error(TokenType::LeftBrace, result))
-            e_pos = &cl->range.end;
+            e_pos = &cl->range.end();
 
         // ;
         ParseResult t_res = Common::Terminator.parse(parser);
@@ -95,7 +95,7 @@ namespace Parser
         {
             result.data =
                 std::make_unique<AST::ImportStmt>(*target, std::move(symbols));
-            result.data->end_position = e_pos;
+            result.data->range.end(*e_pos);
         }
     }
 

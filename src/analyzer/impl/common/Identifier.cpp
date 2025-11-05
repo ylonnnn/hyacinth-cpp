@@ -46,7 +46,7 @@ namespace Semantic
 
         if (result.symbol == nullptr)
         {
-            result.error(Core::PositionRange(node.identifier.range),
+            result.error(node.identifier.range,
                          Diagnostic::ErrorType::UnknownSymbol,
                          "unknown symbol '" + ident + "'.");
 
@@ -58,7 +58,8 @@ namespace Semantic
         if (typeid(*sym) == typeid(Core::TypeSymbol))
         {
             auto t_sym = static_cast<Core::TypeSymbol *>(sym);
-            result.data = t_sym->base.create_instance(std::move(arguments));
+            result.data =
+                t_sym->base.create_instance(std::move(arguments), &node.range);
         }
 
         else if (typeid(*sym) == typeid(Core::VariableSymbol))

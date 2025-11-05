@@ -22,11 +22,10 @@ namespace Core
     {
         auto error = [this, &result, value]() -> auto
         {
-            return result.error(Core::PositionRange(*value->range),
-                                Diagnostic::ErrorType::TypeMismatch,
-                                "expected value of type '" + std::string(name) +
-                                    "', received '" + value->type->to_string() +
-                                    "'.");
+            return result.error(
+                *value->range, Diagnostic::ErrorType::TypeMismatch,
+                "expected value of type '" + std::string(name) +
+                    "', received '" + value->type->to_string() + "'.");
         };
 
         auto ptr = std::get_if<integer>(value->value.get());
@@ -60,7 +59,7 @@ namespace Core
         return std::make_unique<Diagnostic::Diagnostic>(
             Diagnostic::DiagnosticSeverity::Note,
             static_cast<uint32_t>(Diagnostic::NoteType::Suggestion),
-            Core::PositionRange(*value->range),
+            *value->range,
             "expects values within " + std::to_string(min_) + " to " +
                 std::to_string(max_) + ".");
     }

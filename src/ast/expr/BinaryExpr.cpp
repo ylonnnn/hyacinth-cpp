@@ -10,11 +10,11 @@ namespace AST
     BinaryExpr::BinaryExpr(Lexer::Token &operation,
                            std::unique_ptr<Expr> &&left,
                            std::unique_ptr<Expr> &&right)
-        : Node(left->position), operation(operation), left(std::move(left)),
-          right(std::move(right))
+        : Node(left->range.start()), operation(operation),
+          left(std::move(left)), right(std::move(right))
     {
-        end_position = this->right != nullptr ? this->right->end_position
-                                              : &operation.range.end;
+        range.end(this->right != nullptr ? this->right->range.end()
+                                         : operation.range.end());
     }
 
     void BinaryExpr::print(std::ostream &os, uint32_t tab) const

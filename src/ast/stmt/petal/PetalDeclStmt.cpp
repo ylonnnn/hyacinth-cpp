@@ -6,7 +6,7 @@ namespace AST
     PetalDeclarationStmt::PetalDeclarationStmt(
         std::unique_ptr<Path> &&identifier,
         DeclarationAccessibility accessibility)
-        : Node(identifier->position),
+        : Node(identifier->range.start()),
           DeclarationStmt(identifier->segments.front()->identifier,
                           accessibility, false),
           identifier(std::move(identifier))

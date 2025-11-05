@@ -7,12 +7,12 @@ namespace AST
     FunctionCallExpr::FunctionCallExpr(
         std::unique_ptr<Expr> callee,
         std::vector<std::unique_ptr<Expr>> arguments)
-        : Node(callee->position), callee(std::move(callee)),
+        : Node(callee->range.start()), callee(std::move(callee)),
           arguments(std::move(arguments))
     {
-        end_position = this->arguments.empty()
-                           ? this->callee->end_position
-                           : this->arguments.back()->end_position;
+        range.end(this->arguments.empty()
+                      ? this->callee->range.end()
+                      : this->arguments.back()->range.end());
     }
 
     // void FunctionCallExpr::set_fn_symbol(Core::FunctionSymbol *fn_symbol)

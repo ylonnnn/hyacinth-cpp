@@ -21,13 +21,13 @@ namespace Parser
 
         Diagnostic::Diagnostic *
         error(std::unique_ptr<Diagnostic::Diagnostic> &&diagnostic) override;
-        Diagnostic::Diagnostic *error(Core::PositionRange &&range,
+        Diagnostic::Diagnostic *error(const Core::PositionRange &range,
                                       Diagnostic::ErrorType type,
                                       std::string &&message) override;
 
         Diagnostic::Diagnostic *
         force_error(std::unique_ptr<Diagnostic::Diagnostic> &&diagnostic);
-        Diagnostic::Diagnostic *force_error(Core::PositionRange &&range,
+        Diagnostic::Diagnostic *force_error(const Core::PositionRange &range,
                                             Diagnostic::ErrorType type,
                                             const std::string &message);
     };

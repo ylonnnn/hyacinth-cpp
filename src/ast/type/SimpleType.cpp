@@ -4,10 +4,10 @@
 namespace AST
 {
     SimpleType::SimpleType(std::unique_ptr<Path> &&base)
-        : Node(base->position), base(std::move(base))
+        : Node(base->range.start()), base(std::move(base))
     {
         if (this->base != nullptr)
-            end_position = this->base->end_position;
+            range.end(this->base->range.end());
     }
 
     std::string SimpleType::to_string() const

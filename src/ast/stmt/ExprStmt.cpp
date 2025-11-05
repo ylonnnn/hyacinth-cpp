@@ -7,9 +7,9 @@
 namespace AST
 {
     ExprStmt::ExprStmt(std::unique_ptr<AST::Expr> expr)
-        : Node(expr->position), expr(std::move(expr))
+        : Node(expr->range.start()), expr(std::move(expr))
     {
-        end_position = this->expr->end_position;
+        range.end(this->expr->range.end());
     }
 
     void ExprStmt::print(std::ostream &os, uint32_t tab) const

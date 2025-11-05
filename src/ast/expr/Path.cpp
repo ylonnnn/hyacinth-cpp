@@ -4,15 +4,15 @@
 namespace AST
 {
     Path::Path(std::vector<std::unique_ptr<Identifier>> &&segments)
-        : Node(segments.front()->position), segments(std::move(segments))
+        : Node(segments.front()->range.start()), segments(std::move(segments))
     {
         if (!this->segments.empty())
-            end_position = this->segments.back()->end_position;
+            range.end(this->segments.back()->range.end());
     }
 
     void Path::add_segment(std::unique_ptr<Identifier> &&segment)
     {
-        end_position = segment->end_position;
+        range.end(segment->range.end());
         segments.push_back(std::move(segment));
     }
 

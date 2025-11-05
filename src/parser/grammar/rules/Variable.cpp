@@ -83,7 +83,7 @@ namespace Parser
                     return;
 
                 result.force_error(
-                    Core::range_between(prev.range.end, token->range.start),
+                    Core::range_between(prev.range.end(), token->range.start()),
                     Diagnostic::ErrorType::MissingValue,
                     "missing value expression.");
 

@@ -6,10 +6,10 @@ namespace AST
 {
     StructDeclarationStmt::StructDeclarationStmt(
         Lexer::Token &identifier, DeclarationAccessibility accessibility)
-        : Node(identifier.range.start),
+        : Node(identifier.range.start()),
           DeclarationStmt(identifier, accessibility, false)
     {
-        end_position = &identifier.range.end;
+        range.end(identifier.range.end());
     }
 
     void StructDeclarationStmt::print(std::ostream &os, uint32_t tab) const

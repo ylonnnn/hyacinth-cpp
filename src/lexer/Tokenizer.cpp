@@ -178,9 +178,10 @@ namespace Lexer
 
                 if (!allow_sep)
                 {
-                    result.error(Core::PositionRange{pos(), pos()},
-                                 Diagnostic::ErrorType::UnexpectedSeparator,
-                                 "unexpected numeric literal separator.");
+                    auto diag =
+                        result.error(Core::PositionRange{pos(), pos()},
+                                     Diagnostic::ErrorType::UnexpectedSeparator,
+                                     "unexpected numeric literal separator.");
                 }
 
                 allow_sep = false;

@@ -9,12 +9,12 @@ namespace AST
 {
     UnaryExpr::UnaryExpr(UnaryType unary_type, Lexer::Token &operation,
                          std::unique_ptr<Expr> &&expr)
-        : Node(unary_type == UnaryType::Pre ? operation.range.start
-                                            : expr->position),
+        : Node(unary_type == UnaryType::Pre ? operation.range.start()
+                                            : expr->range.start()),
           unary_type(unary_type), operation(operation), expr(std::move(expr))
     {
-        end_position = unary_type == UnaryType::Pre ? this->expr->end_position
-                                                    : &operation.range.end;
+        range.end(unary_type == UnaryType::Pre ? this->expr->range.end()
+                                               : operation.range.end());
     }
 
     void UnaryExpr::print(std::ostream &os, uint32_t tab) const

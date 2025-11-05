@@ -12,8 +12,7 @@ namespace Diagnostic
     {
         return std::make_unique<Diagnostic>(
             DiagnosticSeverity::Error,
-            static_cast<uint32_t>(ErrorType::UnexpectedToken),
-            Core::PositionRange(received.range),
+            static_cast<uint32_t>(ErrorType::UnexpectedToken), received.range,
             "unexpected \"" + std::string(received.value) +
                 (expected.size() ? std::string("\", expected \"") + expected
                                  : "") +

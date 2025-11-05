@@ -32,7 +32,8 @@ namespace Core
         Position &end();
         const Position &end() const;
 
-        void end(const Position &end);
+        void end(Position &end);
+        void end(Position &&end);
 
       private:
         /**

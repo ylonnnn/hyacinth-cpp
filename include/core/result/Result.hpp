@@ -70,15 +70,14 @@ namespace Core
             return diagnostics.back().get();
         }
 
-        virtual Diagnostic::Diagnostic *error(Core::PositionRange &&range,
+        virtual Diagnostic::Diagnostic *error(const Core::PositionRange &range,
                                               Diagnostic::ErrorType type,
                                               std::string &&message)
         {
             status = ResultStatus::Fail;
             diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
                 Diagnostic::DiagnosticSeverity::Error,
-                static_cast<uint32_t>(type), std::move(range),
-                std::move(message)));
+                static_cast<uint32_t>(type), range, std::move(message)));
 
             return diagnostics.back().get();
         }
@@ -90,14 +89,13 @@ namespace Core
             return diagnostics.back().get();
         }
 
-        virtual Diagnostic::Diagnostic *warn(Core::PositionRange &&range,
+        virtual Diagnostic::Diagnostic *warn(const Core::PositionRange &range,
                                              Diagnostic::WarningType type,
                                              std::string &&message)
         {
             diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
                 Diagnostic::DiagnosticSeverity::Warning,
-                static_cast<uint32_t>(type), std::move(range),
-                std::move(message)));
+                static_cast<uint32_t>(type), range, std::move(message)));
 
             return diagnostics.back().get();
         }
@@ -109,14 +107,13 @@ namespace Core
             return diagnostics.back().get();
         }
 
-        virtual Diagnostic::Diagnostic *note(Core::PositionRange &&range,
+        virtual Diagnostic::Diagnostic *note(const Core::PositionRange &range,
                                              Diagnostic::NoteType type,
                                              std::string &&message)
         {
             diagnostics.push_back(std::make_unique<Diagnostic::Diagnostic>(
                 Diagnostic::DiagnosticSeverity::Note,
-                static_cast<uint32_t>(type), std::move(range),
-                std::move(message)));
+                static_cast<uint32_t>(type), range, std::move(message)));
 
             return diagnostics.back().get();
         }

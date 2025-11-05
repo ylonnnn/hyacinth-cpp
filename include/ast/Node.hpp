@@ -11,7 +11,7 @@ namespace AST
 {
     struct Node
     {
-        Core::Position &position, *end_position = nullptr;
+        Core::PositionRange range;
         // std::shared_ptr<Core::Value> value_;
 
         Node(Core::Position &position);

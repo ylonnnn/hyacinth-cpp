@@ -124,12 +124,12 @@ namespace Parser
             // }
             Core::Position *e_pos = nullptr;
             if (auto cl = parser.expect_or_error(TokenType::RightBrace, result))
-                e_pos = &cl->range.end;
+                e_pos = &cl->range.end();
 
             auto node = std::make_unique<AST::StructDefinitionStmt>(
                 *identifier, std::move(fields));
 
-            node->end_position = e_pos;
+            node->range.end(*e_pos);
             result.data = std::move(node);
         }
 

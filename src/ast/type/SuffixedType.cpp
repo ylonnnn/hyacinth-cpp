@@ -16,10 +16,10 @@ namespace AST
 
     SuffixedType::SuffixedType(SuffixedTypeKind kind,
                                std::unique_ptr<Type> &&base)
-        : Node(base->position), kind(kind), base(std::move(base))
+        : Node(base->range.start()), kind(kind), base(std::move(base))
     {
         if (this->base != nullptr)
-            end_position = this->base->end_position;
+            range.end(this->base->range.end());
     }
 
     std::string SuffixedType::to_string() const

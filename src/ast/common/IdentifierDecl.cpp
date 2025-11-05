@@ -7,13 +7,13 @@ namespace AST
     IdentifierDecl::IdentifierDecl(Lexer::Token &identifier,
                                    IdentifierMutabilityState mut_state,
                                    std::unique_ptr<Type> type)
-        : Node(identifier.range.start), mut_state(mut_state),
+        : Node(identifier.range.start()), mut_state(mut_state),
           identifier(identifier), type(std::move(type))
     {
-        end_position = &identifier.range.end;
+        range.end(identifier.range.end());
 
-        if (type != nullptr)
-            end_position = type->end_position;
+        if (this->type != nullptr)
+            range.end(this->type->range.end());
     }
 
     bool IdentifierDecl::is_mutable() const

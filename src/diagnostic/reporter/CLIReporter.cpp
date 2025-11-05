@@ -2,7 +2,6 @@
 
 #include "diagnostic/reporter/CLIReporter.hpp"
 #include "diagnostic/reporter/DiagnosticReporter.hpp"
-#include "utils/dev.hpp"
 #include "utils/style.hpp"
 
 namespace Diagnostic
@@ -40,9 +39,9 @@ namespace Diagnostic
                                       const Core::PositionRange &range,
                                       const std::string &prefix) const
     {
-        auto &[start, end] = range;
+        auto &start = range.start(), &end = range.end();
 
-        auto &program = start.program;
+        auto &program = start.program.get();
         auto &lines_ = program.source_lines;
 
         std::vector<std::string_view> lines;
@@ -89,11 +88,14 @@ namespace Diagnostic
                                                uint32_t indentation) const
     {
         auto &[severity, code, message, range, details] = diagnostic;
-        auto &[row, col, offset, program] = range.start;
+        auto &[row, col, offset, program] = range.start();
 
         fs::path current = fs::current_path(), parent = current.parent_path();
 
-        std::string p_path = program.path.string(),
+        std::cout << row << " | " << col << " | " << offset << "\n";
+        std::cout << "program: " << &program.get() << "\n";
+
+        std::string p_path = program.get().path.string(),
                     cwp = current.string().substr(parent.string().size()),
                     location = p_path.substr(p_path.find(cwp)) + ":" +
                                std::to_string(row) + ":" + std::to_string(col),

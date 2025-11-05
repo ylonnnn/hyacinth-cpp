@@ -5,9 +5,10 @@
 namespace Diagnostic
 {
     Diagnostic::Diagnostic(DiagnosticSeverity severity, uint32_t code,
-                           Core::PositionRange &&range, std::string &&message)
+                           const Core::PositionRange &range,
+                           std::string &&message)
         : severity(severity), code(code), message(std::move(message)),
-          range(std::move(range))
+          range(range)
     {
         details.reserve(4);
     }
@@ -20,11 +21,11 @@ namespace Diagnostic
 
     Diagnostic &Diagnostic::add_detail(DiagnosticSeverity severity,
                                        uint32_t code,
-                                       Core::PositionRange &&range,
+                                       const Core::PositionRange &range,
                                        std::string &&message)
     {
-        details.push_back(std::make_unique<Diagnostic>(
-            severity, code, std::move(range), std::move(message)));
+        details.push_back(std::make_unique<Diagnostic>(severity, code, range,
+                                                       std::move(message)));
 
         return *this;
     }

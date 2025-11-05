@@ -127,7 +127,7 @@ namespace Parser
             }
         }
 
-        node->end_position = &lexer.current().range.end;
+        node->range.end(lexer.current().range.end());
 
         return node;
     }

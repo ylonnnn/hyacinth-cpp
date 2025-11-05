@@ -43,7 +43,7 @@ namespace Semantic
                 if (symbol->decl_node != nullptr)
                     return true;
 
-                result.error(Core::PositionRange(node->name.range),
+                result.error(node->name.range,
                              Diagnostic::ErrorType::IllegalShadowing,
                              "illegal shadowing of built-in type '" +
                                  std::string(symbol->name) + "'.");
@@ -73,14 +73,13 @@ namespace Semantic
                 std::cout << "re-declaration\n";
 
                 result
-                    .error(Core::PositionRange(node->name.range),
+                    .error(node->name.range,
                            Diagnostic::ErrorType::IllegalVariableRedeclaration,
                            "cannot re-declare variable '" + ident + "'.")
                     ->add_detail(
                         Diagnostic::DiagnosticSeverity::Note,
                         static_cast<uint32_t>(Diagnostic::NoteType::Info),
-                        Core::PositionRange{decl->position,
-                                            *decl->end_position},
+                        decl->range,
                         "variable '" + ident + "' is already declared here");
 
                 return;
@@ -216,7 +215,7 @@ namespace Semantic
         // For variable declaration with no type annotation provided
         else if (node.type == nullptr)
         {
-            result.error(Core::PositionRange{node.position, *node.end_position},
+            result.error(node.range,
                          Diagnostic::ErrorType::InvalidVariableDeclaration,
                          "cannot declare a variable with neither explicit type "
                          "annotation nor value initializer.");

@@ -2,16 +2,23 @@
 
 namespace Core
 {
-    PositionRange::PositionRange(Pos start, Pos end) : start_(start), end_(end)
+    PositionRange::PositionRange(Pos start, Pos end)
+        : start_(std::move(start)), end_(std::move(end))
     {
     }
 
     Position &PositionRange::start()
     {
-        if (auto ptr = std::get_if<Position>(&start_))
-            return *ptr;
-        else
-            return **std::get_if<Position *>(&start_);
+        return std::visit(
+            [](auto &&arg) -> Position &
+            {
+                using T = std::decay_t<decltype(arg)>;
+                if constexpr (std::is_same_v<T, Position *>)
+                    return *arg;
+                else
+                    return arg;
+            },
+            start_);
     }
 
     const Position &PositionRange::start() const
@@ -25,15 +32,25 @@ namespace Core
 
     Position &PositionRange::end()
     {
-        if (auto ptr = std::get_if<Position>(&end_))
-            return *ptr;
-        else
-            return **std::get_if<Position *>(&end_);
+        return std::visit(
+            [](auto &&arg) -> Position &
+            {
+                using T = std::decay_t<decltype(arg)>;
+                if constexpr (std::is_same_v<T, Position *>)
+                    return *arg;
+                else
+                    return arg;
+            },
+            end_);
     }
 
     const Position &PositionRange::end() const
     {
         return const_cast<PositionRange *>(this)->end();
     }
+
+    void PositionRange::end(Position &end) { end_ = &end; }
+
+    void PositionRange::end(Position &&end) { end_ = std::move(end); }
 
 } // namespace Core

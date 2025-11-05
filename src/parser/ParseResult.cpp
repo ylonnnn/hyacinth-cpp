@@ -36,7 +36,7 @@ namespace Parser
         return diagnostics.back().get();
     }
 
-    Diagnostic::Diagnostic *ParseResult::error(Core::PositionRange &&range,
+    Diagnostic::Diagnostic *ParseResult::error(const Core::PositionRange &range,
                                                Diagnostic::ErrorType type,
                                                std::string &&message)
     {
@@ -64,7 +64,7 @@ namespace Parser
     }
 
     Diagnostic::Diagnostic *
-    ParseResult::force_error(Core::PositionRange &&range,
+    ParseResult::force_error(const Core::PositionRange &range,
                              Diagnostic::ErrorType type,
                              const std::string &message)
     {

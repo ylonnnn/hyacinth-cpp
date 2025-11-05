@@ -6,13 +6,14 @@ namespace AST
 {
     ImportStmt::ImportStmt(Lexer::Token &target,
                            std::vector<Lexer::Token *> &&symbols)
-        : Node(target.range.start),
+        : Node(target.range.start()),
           DeclarationStmt(target, DeclarationAccessibility::Private, true),
           target(target), symbols(std::move(symbols))
     {
     }
 
-    void ImportStmt::print(std::ostream &os, [[maybe_unused]] uint32_t tab) const
+    void ImportStmt::print(std::ostream &os,
+                           [[maybe_unused]] uint32_t tab) const
     {
         std::string indentation = utils::tab(tab - 1, 4),
                     inner_indentation = utils::tab(tab, 4);

@@ -64,8 +64,8 @@ namespace utils
         Core::Value *value = Core::create_value(
             std::move(val), nullptr, Core::ValueType::RValue, &range);
 
-        value->type =
-            Core::BaseType::infer(*range.start.program.environment, *value);
+        value->type = Core::BaseType::infer(
+            *range.start().program.get().environment, *value);
 
         return value;
     }

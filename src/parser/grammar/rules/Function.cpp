@@ -142,7 +142,7 @@ namespace Parser
                                                       Lexer::TokenType expected)
     {
         if (auto cl = parser.expect_or_error(expected, result))
-            return &cl->range.end;
+            return &cl->range.end();
 
         return nullptr;
     }
@@ -230,7 +230,7 @@ namespace Parser
             auto fn_node = std::make_unique<AST::FunctionDeclarationStmt>(
                 *identifier, std::move(ret_type), std::move(parameters));
 
-            fn_node->end_position = param_cl;
+            fn_node->range.end(*param_cl);
             result.data = std::move(fn_node);
         }
     }
@@ -262,7 +262,7 @@ namespace Parser
         // return
         Core::Position *ret_pos = nullptr;
         if (auto ret = parser.expect_or_error(TokenType::LeftParen, result))
-            ret_pos = &ret->range.end;
+            ret_pos = &ret->range.end();
 
         std::unique_ptr<AST::Expr> value;
 

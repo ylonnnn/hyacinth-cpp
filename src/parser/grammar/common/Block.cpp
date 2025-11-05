@@ -30,7 +30,7 @@ namespace Parser
         auto &lexer = parser.lexer;
 
         // {
-        Core::Position &pos = lexer.next()->range.start;
+        Core::Position &pos = lexer.next()->range.start();
 
         auto block = std::make_unique<AST::BlockStmt>(
             pos, std::vector<std::unique_ptr<AST::Stmt>>{});
@@ -58,7 +58,7 @@ namespace Parser
         // }
 
         if (auto cl = parser.expect_or_error(closing, result))
-            block->end_position = &cl->range.end;
+            block->range.end(cl->range.end());
 
         result.data = std::move(block);
     }

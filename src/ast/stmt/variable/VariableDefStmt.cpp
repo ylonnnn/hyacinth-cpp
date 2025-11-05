@@ -8,7 +8,7 @@ namespace AST
         Lexer::Token &name, IdentifierMutabilityState mut_state,
         std::unique_ptr<Type> type, std::unique_ptr<Expr> value,
         DeclarationAccessibility accessibility)
-        : Node(name.range.start),
+        : Node(name.range.start()),
           VariableDeclarationStmt(name, mut_state, std::move(type),
                                   accessibility),
           value(std::move(value))
@@ -16,7 +16,7 @@ namespace AST
         is_definition_ = true;
 
         if (this->value != nullptr)
-            end_position = this->value->end_position;
+            range.end(this->value->range.end());
     }
 
     void VariableDefinitionStmt::print(std::ostream &os, uint32_t tab) const

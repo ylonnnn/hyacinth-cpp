@@ -7,7 +7,7 @@ namespace AST
                                          IdentifierMutabilityState mut_state,
                                          std::unique_ptr<Type> &&type,
                                          std::unique_ptr<Expr> &&default_value)
-        : Node(identifier.range.start),
+        : Node(identifier.range.start()),
           IdentifierDecl(identifier, mut_state, std::move(type)),
           default_value(std::move(default_value))
     {
@@ -43,13 +43,13 @@ namespace AST
         Lexer::Token &name, std::unique_ptr<Type> &&return_type,
         std::vector<std::unique_ptr<FunctionParameter>> &&parameters,
         DeclarationAccessibility accessibility)
-        : Node(name.range.start), DeclarationStmt(name, accessibility, false),
+        : Node(name.range.start()), DeclarationStmt(name, accessibility, false),
           return_type(std::move(return_type)), parameters(std::move(parameters))
     {
         if (this->return_type != nullptr)
-            end_position = this->parameters.empty()
-                               ? this->return_type->end_position
-                               : this->parameters.back()->end_position;
+            range.end(this->parameters.empty()
+                          ? this->return_type->range.end()
+                          : this->parameters.back()->range.end());
     }
 
     void FunctionDeclarationStmt::print(std::ostream &os, uint32_t tab) const

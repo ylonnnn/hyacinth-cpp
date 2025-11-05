@@ -7,13 +7,13 @@ namespace AST
     VariableDeclarationStmt::VariableDeclarationStmt(
         Lexer::Token &name, IdentifierMutabilityState mut_state,
         std::unique_ptr<Type> type, DeclarationAccessibility accessibility)
-        : Node(name.range.start), DeclarationStmt(name, accessibility, false),
+        : Node(name.range.start()), DeclarationStmt(name, accessibility, false),
           IdentifierDecl(name, mut_state, std::move(type)), name(name)
     {
-        end_position = IdentifierDecl::end_position;
+        range.end(IdentifierDecl::range.end());
 
         if (this->type != nullptr)
-            end_position = this->type->end_position;
+            range.end(this->type->range.end());
     }
 
     void VariableDeclarationStmt::print(std::ostream &os, uint32_t tab) const

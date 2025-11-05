@@ -7,7 +7,7 @@ namespace AST
     PetalDefinitionStmt::PetalDefinitionStmt(
         std::unique_ptr<Path> &&identifier, std::unique_ptr<BlockStmt> &&block,
         DeclarationAccessibility accessibility)
-        : Node(identifier->position),
+        : Node(identifier->range.start()),
           PetalDeclarationStmt(std::move(identifier), accessibility),
           block(std::move(block))
     {

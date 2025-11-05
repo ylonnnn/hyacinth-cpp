@@ -163,7 +163,7 @@ namespace Parser
                 parser, Core::ResultStatus::Success, nullptr, {}};
 
             auto collection = std::make_unique<AST::NodeCollection<AST::Expr>>(
-                lexer.current().range.start,
+                lexer.current().range.start(),
                 std::vector<std::unique_ptr<AST::Expr>>{});
 
             Lexer::TokenType closing = TokenType::RightParen;
@@ -204,7 +204,7 @@ namespace Parser
 
             if (auto cl = parser.expect_or_error(
                     closing, result, ParserTokenConsumptionType::UponSuccess))
-                collection->end_position = &cl->range.end;
+                collection->range.end(cl->range.end());
 
             result.data = std::move(collection);
 
@@ -267,7 +267,7 @@ namespace Parser
                 kind](Parser &parser,
                       ParseResult &result) -> std::unique_ptr<AST::PrefixedType>
         {
-            Core::Position &ts_pos = parser.lexer.next()->range.start;
+            Core::Position &ts_pos = parser.lexer.next()->range.start();
 
             ParseResult b_res = Common::Pratt.parse_base(
                 parser, static_cast<int32_t>(bp), true);
@@ -279,7 +279,7 @@ namespace Parser
 
             auto type =
                 std::make_unique<AST::PrefixedType>(kind, std::move(base));
-            type->set_position(ts_pos);
+            type->range.start(ts_pos);
 
             return type;
         };
@@ -309,7 +309,7 @@ namespace Parser
                 type](Parser &parser,
                       ParseResult &result) -> std::unique_ptr<AST::ModifiedType>
         {
-            Core::Position &ts_pos = parser.lexer.next()->range.start;
+            Core::Position &ts_pos = parser.lexer.next()->range.start();
 
             ParseResult b_res = Common::Pratt.parse_base(
                 parser, static_cast<int32_t>(bp), true);
@@ -321,7 +321,7 @@ namespace Parser
 
             auto m_type =
                 std::make_unique<AST::ModifiedType>(type, std::move(base));
-            m_type->set_position(ts_pos);
+            m_type->range.start(ts_pos);
 
             return m_type;
         };
@@ -389,7 +389,7 @@ namespace Parser
     //     auto node = std::make_unique<AST::BinaryExpr>(
     //         std::move(left), operation, std::move(right));
 
-    //     node->set_end_position(*c_ep);
+    //     node->set_range.end(*c_ep);
 
     //     return node;
     // }
@@ -451,7 +451,7 @@ namespace Parser
     //     }
 
     //     else
-    //         fnc_ep = &lexer.next()->end_position;
+    //         fnc_ep = &lexer.next()->range.end;
 
     //     // return std::make_unique<AST::BinaryExpr>(
     //     //     std::move(left), operation,
@@ -460,7 +460,7 @@ namespace Parser
     //     auto node = std::make_unique<AST::FunctionCallExpr>(
     //         std::move(left), std::move(arguments));
 
-    //     node->set_end_position(*fnc_ep);
+    //     node->set_range.end(*fnc_ep);
 
     //     return node;
     // }
@@ -535,7 +535,7 @@ namespace Parser
     //     auto node = std::make_unique<AST::ArrayExpr>(*o_p,
     //     std::move(elements));
 
-    //     node->set_end_position(*c_ep);
+    //     node->set_range.end(*c_ep);
 
     //     return node;
     // }
@@ -636,14 +636,14 @@ namespace Parser
     //     }
 
     //     else
-    //         c_ep = &lexer.next()->end_position;
+    //         c_ep = &lexer.next()->range.end;
 
     //     if (left == nullptr)
     //     {
     //         auto node = std::make_unique<AST::InstanceExpr>(opening.position,
     //                                                         std::move(fields));
 
-    //         node->set_end_position(*c_ep);
+    //         node->set_range.end(*c_ep);
 
     //         return node;
     //     }
@@ -664,7 +664,7 @@ namespace Parser
     //     auto node = std::make_unique<AST::InstanceExpr>(std::move(type),
     //                                                     std::move(fields));
 
-    //     node->set_end_position(*c_ep);
+    //     node->set_range.end(*c_ep);
 
     //     return node;
     // }

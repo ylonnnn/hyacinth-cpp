@@ -18,15 +18,15 @@ namespace Diagnostic
         DiagnosticSeverity severity;
         uint32_t code;
         std::string message;
-        Core::PositionRange range;
+        const Core::PositionRange &range;
         DiagnosticList details;
 
         Diagnostic(DiagnosticSeverity severity, uint32_t code,
-                   Core::PositionRange &&range, std::string &&message);
+                   Core::PositionRange &range, std::string &&message);
 
         Diagnostic &add_detail(std::unique_ptr<Diagnostic> &&detail);
         Diagnostic &add_detail(DiagnosticSeverity severity, uint32_t code,
-                               Core::PositionRange &&range,
+                               const Core::PositionRange &range,
                                std::string &&message);
     };
 

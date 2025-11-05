@@ -8,7 +8,7 @@ namespace AST
                              IdentifierMutabilityState mut_state,
                              std::unique_ptr<Type> &&type,
                              std::unique_ptr<Expr> &&default_value)
-        : Node(identifier.range.start),
+        : Node(identifier.range.start()),
           IdentifierDecl(identifier, mut_state, std::move(type)),
           default_value(std::move(default_value))
     {
@@ -28,7 +28,7 @@ namespace AST
     StructDefinitionStmt::StructDefinitionStmt(
         Lexer::Token &identifier,
         std::unordered_map<std::string_view, StructField> &&fields)
-        : Node(identifier.range.start), StructDeclarationStmt(identifier),
+        : Node(identifier.range.start()), StructDeclarationStmt(identifier),
           fields(std::move(fields))
     {
     }
