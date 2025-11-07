@@ -59,6 +59,38 @@ namespace Core
     object::operator std::string() const
     {
         // TODO: object::operator std::string()
+        // T { [field]: [value] }
+        return "{}";
+    }
+
+    array::array(InstantiatedType *element_type) : element_type(element_type) {}
+
+    size_t array::size() const { return elements_.size(); }
+
+    Value *array::get(size_t idx)
+    {
+        return idx >= size() ? nullptr : elements_[idx];
+    }
+
+    const Value *array::get(size_t idx) const
+    {
+        return const_cast<array *>(this)->get(idx);
+    }
+
+    size_t array::hash() const
+    {
+        size_t hash_val = 0;
+
+        for (auto &el : elements_)
+            hash_val += std::hash<Value *>{}(el);
+
+        return hash_val;
+    }
+
+    array::operator std::string() const
+    {
+        // TODO: array::operator std::string()
+        // T{...}
         return "{}";
     }
 

@@ -25,10 +25,7 @@ namespace Core
         operator std::string() const;
     };
 
-    struct integer;
-    struct object;
     struct callable;
-    // struct array; // ?
 
     struct integer : value_base_type
     {
@@ -72,6 +69,26 @@ namespace Core
         std::unordered_map<std::string, Value *> entries_;
     };
 
+    struct array
+    {
+        InstantiatedType *element_type = nullptr;
+
+        array(InstantiatedType *element_type);
+
+        size_t size() const;
+
+        Value *get(size_t idx);
+        const Value *get(size_t idx) const;
+
+        size_t hash() const;
+        operator std::string() const;
+
+      private:
+        std::vector<Value *> elements_;
+    };
+
+    using character = uint32_t;
+
     enum class ValueType
     {
         RValue,
@@ -80,7 +97,8 @@ namespace Core
 
     struct Value
     {
-        using T = std::variant<null, integer, double, bool, char, std::string>;
+        using T =
+            std::variant<null, integer, double, bool, character, std::string>;
 
         std::unique_ptr<T> value;
         InstantiatedType *type = nullptr;
@@ -97,7 +115,7 @@ namespace Core
         friend std::ostream &operator<<(std::ostream &os, const Value &val);
     };
 
-    // struct Type;
+    // struct InstantiatedType;
     // struct FunctionSymbol;
 
     // struct h_int
@@ -136,60 +154,37 @@ namespace Core
 
     // std::ostream &operator<<(std::ostream &os, const Value &value);
 
-    // struct value_data
+    // structValue *
     // {
     //     std::shared_ptr<Value> value;
-    //     Type *type = nullptr;
+    //     InstantiatedType *type = nullptr;
     // };
 
     // struct object
     // {
     //   private:
-    //     Type *type_;
-    //     std::unordered_map<std::string_view, value_data> value_;
+    //     InstantiatedType *type_;
+    //     std::unordered_map<std::string_view, Value *> value_;
 
     //   public:
-    //     Type *&type();
-    //     const Type *type() const;
+    //     InstantiatedType *&type();
+    //     const InstantiatedType *type() const;
 
-    //     std::unordered_map<std::string_view, value_data> &value();
-    //     const std::unordered_map<std::string_view, value_data> &value()
+    //     std::unordered_map<std::string_view, Value *> &value();
+    //     const std::unordered_map<std::string_view, Value *> &value()
     //     const;
 
-    //     value_data *get(const std::string &key);
-    //     const value_data *get(const std::string &key) const;
+    //     Value * *get(const std::string &key);
+    //     const Value * *get(const std::string &key) const;
 
-    //     bool set(const std::string &key, value_data &&value);
+    //     bool set(const std::string &key, Value * &&value);
 
     //     Value *get_value(const std::string &key);
     //     const Value *get_value(const std::string &key) const;
-    //     Type *get_type(const std::string &key);
-    //     const Type *get_type(const std::string &key) const;
+    //     InstantiatedType *get_type(const std::string &key);
+    //     const InstantiatedType *get_type(const std::string &key) const;
 
     //     size_t size() const;
-
-    //     operator std::string() const;
-    // };
-
-    // struct array
-    // {
-    //   private:
-    //     Type *element_type_ = nullptr;
-    //     std::vector<value_data> elements_;
-
-    //   public:
-    //     array(Type *element_type);
-
-    //     Type *&element_type();
-    //     const Type *element_type() const;
-
-    //     std::vector<value_data> &elements();
-    //     const std::vector<value_data> &elements() const;
-
-    //     size_t size() const;
-
-    //     value_data *get(size_t idx);
-    //     const value_data *get(size_t idx) const;
 
     //     operator std::string() const;
     // };
