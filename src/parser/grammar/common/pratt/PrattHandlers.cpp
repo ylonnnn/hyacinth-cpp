@@ -271,9 +271,9 @@ namespace Parser
 
                 return nullptr;
             }
-        }
 
-        result.adapt(t_res.status, std::move(t_res.diagnostics));
+            result.adapt(t_res.status, std::move(t_res.diagnostics));
+        }
 
         // {...}
         std::unique_ptr<AST::Node> values = make_grouped_expr_handler(
