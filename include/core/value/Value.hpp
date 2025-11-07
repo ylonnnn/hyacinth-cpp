@@ -97,8 +97,8 @@ namespace Core
 
     struct Value
     {
-        using T =
-            std::variant<null, integer, double, bool, character, std::string>;
+        using T = std::variant<null, integer, double, bool, character,
+                               std::string, array>;
 
         std::unique_ptr<T> value;
         InstantiatedType *type = nullptr;
