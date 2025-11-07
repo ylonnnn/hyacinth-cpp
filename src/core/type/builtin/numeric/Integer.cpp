@@ -23,41 +23,7 @@ namespace Core
 
     TypeResult IntegerInstantiated::assignable(Value *value) const
     {
-        TypeResult result{ResultStatus::Success, nullptr, {}};
-
-        Diagnostic::Diagnostic *diagnostic = nullptr;
-        IntegerType::Signal signal = base.assignable(arguments, value, result);
-
-        Core::PositionRange *range = value->range;
-        auto str_type = *to_string();
-
-        if (range != nullptr)
-            switch (signal)
-            {
-                case IntegerType::Mismatch:
-                    [[fallthrough]];
-
-                // TODO: Implement some sort of difference
-                case IntegerType::Underflow:
-                    [[fallthrough]];
-                case IntegerType::Overflow:
-                    diagnostic = result.error(
-                        *range, Diagnostic::ErrorType::TypeMismatch,
-                        "expected value of type '" + str_type +
-                            "', received '" + value->type->to_string() + "'.");
-                    break;
-
-                case IntegerType::Assignable:
-                    break; // Assignable
-
-                default:
-                    return result;
-            }
-
-        if (diagnostic != nullptr)
-            diagnostic->add_detail(base.make_suggestion(arguments, value));
-
-        return result;
+        return InstantiatedType::assignable(value);
     }
 
     // bool IntegerType::Wrapper::assignable_with(const Type &type) const

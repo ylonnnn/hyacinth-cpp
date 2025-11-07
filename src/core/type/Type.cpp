@@ -170,6 +170,9 @@ namespace Core
                 else if constexpr (std::is_same_v<T, double>)
                     t_name = "float";
 
+                else if constexpr (std::is_same_v<T, character>)
+                    t_name = "char";
+
                 BaseType *resolved = environment.resolve_type(t_name);
                 if (resolved == nullptr)
                     return nullptr;
@@ -191,7 +194,20 @@ namespace Core
     TypeResult InstantiatedType::assignable(Value *value) const
     {
         TypeResult result{ResultStatus::Success, nullptr, {}};
-        base.assignable(arguments, value, result);
+
+        BaseType::Signal signal = base.assignable(arguments, value, result);
+        Core::PositionRange *range = value->range;
+
+        auto str_type = *to_string();
+        if (range == nullptr)
+            return result;
+
+        if (signal == BaseType::Mismatch)
+            result
+                .error(*range, Diagnostic::ErrorType::TypeMismatch,
+                       "expected value of type '" + str_type + "', received '" +
+                           value->type->to_string() + "'.")
+                ->add_detail(base.make_suggestion(arguments, value));
 
         return result;
     }

@@ -2,6 +2,7 @@
 #include "core/environment/Environment.hpp"
 #include "core/symbol/TypeSymbol.hpp"
 #include "core/type/Type.hpp"
+#include "core/type/builtin/Char.hpp"
 #include "core/type/builtin/numeric/Float.hpp"
 #include "core/type/builtin/numeric/Integer.hpp"
 #include "core/type/wrapper/ArrayType.hpp"
@@ -66,6 +67,9 @@ namespace Semantic
 
         // float<{}>
         add_type(std::make_unique<Core::FloatType>(*root));
+
+        // char
+        add_type(std::make_unique<Core::CharType>(*root));
     }
 
     // Return Type Only

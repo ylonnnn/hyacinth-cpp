@@ -81,42 +81,7 @@ namespace Core
 
     TypeResult FloatInstantiated::assignable(Value *value) const
     {
-        TypeResult result{ResultStatus::Success, nullptr, {}};
-
-        Diagnostic::Diagnostic *diagnostic = nullptr;
-        FloatType::Signal signal = base.assignable(arguments, value, result);
-
-        Core::PositionRange *range = value->range;
-        auto str_type = *to_string();
-
-        if (range != nullptr)
-            switch (signal)
-            {
-                case FloatType::Mismatch:
-                    [[fallthrough]];
-
-                // TODO: Implement some sort of difference
-                case FloatType::Underflow:
-                    [[fallthrough]];
-                case FloatType::Overflow:
-                    diagnostic = result.error(
-                        *range, Diagnostic::ErrorType::TypeMismatch,
-                        "expected value of type '" + str_type +
-                            "', received '" + value->type->to_string() + "'.");
-
-                    break;
-
-                case FloatType::Assignable:
-                    break; // Assignable
-
-                default:
-                    return result;
-            }
-
-        if (diagnostic != nullptr)
-            diagnostic->add_detail(base.make_suggestion(arguments, value));
-
-        return result;
+        return InstantiatedType::assignable(value);
     }
 
     FloatType ::FloatType(Environment &environment)

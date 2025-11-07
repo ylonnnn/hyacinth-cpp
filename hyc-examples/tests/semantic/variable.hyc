@@ -1,2 +1,5 @@
-var test: []uint<{8}> = "hello world 🦀";
-var test_char: uint<{8}> = '🦀';
+// var test: []uint<{8}> = "hello world 🦀";
+var test_char: char = '🦀';
+// var test_char: uint<{8}> = '🦀';
+
+var another_test_char: char = 123;

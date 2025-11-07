@@ -49,6 +49,8 @@ namespace Lexer
         void read_num(LexerResult &result);
 
         size_t read_char_seq(LexerResult &result, char terminator);
+        char32_t read_utf8(LexerResult &result);
+
         void read_char(LexerResult &result);
         void read_str(LexerResult &result);
 

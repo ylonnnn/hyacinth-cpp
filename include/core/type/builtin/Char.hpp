@@ -6,6 +6,8 @@ namespace Core
 {
     struct CharType : BaseType
     {
+        static constexpr Signal Mismatch = 0, Assignable = 1;
+
         CharType(Environment &environment);
 
         void default_operations() override;

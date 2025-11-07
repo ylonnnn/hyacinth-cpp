@@ -276,14 +276,61 @@ namespace Lexer
                 return SIZE_MAX;
             }
 
-            if (c == '\\')
+            if (c == U'\\')
+            {
+                read_utf8(result);
                 consume();
+            }
 
-            consume();
+            read_utf8(result);
             ++len;
         }
 
         return len;
+    }
+
+    char32_t Tokenizer::read_utf8(LexerResult &result)
+    {
+        unsigned char first_byte = static_cast<unsigned char>(next());
+
+        if ((first_byte & 0x80) == 0x00)
+            return first_byte;
+
+        else if ((first_byte & 0xE0) == 0xC0)
+        {
+            // 2-byte sequence
+            unsigned char b2 = static_cast<unsigned char>(next());
+
+            return ((first_byte & 0x1F) << 6) | (b2 & 0x3F);
+        }
+        else if ((first_byte & 0xF0) == 0xE0)
+        {
+            // 3-byte sequence
+            unsigned char b2 = static_cast<unsigned char>(next());
+            unsigned char b3 = static_cast<unsigned char>(next());
+
+            return ((first_byte & 0x0F) << 12) | ((b2 & 0x3F) << 6) |
+                   (b3 & 0x3F);
+        }
+        else if ((first_byte & 0xF8) == 0xF0)
+        {
+            // 4-byte sequence (emojis!)
+            unsigned char b2 = static_cast<unsigned char>(next());
+            unsigned char b3 = static_cast<unsigned char>(next());
+            unsigned char b4 = static_cast<unsigned char>(next());
+
+            return ((first_byte & 0x07) << 18) | ((b2 & 0x3F) << 12) |
+                   ((b3 & 0x3F) << 6) | (b4 & 0x3F);
+        }
+
+        auto pos = [this]() -> Core::Position
+        { return program.position_at(row, col, offset); };
+
+        result.error(Core::PositionRange{pos(), pos()},
+                     Diagnostic::ErrorType::InvalidCharacter,
+                     "invalid character.");
+
+        return 0xFFFD;
     }
 
     void Tokenizer::read_char(LexerResult &result)

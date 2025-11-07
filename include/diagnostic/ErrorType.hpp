@@ -16,6 +16,8 @@ namespace Diagnostic
         InvalidNumericLiteralPrefix,
         InvalidNumericLiteralDigit,
 
+        InvalidCharacter,
+
         MissingValue,
 
         // Semantic

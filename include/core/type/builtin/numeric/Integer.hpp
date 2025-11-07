@@ -20,9 +20,9 @@ namespace Core
     {
         using T = IntegerInstantiated;
         static constexpr Signal Mismatch = 0, // Type Mismatch
-            Underflow = 1,                    // Value Underflow
-            Overflow = 2,                     // Value Overflow
-            Assignable = 3;                   // Assignable
+            Assignable = 1,                   // Assignable
+            Underflow = 2,                    // Value Underflow
+            Overflow = 3;                     // Value Overflow
 
         bool is_signed;
 

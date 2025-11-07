@@ -5,6 +5,7 @@
 #include "core/type/Type.hpp"
 #include "core/value/ValuePool.hpp"
 #include "lexer/Token.hpp"
+#include "utils/char.hpp"
 #include "utils/value.hpp"
 
 namespace utils
@@ -39,11 +40,11 @@ namespace utils
 
             case TokenType::Bool:
                 return std::make_unique<Core::Value::T>(
-                    value == "true" ? true : false);
+                    value.at(0) == 't' ? true : false);
 
             case TokenType::Char:
-                return std::make_unique<Core::Value::T>(
-                    Core::character(value[1]));
+                return std::make_unique<Core::Value::T>(Core::character(
+                    utils::utf8_to_utf32(value.substr(1, value.size() - 2))));
 
             case TokenType::String:
                 return std::make_unique<Core::Value::T>(

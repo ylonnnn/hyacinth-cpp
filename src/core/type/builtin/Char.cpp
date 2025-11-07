@@ -1,4 +1,6 @@
 #include "core/type/builtin/Char.hpp"
+#include "core/type/TypePool.hpp"
+#include "utils/char.hpp"
 
 namespace Core
 {
@@ -12,22 +14,30 @@ namespace Core
     CharType::create_instance(std::vector<GenericArgument> &&arguments,
                               Core::PositionRange *range)
     {
-        // TODO: CharType::create_instance
-        return nullptr;
+        return TYPE_POOL.add(
+            std::make_unique<T>(*this, std::move(arguments), range));
     }
 
     CharType::Signal
     CharType::assignable(const std::vector<GenericArgument> &arguments,
                          Value *value, TypeResult &result) const
     {
-        // TODO: CharType::assignable()
-        return 0;
+        // Default (Core::character)
+        auto ptr = std::get_if<character>(value->value.get());
+        if (ptr != nullptr)
+        {
+            std::cout << "char: " << utils::utf32_to_utf8(*ptr) << "\n";
+            return Assignable;
+        }
+
+        // TODO: Assignability for other numeric types within the Value variant
+
+        return Mismatch;
     }
 
     CharType::T *CharType::infer(Value &value)
     {
-        // TODO: CharType::infer()
-        return nullptr;
+        return create_instance({}, value.range);
     }
 
     std::unique_ptr<Diagnostic::Diagnostic>

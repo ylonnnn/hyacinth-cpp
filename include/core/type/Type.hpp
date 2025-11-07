@@ -20,6 +20,8 @@ namespace Core
         using T = InstantiatedType;
         using Signal = uint32_t;
 
+        static constexpr Signal Mismatch = 0, Assignable = 1;
+
         Environment &environment;
         std::string name;
 
