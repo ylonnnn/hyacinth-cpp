@@ -1,0 +1,11 @@
+# Folder Ignorance
+/build
+/obj
+/temp
+
+# File Ignorance
+/massif.out.*
+
+# Preference Ignorance
+/.clang-format
+/compile_flags.txt
