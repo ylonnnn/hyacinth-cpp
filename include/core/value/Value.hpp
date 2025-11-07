@@ -69,7 +69,7 @@ namespace Core
         std::unordered_map<std::string, Value *> entries_;
     };
 
-    struct array
+    struct array : value_base_type
     {
         InstantiatedType *element_type = nullptr;
 

@@ -42,7 +42,8 @@ namespace utils
                     value == "true" ? true : false);
 
             case TokenType::Char:
-                return std::make_unique<Core::Value::T>(value[1]);
+                return std::make_unique<Core::Value::T>(
+                    Core::character(value[1]));
 
             case TokenType::String:
                 return std::make_unique<Core::Value::T>(
