@@ -1,1 +1,1 @@
-var test_arr: []char = []{1,2,3};
+var test_arr: []char = []&int{1,2,3};

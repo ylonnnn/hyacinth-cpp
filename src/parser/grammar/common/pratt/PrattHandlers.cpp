@@ -258,10 +258,7 @@ namespace Parser
                 parser.expect_or_error(Lexer::TokenType::RightBracket, result);
 
             if (p_token == nullptr)
-            {
-                result.adapt(t_res.status, std::move(t_res.diagnostics));
                 return nullptr;
-            }
         }
 
         else
@@ -276,7 +273,7 @@ namespace Parser
             }
         }
 
-        std::cout << "curr: " << lexer.current() << "\n";
+        result.adapt(t_res.status, std::move(t_res.diagnostics));
 
         // {...}
         std::unique_ptr<AST::Node> values = make_grouped_expr_handler(
