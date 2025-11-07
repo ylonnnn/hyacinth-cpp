@@ -25,10 +25,7 @@ namespace Core
         // Default (Core::character)
         auto ptr = std::get_if<character>(value->value.get());
         if (ptr != nullptr)
-        {
-            std::cout << "char: " << utils::utf32_to_utf8(*ptr) << "\n";
             return Assignable;
-        }
 
         // TODO: Assignability for other numeric types within the Value variant
 

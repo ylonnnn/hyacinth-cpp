@@ -2,4 +2,5 @@
 var test_char: char = '🦀';
 // var test_char: uint<{8}> = '🦀';
 
-var another_test_char: char = 123;
+var another_test_char: char = '🐉';
+var another_test_char1: uint<{8}> = 12;
