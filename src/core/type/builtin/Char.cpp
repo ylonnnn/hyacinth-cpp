@@ -1,6 +1,5 @@
 #include "core/type/builtin/Char.hpp"
 #include "core/type/TypePool.hpp"
-#include "utils/char.hpp"
 
 namespace Core
 {
@@ -23,8 +22,7 @@ namespace Core
                          Value *value, TypeResult &result) const
     {
         // Default (Core::character)
-        auto ptr = std::get_if<character>(value->value.get());
-        if (ptr != nullptr)
+        if (auto ptr = std::get_if<character>(value->value.get()))
             return Assignable;
 
         // TODO: Assignability for other numeric types within the Value variant

@@ -4,3 +4,5 @@ var test_char: char = '🦀';
 
 var another_test_char: char = '🐉';
 var another_test_char1: uint<{8}> = 12;
+
+var some_string: str = "hello world";
