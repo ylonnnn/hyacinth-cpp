@@ -1,5 +1,6 @@
 
 #include "ast/common/Identifier.hpp"
+#include "ast/expr/ArrayLiteralExpr.hpp"
 #include "ast/expr/BinaryExpr.hpp"
 #include "ast/expr/FunctionCallExpr.hpp"
 #include "ast/expr/LiteralExpr.hpp"
@@ -7,6 +8,7 @@
 // #include "ast/expr/compound/ArrayExpr.hpp"
 // #include "ast/expr/compound/InstanceExpr.hpp"
 #include "ast/expr/Path.hpp"
+#include "ast/expr/StructLiteralExpr.hpp"
 #include "ast/expr/UnaryExpr.hpp"
 #include "ast/type/ModifiedType.hpp"
 #include "ast/type/PrefixedType.hpp"
@@ -21,6 +23,8 @@ namespace Parser
 
     NudHandler<AST::Node> make_group_handler(Lexer::TokenType &&cl_pair,
                                              GroupHandlerFn &&handler);
+
+    NudHandler<AST::Node> make_grouped_expr_handler(Lexer::TokenType &&cl_pair);
 
     // Default
 
@@ -48,6 +52,11 @@ namespace Parser
     std::unique_ptr<AST::FunctionCallExpr>
     parse_func_call(Parser &parser, std::unique_ptr<AST::Node> &left,
                     float right_bp, ParseResult &result);
+
+    std::unique_ptr<AST::ArrayLiteralExpr>
+    parse_array_literal_expr(Parser &parser, ParseResult &result);
+
+    std::unique_ptr<AST::StructLiteralExpr> parse_struct_literal_expr();
 
     // Type
 

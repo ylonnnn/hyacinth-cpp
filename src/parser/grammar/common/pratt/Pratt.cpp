@@ -74,6 +74,14 @@ namespace Parser
         // add_nud(Delimeter::BraceOpen, parse_array);
         // add_led(Delimeter::BraceOpen, parse_instance);
 
+        // []T {...}
+        add_handler(TokenType::LeftBracket, PrattHandler{
+                                                .type = TokenType::LeftBracket,
+                                                .bp = {default_bp, default_bp},
+                                                .nud = parse_array_literal_expr,
+                                                .led = nullptr,
+                                            });
+
         // // Element Access
         // add_led(Delimeter::BracketOpen, parse_elaccess);
 

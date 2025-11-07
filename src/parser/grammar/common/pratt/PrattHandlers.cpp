@@ -2,6 +2,7 @@
 
 #include "ast/NodeCollection.hpp"
 #include "ast/common/Identifier.hpp"
+#include "ast/expr/ArrayLiteralExpr.hpp"
 #include "ast/expr/Path.hpp"
 #include "parser/grammar/common/Common.hpp"
 #include "parser/grammar/common/pratt/Pratt.hpp"
@@ -152,64 +153,69 @@ namespace Parser
                                                 *operation, std::move(left_));
     }
 
-    static NudHandler<> func_call_argument_handler = make_group_handler(
-        Lexer::TokenType::RightParen,
-        [](Parser &parser) -> ParseResult
-        {
-            using Lexer::TokenType;
-
-            auto &lexer = parser.lexer;
-            ParseResult result{
-                parser, Core::ResultStatus::Success, nullptr, {}};
-
-            auto collection = std::make_unique<AST::NodeCollection<AST::Expr>>(
-                lexer.current().range.start(),
-                std::vector<std::unique_ptr<AST::Expr>>{});
-
-            Lexer::TokenType closing = TokenType::RightParen;
-            auto expect_arg = true;
-
-            while (!parser.expect(closing, false))
+    NudHandler<AST::Node> make_grouped_expr_handler(Lexer::TokenType &&cl_pair)
+    {
+        return make_group_handler(
+            std::move(cl_pair),
+            [cl_pair](Parser &parser) -> ParseResult
             {
-                if (expect_arg)
+                using Lexer::TokenType;
+
+                auto &lexer = parser.lexer;
+                ParseResult result{
+                    parser, Core::ResultStatus::Success, nullptr, {}};
+
+                auto collection =
+                    std::make_unique<AST::NodeCollection<AST::Expr>>(
+                        lexer.current().range.start(),
+                        std::vector<std::unique_ptr<AST::Expr>>{});
+
+                auto expect_arg = true;
+
+                while (!parser.expect(cl_pair, false))
                 {
-                    ParseResult p_res = Common::Pratt.parse_base(parser, 0);
-                    result.adapt(p_res.status, std::move(p_res.diagnostics));
+                    if (expect_arg)
+                    {
+                        ParseResult p_res = Common::Pratt.parse_base(parser, 0);
+                        result.adapt(p_res.status,
+                                     std::move(p_res.diagnostics));
 
-                    if (p_res.data == nullptr)
-                        break;
+                        if (p_res.data == nullptr)
+                            break;
 
-                    auto param = dynamic_cast<AST::Expr *>(p_res.data.get());
-                    if (param == nullptr)
-                        break;
+                        auto value =
+                            dynamic_cast<AST::Expr *>(p_res.data.get());
+                        if (value == nullptr)
+                            break;
 
-                    // Store and use to avoid warnings
-                    auto _ = p_res.data.release();
-                    (void)_;
+                        // Store and use to avoid warnings
+                        auto _ = p_res.data.release();
+                        (void)_;
 
-                    collection->collection.emplace_back(param);
-                    expect_arg = false;
+                        collection->collection.emplace_back(value);
+                        expect_arg = false;
+                    }
+
+                    if (parser.expect(TokenType::Comma, false))
+                    {
+                        lexer.consume();
+                        expect_arg = true;
+
+                        continue;
+                    }
+
+                    break;
                 }
 
-                if (parser.expect(TokenType::Comma, false))
-                {
-                    lexer.consume();
-                    expect_arg = true;
+                if (auto cl = parser.expect_or_error(
+                        cl_pair, result, ParserTokenConsumptionType::Preserve))
+                    collection->range.end(cl->range.end());
 
-                    continue;
-                }
+                result.data = std::move(collection);
 
-                break;
-            }
-
-            if (auto cl = parser.expect_or_error(
-                    closing, result, ParserTokenConsumptionType::UponSuccess))
-                collection->range.end(cl->range.end());
-
-            result.data = std::move(collection);
-
-            return result;
-        });
+                return result;
+            });
+    }
 
     std::unique_ptr<AST::FunctionCallExpr>
     parse_func_call(Parser &parser, std::unique_ptr<AST::Node> &left, float,
@@ -222,8 +228,9 @@ namespace Parser
             return nullptr;
         }
 
-        std::unique_ptr<AST::Node> args =
-            func_call_argument_handler(parser, result);
+        std::unique_ptr<AST::Node> args = make_grouped_expr_handler(
+            Lexer::TokenType::LeftParen)(parser, result);
+
         auto arguments =
             utils::dynamic_ptr_cast<AST::NodeCollection<AST::Expr>>(args);
         if (arguments == nullptr)
@@ -231,6 +238,60 @@ namespace Parser
 
         return std::make_unique<AST::FunctionCallExpr>(
             std::move(callee), std::move(arguments->collection));
+    }
+
+    std::unique_ptr<AST::ArrayLiteralExpr>
+    parse_array_literal_expr(Parser &parser, ParseResult &result)
+    {
+        Lexer::Lexer &lexer = parser.lexer;
+
+        Core::Position &start_pos = lexer.peek()->range.start();
+        size_t prev = lexer.position;
+
+        ParseResult t_res = Common::Pratt.parse_base(parser, 0, true);
+        std::unique_ptr<AST::PrefixedType> type;
+
+        if (t_res.data == nullptr)
+        {
+            lexer.position = prev + 1; // Revert next to the last valid position
+            Lexer::Token *p_token =
+                parser.expect_or_error(Lexer::TokenType::RightBracket, result);
+
+            if (p_token == nullptr)
+            {
+                result.adapt(t_res.status, std::move(t_res.diagnostics));
+                return nullptr;
+            }
+        }
+
+        else
+        {
+            type = utils::dynamic_ptr_cast<AST::PrefixedType>(t_res.data);
+            if (type == nullptr || type->kind != AST::PrefixedTypeKind::Array)
+            {
+                utils::todo("throw error: cannot construct array literal from "
+                            "non-array type");
+
+                return nullptr;
+            }
+        }
+
+        std::cout << "curr: " << lexer.current() << "\n";
+
+        // {...}
+        std::unique_ptr<AST::Node> values = make_grouped_expr_handler(
+            Lexer::TokenType::RightBrace)(parser, result);
+
+        auto elements =
+            utils::dynamic_ptr_cast<AST::NodeCollection<AST::Expr>>(values);
+        if (elements == nullptr)
+            return nullptr;
+
+        auto node = std::make_unique<AST ::ArrayLiteralExpr>(start_pos,
+                                                             std::move(type));
+        node->elements.swap(elements->collection);
+
+        return node;
     }
 
     // Type
