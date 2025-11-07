@@ -28,7 +28,11 @@ namespace Lexer
 
     bool Lexer::eof(bool absolute) const
     {
-        return position >= (tokens.size() - !absolute);
+        size_t n = tokens.size();
+        if (n == 0)
+            return true;
+
+        return position >= (n - !absolute);
     }
 
     Token *Lexer::at(size_t pos) { return eof() ? nullptr : &tokens[pos]; }

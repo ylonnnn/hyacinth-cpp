@@ -9,6 +9,14 @@
 
 namespace utils
 {
+    Core::Value *from_char(char c, Core::PositionRange &range)
+    {
+        auto val = std::make_unique<Core::Value::T>(Core::integer(c, false));
+
+        return Core::create_value(std::move(val), nullptr,
+                                  Core::ValueType::RValue, &range);
+    }
+
     std::unique_ptr<Core::Value::T> parse_val_t(Lexer::Token &token)
     {
         using Lexer::TokenType;
@@ -39,7 +47,7 @@ namespace utils
 
             case TokenType::Bool:
                 return std::make_unique<Core::Value::T>(
-                    value == "true" ? true : false);
+                    value[0] == 't' ? true : false);
 
             case TokenType::Char:
                 return std::make_unique<Core::Value::T>(value[1]);

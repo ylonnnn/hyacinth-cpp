@@ -25,10 +25,25 @@ namespace Core
         operator std::string() const;
     };
 
-    struct integer;
-    struct object;
     struct callable;
-    // struct array; // ?
+
+    struct array : value_base_type
+    {
+        InstantiatedType *element_type = nullptr;
+
+        array(InstantiatedType *element_type);
+
+        size_t size() const;
+
+        Value *get(size_t idx);
+        const Value *get(size_t idx) const;
+
+        size_t hash() const;
+        operator std::string() const;
+
+      private:
+        std::vector<Value *> elements_;
+    };
 
     struct integer : value_base_type
     {
@@ -80,7 +95,8 @@ namespace Core
 
     struct Value
     {
-        using T = std::variant<null, integer, double, bool, char, std::string>;
+        using T =
+            std::variant<null, integer, double, bool, char, std::string, array>;
 
         std::unique_ptr<T> value;
         InstantiatedType *type = nullptr;
@@ -167,29 +183,6 @@ namespace Core
     //     const Type *get_type(const std::string &key) const;
 
     //     size_t size() const;
-
-    //     operator std::string() const;
-    // };
-
-    // struct array
-    // {
-    //   private:
-    //     Type *element_type_ = nullptr;
-    //     std::vector<value_data> elements_;
-
-    //   public:
-    //     array(Type *element_type);
-
-    //     Type *&element_type();
-    //     const Type *element_type() const;
-
-    //     std::vector<value_data> &elements();
-    //     const std::vector<value_data> &elements() const;
-
-    //     size_t size() const;
-
-    //     value_data *get(size_t idx);
-    //     const value_data *get(size_t idx) const;
 
     //     operator std::string() const;
     // };
