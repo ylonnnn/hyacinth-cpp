@@ -6,3 +6,5 @@ var another_test_char: char = '🐉';
 var another_test_char1: uint<{8}> = 12;
 
 var some_string: str = "hello world";
+var some_invalid_str: str = 123;
+var another_invalid_str: str = 'H';

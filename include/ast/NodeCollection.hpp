@@ -16,7 +16,7 @@ namespace AST
         std::vector<std::unique_ptr<T>> collection;
 
         NodeCollection(Core::Position &position,
-                       std::vector<std::unique_ptr<T>> collection)
+                       std::vector<std::unique_ptr<T>> &&collection)
             : Node(position), collection(std::move(collection))
         {
         }
