@@ -1,2 +1,3 @@
-var test_arr: []char = []uint<{1}>{1,2,3};
-
+// var u8_max: uint<{8}> = 255;
+// var test_arr: []char = []uint<{1}>{1, 2, u8_max};
+var test_arr: []char = []uint<{1}>{1, 2};

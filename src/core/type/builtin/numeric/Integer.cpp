@@ -243,9 +243,13 @@ namespace Core
         if (is_signed)
         {
             auto i64 = val.as<int64_t>();
-            return i64 < min                         ? Underflow
-                   : i64 > static_cast<int64_t>(max) ? Overflow
-                                                     : Assignable;
+            // TODO: Overflow and Underflow handling
+            // return i64 < min                         ? Underflow
+            //        : i64 > static_cast<int64_t>(max) ? Overflow
+            //                                          : Assignable;
+
+            return i64 < min || i64 > static_cast<int64_t>(max) ? Mismatch
+                                                                : Assignable;
         }
 
         else
@@ -254,9 +258,13 @@ namespace Core
                 return Underflow;
 
             auto u64 = val.as<uint64_t>();
-            return u64 < static_cast<uint64_t>(min) ? Underflow
-                   : u64 > max                      ? Overflow
-                                                    : Assignable;
+            // TODO: Overflow and Underflow handling
+            // return u64 < static_cast<uint64_t>(min) ? Underflow
+            //        : u64 > max                      ? Overflow
+            //                                         : Assignable;
+
+            return u64 < static_cast<uint64_t>(min) || u64 > max ? Mismatch
+                                                                 : Assignable;
         }
 
         return Assignable;
