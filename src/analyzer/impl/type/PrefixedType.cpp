@@ -15,9 +15,9 @@ namespace Semantic
         AST::Type &base = *node.base;
 
         AnalysisResult b_res = AnalyzerImpl<AST::Type>::analyze(analyzer, base);
-        result.adapt(b_res);
+        result.adapt(b_res.status, std::move(b_res.diagnostics));
 
-        Core::InstantiatedType *type = result.data;
+        Core::InstantiatedType *type = b_res.data;
         if (type == nullptr)
         {
             // result.error(Core::PositionRange{  base.position,

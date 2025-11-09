@@ -24,6 +24,9 @@ namespace Semantic
 
             // FunctionCallExpr
             EXPR_DISPATCH(AST::FunctionCallExpr),
+
+            // ArrayLiteralExpr
+            EXPR_DISPATCH(AST::ArrayLiteralExpr),
     };
 
     AnalysisResult AnalyzerImpl<AST::Expr>::analyze(Analyzer &analyzer,

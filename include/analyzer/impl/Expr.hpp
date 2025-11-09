@@ -1,11 +1,11 @@
 #pragma once
 
+#include "ast/expr/ArrayLiteralExpr.hpp"
 #include "ast/expr/BinaryExpr.hpp"
 #include "ast/expr/FunctionCallExpr.hpp"
 #include "ast/expr/LiteralExpr.hpp"
 #include "ast/expr/Path.hpp"
 #include "ast/expr/UnaryExpr.hpp"
-// #include "ast/expr/compound/ArrayExpr.hpp"
 // #include "ast/expr/compound/InstanceExpr.hpp"
 #include "analyzer/Analyzer.hpp"
 
@@ -44,16 +44,16 @@ namespace Semantic
                                       AST::FunctionCallExpr &node);
     };
 
+    template <> struct AnalyzerImpl<AST::ArrayLiteralExpr>
+    {
+        static AnalysisResult analyze(Analyzer &analyzer,
+                                      AST::ArrayLiteralExpr &node);
+    };
+
     // template <> struct AnalyzerImpl<AST::InstanceExpr>
     // {
     //     static AnalysisResult analyze(Analyzer &analyzer,
     //                                   AST::InstanceExpr &node);
-    // };
-
-    // template <> struct AnalyzerImpl<AST::ArrayExpr>
-    // {
-    //     static AnalysisResult analyze(Analyzer &analyzer, AST::ArrayExpr
-    //     &node);
     // };
 
     // template <> struct AnalyzerImpl<AST::TypeExpr>
