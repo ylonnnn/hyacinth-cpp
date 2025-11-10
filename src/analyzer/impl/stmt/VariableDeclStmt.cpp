@@ -113,6 +113,7 @@ namespace Semantic
             //              this type");
         }
 
+        // TODO: Move to Type::assignment_semantic
         void determine_assignment(Core::VariableSymbol *varsym,
                                   AnalysisResult &result)
         {
@@ -125,7 +126,7 @@ namespace Semantic
             if (typeid(*type) == typeid(Core::ReferenceInstantiated))
             {
                 auto ref = static_cast<Core::ReferenceInstantiated *>(type);
-                // TODO: Handle Reference Values
+                varsym->value = val;
             }
 
             else if (typeid(*type) == typeid(Core::PointerInstantiated))
