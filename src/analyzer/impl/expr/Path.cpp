@@ -39,9 +39,12 @@ namespace Semantic
 
             else if (typeid(*sym) == typeid(Core::TypeSymbol))
             {
-                utils::todo(
-                    "implement Core::TypeSymbol path resolver. For static "
-                    "member access (e.g. std::vector<int<{8}>>::iterator)");
+                // TODO: Implement Core::TypeSymbol path resolver. For static
+                // member access (e.g. std::vector<int<{8}>>::iterator)
+
+                // utils::todo(
+                //     "implement Core::TypeSymbol path resolver. For static "
+                //     "member access (e.g. std::vector<int<{8}>>::iterator)");
                 break;
             }
         }

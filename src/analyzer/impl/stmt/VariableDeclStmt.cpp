@@ -158,15 +158,14 @@ namespace Semantic
                 return;
             }
 
-            if (!ptr->is_constexpr)
-                return;
-
             // Type Inferrence
             if (varsym->type == nullptr)
             {
                 varsym->type =
                     Core::BaseType::infer(*analyzer.env_stack.current(), *val);
-                varsym->value = Core::create_copy(*val);
+
+                if (ptr->is_constexpr)
+                    varsym->value = Core::create_copy(*val);
             }
 
             // Type Validation
@@ -175,7 +174,8 @@ namespace Semantic
                 Core::TypeResult vv_res = varsym->type->assignable(val);
                 result.adapt(vv_res.status, std::move(vv_res.diagnostics));
 
-                determine_assignment(varsym, result);
+                if (ptr->is_constexpr)
+                    varsym->value = varsym->type->base.transfer_semantics(val);
             }
         }
 

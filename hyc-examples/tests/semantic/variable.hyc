@@ -1,3 +1,2 @@
-var constexpr test = 12;
-var test1 = test;
-var constexpr test_1: uint<{8}> = test1;
+var test: uint<{8}>;
+var test_1: uint<{5}> = test;

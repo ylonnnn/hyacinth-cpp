@@ -4,6 +4,7 @@
 #include "core/environment/Environment.hpp"
 #include "core/type/Type.hpp"
 #include "core/value/Value.hpp"
+#include "core/value/ValuePool.hpp"
 
 namespace Core
 {
@@ -135,21 +136,13 @@ namespace Core
         return result;
     }
 
-    size_t BaseType::hash()
+    Core::Value *BaseType::transfer_semantics(Core::Value *value) const
     {
-        if (hash_info_.first)
-            return hash_info_.second;
-
-        return hash_info_.first = true,
-               hash_info_.second = std::hash<std::string>{}(name);
-    }
-
-    size_t *BaseType::hash() const
-    {
-        if (!hash_info_.first)
+        if (value == nullptr)
             return nullptr;
 
-        return const_cast<size_t *>(&hash_info_.second);
+        // Default data transfer semantics
+        return Core::create_copy(*value);
     }
 
     BaseType::T *BaseType::infer(Environment &environment, Value &value)
@@ -183,6 +176,23 @@ namespace Core
                 return resolved->infer(value);
             },
             *rvalue.value);
+    }
+
+    size_t BaseType::hash()
+    {
+        if (hash_info_.first)
+            return hash_info_.second;
+
+        return hash_info_.first = true,
+               hash_info_.second = std::hash<std::string>{}(name);
+    }
+
+    size_t *BaseType::hash() const
+    {
+        if (!hash_info_.first)
+            return nullptr;
+
+        return const_cast<size_t *>(&hash_info_.second);
     }
 
     InstantiatedType::InstantiatedType(BaseType &base,

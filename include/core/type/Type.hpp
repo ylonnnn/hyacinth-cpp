@@ -41,6 +41,9 @@ namespace Core
         validate_arguments(const std::vector<GenericArgument> &arguments,
                            const Core::PositionRange &range);
 
+        // Semantics
+        virtual Core::Value *transfer_semantics(Core::Value *value) const;
+
         virtual Signal assignable(const std::vector<GenericArgument> &arguments,
                                   Value *value, TypeResult &result) const = 0;
 

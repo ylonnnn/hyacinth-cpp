@@ -1,8 +1,6 @@
 #include "analyzer/impl/Common.hpp"
 #include "core/symbol/TypeSymbol.hpp"
 #include "core/symbol/VariableSymbol.hpp"
-#include "core/value/Value.hpp"
-#include "utils/dev.hpp"
 
 namespace Semantic
 {
