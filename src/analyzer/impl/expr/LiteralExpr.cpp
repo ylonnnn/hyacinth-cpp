@@ -14,7 +14,7 @@ namespace Semantic
 
         result.value = utils::parse_val(node.value);
         if (result.value != nullptr)
-            result.data = result.value->type;
+            result.data = get_rvalue(*result.value).type;
 
         return result;
     }

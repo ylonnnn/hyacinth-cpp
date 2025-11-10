@@ -19,8 +19,11 @@ namespace Core
     StrType::assignable(const std::vector<GenericArgument> &arguments,
                         Value *value, TypeResult &result) const
     {
+        if (value == nullptr)
+            return Mismatch;
+
         // Default (std::string)
-        if (auto ptr = std::get_if<std::string>(value->value.get()))
+        if (auto ptr = std::get_if<std::string>(get_rvalue(*value).value.get()))
             return Assignable;
 
         // TODO: Assignability for other numeric types within the Value variant

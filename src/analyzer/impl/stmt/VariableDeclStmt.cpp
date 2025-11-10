@@ -138,26 +138,20 @@ namespace Semantic
                 Core::TypeResult vv_res = varsym->type->assignable(val);
                 result.adapt(vv_res.status, std::move(vv_res.diagnostics));
 
-                if (result.status == Core::ResultStatus::Fail)
-                    return;
+                if (vv_res.status == Core::ResultStatus::Success)
+                {
+                    Core::ReadValue *rval = Core::get_rvalue(val);
+                    if (rval != nullptr)
+                        rval->type = varsym->type;
+                }
             }
 
             // Otherwise, infer type
             else
-            {
                 varsym->type =
                     Core::BaseType::infer(*analyzer.env_stack.current(), *val);
 
-                // TODO: Remove this
-                std::cout << varsym->name << ": varsym->type: ";
-                if (varsym->type != nullptr)
-                    std::cout << varsym->type->to_string() << "\n";
-                else
-                    std::cout << "nullptr\n";
-            }
-
-            varsym->value = v_res.value;
-            varsym->value->val_type = Core::ValueType::LValue;
+            varsym->value = val;
 
             //     // Define
             //     var->define(const_cast<Core::Position *>(&stmt.position()));
@@ -204,9 +198,7 @@ namespace Semantic
         Core::VariableSymbol *varptr = varsym.get();
 
         VariableAnalyzer::verify_duplication(analyzer, varptr, result);
-
-        if (!VariableAnalyzer::analyze_type(analyzer, varptr, result))
-            return result;
+        VariableAnalyzer::analyze_type(analyzer, varptr, result);
 
         // If the node is a variable definition
         if (node.is_definition())

@@ -3,6 +3,7 @@
 
 #include "core/environment/Environment.hpp"
 #include "core/type/Type.hpp"
+#include "core/value/Value.hpp"
 
 namespace Core
 {
@@ -29,7 +30,7 @@ namespace Core
 
     BaseType::T *
     BaseType::create_instance(std::vector<GenericArgument> &&arguments,
-                              Core::PositionRange *range)
+                              PositionRange *range)
     {
         return TYPE_POOL.add<T>(
             std::make_unique<T>(*this, std::move(arguments), range));
@@ -43,7 +44,7 @@ namespace Core
 
     TypeResult
     BaseType::validate_arguments(const std::vector<GenericArgument> &arguments,
-                                 const Core::PositionRange &range)
+                                 const PositionRange &range)
     {
         TypeResult result{ResultStatus::Success, nullptr, {}};
 
@@ -69,8 +70,7 @@ namespace Core
             bool is_val = std::visit(
                 [](auto &val) -> bool
                 {
-                    return std::is_same_v<std::decay_t<decltype(val)>,
-                                          Core::Value *>;
+                    return std::is_same_v<std::decay_t<decltype(val)>, Value *>;
                 },
                 arg);
 
@@ -79,19 +79,21 @@ namespace Core
             {
                 if (is_val)
                 {
-                    auto ptr = std::get_if<Core::Value *>(&arg);
+                    auto ptr = std::get_if<Value *>(&arg);
                     if (ptr == nullptr)
                         return result;
 
-                    Core::Value *value = *ptr;
+                    Value *value = *ptr;
                     if (value->range == nullptr)
                         return result;
+
+                    ReadValue *rvalue = get_rvalue(value);
 
                     result.error(
                         *value->range, Diagnostic::ErrorType::InvalidArgument,
                         "expects type argument " + param.type->to_string() +
                             +" for " + param.name + ", received " +
-                            value->to_string() + ".");
+                            rvalue->to_string() + ".");
 
                     return result;
                 }
@@ -104,11 +106,11 @@ namespace Core
             {
                 if (!is_val)
                 {
-                    auto ptr = std::get_if<Core::InstantiatedType *>(&arg);
+                    auto ptr = std::get_if<InstantiatedType *>(&arg);
                     if (ptr == nullptr)
                         return result;
 
-                    Core::InstantiatedType *type = *ptr;
+                    InstantiatedType *type = *ptr;
                     if (type->range == nullptr)
                         return result;
 
@@ -121,7 +123,7 @@ namespace Core
                     return result;
                 }
 
-                auto ptr = std::get_if<Core::Value *>(&arg);
+                auto ptr = std::get_if<Value *>(&arg);
                 if (ptr == nullptr)
                     return result;
 
@@ -152,10 +154,11 @@ namespace Core
 
     BaseType::T *BaseType::infer(Environment &environment, Value &value)
     {
-        if (value.type != nullptr)
-            return value.type;
+        ReadValue &rvalue = get_rvalue(value);
+        if (rvalue.type != nullptr)
+            return rvalue.type;
 
-        if (value.value == nullptr)
+        if (rvalue.value == nullptr)
             return nullptr;
 
         return std::visit(
@@ -164,7 +167,7 @@ namespace Core
                 using T = std::decay_t<decltype(val)>;
                 std::string t_name;
 
-                if constexpr (std::is_same_v<T, Core::integer>)
+                if constexpr (std::is_same_v<T, integer>)
                     t_name = val.is_negative ? "int" : "uint";
 
                 else if constexpr (std::is_same_v<T, double>)
@@ -179,12 +182,12 @@ namespace Core
 
                 return resolved->infer(value);
             },
-            *value.value);
+            *rvalue.value);
     }
 
     InstantiatedType::InstantiatedType(BaseType &base,
                                        std::vector<GenericArgument> &&arguments,
-                                       Core::PositionRange *range)
+                                       PositionRange *range)
         : base(base), arguments(std::move(arguments)), range(range)
     {
         hash();
@@ -196,18 +199,24 @@ namespace Core
         TypeResult result{ResultStatus::Success, nullptr, {}};
 
         BaseType::Signal signal = base.assignable(arguments, value, result);
-        Core::PositionRange *range = value->range;
+        PositionRange *range = value->range;
 
         auto str_type = *to_string();
         if (range == nullptr)
             return result;
 
         if (signal == BaseType::Mismatch)
+        {
+            ReadValue *rvalue = get_rvalue(value);
+            if (rvalue == nullptr)
+                return result;
+
             result
                 .error(*range, Diagnostic::ErrorType::TypeMismatch,
                        "expected value of type '" + str_type + "', received '" +
-                           value->type->to_string() + "'.")
+                           rvalue->type->to_string() + "'.")
                 ->add_detail(base.make_suggestion(arguments, value));
+        }
 
         return result;
     }
@@ -235,7 +244,7 @@ namespace Core
                                                    value_base_type, T>)
                                 hash_val += val.hash();
                         },
-                        *(*ptr)->value);
+                        *get_rvalue(*ptr)->value);
                 }
             }
 
@@ -281,7 +290,7 @@ namespace Core
                             else
                                 str += std::to_string(val);
                         },
-                        *(*ptr)->value);
+                        *get_rvalue(*ptr)->value);
                 }
 
                 else if (auto ptr = std::get_if<InstantiatedType *>(&argument))
@@ -323,7 +332,7 @@ namespace Core
 
 // namespace Core
 // {
-//     bool Type::assignable(const Core::Value &value) const
+//     bool Type::assignable(const Value &value) const
 //     {
 //         return type->assignable(value, arguments);
 //     }
@@ -342,8 +351,8 @@ namespace Core
 //         return type->make_suggestion(node, arguments);
 //     }
 
-//     Type *Type::from_value(Core::Environment *environment,
-//                            const Core::Value &value)
+//     Type *Type::from_value(Environment *environment,
+//                            const Value &value)
 //     {
 //         if (environment == nullptr)
 //             return nullptr;
@@ -397,7 +406,7 @@ namespace Core
 
 //     TypeResolutionResult::TypeResolutionResult(
 //         ResultStatus status, Type *data, Diagnostic::DiagnosticList
-//         diagnostics) : Core::Result<Type *>(status, data,
+//         diagnostics) : Result<Type *>(status, data,
 //         std::move(diagnostics))
 //     {
 //     }
@@ -407,7 +416,7 @@ namespace Core
 //     {
 //         switch (param_type)
 //         {
-//             case Core::TypeParameterType::Type:
+//             case TypeParameterType::Type:
 //             {
 //                 BaseType *resolved =
 //                     environment.resolve_type(std::string(type.value().value));
@@ -417,14 +426,14 @@ namespace Core
 //                 return resolved->resolve(type).data;
 //             }
 
-//             case Core::TypeParameterType::Constant:
+//             case TypeParameterType::Constant:
 //             {
-//                 Core::Value parsed = utils::parse_val(type.value());
+//                 Value parsed = utils::parse_val(type.value());
 //                 if (this->type == nullptr)
-//                     return std::make_shared<Core::Value>(Core::null{});
+//                     return std::make_shared<Value>(null{});
 
-//                 return std::make_shared<Core::Value>(
-//                     this->type->assignable(parsed) ? parsed : Core::null{});
+//                 return std::make_shared<Value>(
+//                     this->type->assignable(parsed) ? parsed : null{});
 //             }
 //         }
 
@@ -506,9 +515,9 @@ namespace Core
 //         }
 
 //         else if (auto ptr =
-//                      std::get_if<std::shared_ptr<Core::Value>>(&resolved))
+//                      std::get_if<std::shared_ptr<Value>>(&resolved))
 //         {
-//             if (std::holds_alternative<Core::null>(**ptr))
+//             if (std::holds_alternative<null>(**ptr))
 //             {
 //                 result.first = false;
 
@@ -521,9 +530,9 @@ namespace Core
 //             return result;
 //         }
 
-//         result.second = param.param_type == Core::TypeParameterType::Type
+//         result.second = param.param_type == TypeParameterType::Type
 //                             ? nullptr
-//                             : std::make_shared<Core::Value>(Core::null{});
+//                             : std::make_shared<Value>(null{});
 
 //         return result;
 //     }

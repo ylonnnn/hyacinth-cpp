@@ -10,12 +10,17 @@ namespace Core
         return pool_.back().get();
     }
 
-    Value *create_value(std::unique_ptr<Value::T> &&value,
-                        InstantiatedType *type, ValueType val_type,
-                        Core::PositionRange *range)
+    ReadValue *create_value(std::unique_ptr<Value::T> &&value,
+                            InstantiatedType *type, PositionRange *range)
     {
-        return VALUE_POOL.add(
-            std::make_unique<Value>(std::move(value), type, val_type, range));
+        return static_cast<ReadValue *>(VALUE_POOL.add(
+            std::make_unique<ReadValue>(std::move(value), type, range)));
+    }
+
+    LocatorValue *create_value(ReadValue &rvalue, PositionRange &range)
+    {
+        return static_cast<LocatorValue *>(
+            VALUE_POOL.add(std::make_unique<LocatorValue>(rvalue, range)));
     }
 
     ValuePool VALUE_POOL;

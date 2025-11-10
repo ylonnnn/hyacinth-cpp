@@ -226,11 +226,12 @@ namespace Core
         if (!arguments.empty())
         {
             if (auto ptr = std::get_if<Value *>(&arguments[0]))
-                if (auto val_ptr = std::get_if<integer>((*ptr)->value.get()))
+                if (auto val_ptr =
+                        std::get_if<integer>(get_rvalue(*ptr)->value.get()))
                     bw = val_ptr->as<uint64_t>();
         }
 
-        auto ptr = std::get_if<integer>(value->value.get());
+        auto ptr = std::get_if<integer>(get_rvalue(value)->value.get());
         if (ptr == nullptr)
             return Mismatch;
 
@@ -272,16 +273,15 @@ namespace Core
 
     IntegerType::T *IntegerType::infer(Value &value)
     {
-        auto ptr = std::get_if<Core::integer>(value.value.get());
+        auto ptr = std::get_if<Core::integer>(get_rvalue(value).value.get());
         if (ptr == nullptr)
             return nullptr;
 
         uint64_t bw = bit_width_of(value);
 
         return create_instance(
-            {VALUE_POOL.add(std::make_unique<Value>(
-                std::make_unique<Value::T>(Core::integer(bw, false)),
-                bw_type_.create_instance({})))},
+            {create_value(std::make_unique<Value::T>(Core::integer(bw, false)),
+                          bw_type_.create_instance({}))},
             value.range);
     }
 
@@ -297,7 +297,8 @@ namespace Core
         if (!arguments.empty())
         {
             if (auto ptr = std::get_if<Value *>(&arguments[0]))
-                if (auto val_ptr = std::get_if<integer>((*ptr)->value.get()))
+                if (auto val_ptr =
+                        std::get_if<integer>(get_rvalue(*ptr)->value.get()))
                     bw = val_ptr->as<uint64_t>();
         }
 
@@ -317,7 +318,7 @@ namespace Core
     uint32_t IntegerType::bit_width_of(Value &value) const
     {
         uint32_t bw = 32;
-        auto ptr = std::get_if<Core::integer>(value.value.get());
+        auto ptr = std::get_if<Core::integer>(get_rvalue(value).value.get());
 
         if (ptr == nullptr)
             return bw;

@@ -74,7 +74,7 @@ namespace Semantic
         {
             auto v_sym = static_cast<Core::VariableSymbol *>(sym);
 
-            result.value = v_sym->value;
+            result.value = v_sym->ref(node.range);
             result.data = v_sym->type;
         }
 

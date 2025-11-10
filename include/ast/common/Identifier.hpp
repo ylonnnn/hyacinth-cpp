@@ -5,6 +5,7 @@
 #include "ast/Node.hpp"
 #include "ast/expr/Expr.hpp"
 #include "ast/type/Type.hpp"
+#include "core/value/Value.hpp"
 #include "lexer/Token.hpp"
 
 namespace AST

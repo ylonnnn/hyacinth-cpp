@@ -35,10 +35,11 @@ namespace Core
             return result.error(
                 *value->range, Diagnostic::ErrorType::TypeMismatch,
                 "expected value of type '" + std::string(name) +
-                    "', received '" + value->type->to_string() + "'.");
+                    "', received '" + get_rvalue(value)->type->to_string() +
+                    "'.");
         };
 
-        auto ptr = std::get_if<integer>(value->value.get());
+        auto ptr = std::get_if<integer>(get_rvalue(value)->value.get());
         if (value == nullptr || ptr == nullptr)
         {
             error();
@@ -106,7 +107,7 @@ namespace Core
     int8_t FloatType::can_fit(Value &value, uint64_t t_exponent,
                               uint64_t t_mantissa) const
     {
-        auto ptr = std::get_if<double>(value.value.get());
+        auto ptr = std::get_if<double>(get_rvalue(value).value.get());
         if (ptr == nullptr)
             return -2;
 
@@ -171,7 +172,8 @@ namespace Core
         if (!arguments.empty())
         {
             if (auto ptr = std::get_if<Value *>(&arguments[0]))
-                if (auto val_ptr = std::get_if<integer>((*ptr)->value.get()))
+                if (auto val_ptr =
+                        std::get_if<integer>(get_rvalue(*ptr)->value.get()))
                     bw = val_ptr->as<uint64_t>();
         }
 
@@ -195,7 +197,7 @@ namespace Core
 
     FloatType::T *FloatType::infer(Value &value)
     {
-        auto ptr = std::get_if<double>(value.value.get());
+        auto ptr = std::get_if<double>(get_rvalue(value).value.get());
         if (ptr == nullptr)
             return nullptr;
 
@@ -219,7 +221,8 @@ namespace Core
         if (!arguments.empty())
         {
             if (auto ptr = std::get_if<Value *>(&arguments[0]))
-                if (auto val_ptr = std::get_if<integer>((*ptr)->value.get()))
+                if (auto val_ptr =
+                        std::get_if<integer>(get_rvalue(*ptr)->value.get()))
                     bw = val_ptr->as<uint64_t>();
         }
 

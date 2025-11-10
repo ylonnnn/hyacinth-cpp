@@ -25,10 +25,11 @@ namespace Core
             return result.error(
                 *value->range, Diagnostic::ErrorType::TypeMismatch,
                 "expected value of type '" + std::string(name) +
-                    "', received '" + value->type->to_string() + "'.");
+                    "', received '" + get_rvalue(value)->type->to_string() +
+                    "'.");
         };
 
-        auto ptr = std::get_if<integer>(value->value.get());
+        auto ptr = std::get_if<integer>(get_rvalue(value)->value.get());
         if (value == nullptr || ptr == nullptr)
         {
             error();

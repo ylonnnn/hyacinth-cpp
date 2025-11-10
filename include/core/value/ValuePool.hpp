@@ -16,10 +16,11 @@ namespace Core
         std::vector<std::unique_ptr<Value>> pool_;
     };
 
-    Value *create_value(std::unique_ptr<Value::T> &&value,
-                        InstantiatedType *type,
-                        ValueType val_type = ValueType::RValue,
-                        Core::PositionRange *range = nullptr);
+    ReadValue *create_value(std::unique_ptr<Value::T> &&value,
+                            InstantiatedType *type,
+                            PositionRange *range = nullptr);
+
+    LocatorValue *create_value(ReadValue &rvalue, PositionRange &range);
 
     extern ValuePool VALUE_POOL;
 

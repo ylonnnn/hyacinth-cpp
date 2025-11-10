@@ -12,6 +12,7 @@ namespace Core
         AST::VariableDeclarationStmt *decl_node = nullptr;
         AST::Node *def_node = nullptr;
 
+
         VariableSymbol(std::string_view name, SymbolAccessibility acessibility,
                        AST::VariableDeclarationStmt *decl_node, bool is_mutable,
                        InstantiatedType *type, Value *value = nullptr);

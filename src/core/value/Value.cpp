@@ -90,17 +90,19 @@ namespace Core
     array::operator std::string() const
     {
         // TODO: array::operator std::string()
-        // T{...}
+        // []T{...}
         return "{}";
     }
 
-    Value::Value(std::unique_ptr<Value::T> &&value, InstantiatedType *type,
-                 ValueType val_type, Core::PositionRange *range)
-        : value(std::move(value)), type(type), val_type(val_type), range(range)
+    Value::Value(PositionRange *range) : range(range) {}
+
+    ReadValue::ReadValue(std::unique_ptr<T> &&value, InstantiatedType *type,
+                         PositionRange *range)
+        : Value(range), value(std::move(value)), type(type)
     {
     }
 
-    size_t Value::hash() const
+    size_t ReadValue::hash() const
     {
         return std::visit(
             [](auto &val) -> size_t
@@ -115,7 +117,7 @@ namespace Core
             *value);
     }
 
-    std::string Value::to_string() const
+    std::string ReadValue::to_string() const
     {
         return std::visit(
             [](auto &val) -> std::string
@@ -130,9 +132,26 @@ namespace Core
             *value);
     }
 
-    std::ostream &operator<<(std::ostream &os, const Value &val)
+    std::ostream &operator<<(std::ostream &os, const ReadValue &val)
     {
         return os << val.to_string();
+    }
+
+    LocatorValue::LocatorValue(ReadValue &rvalue, PositionRange &range)
+        : Value(&range), rvalue(rvalue)
+    {
+    }
+
+    ReadValue &get_rvalue(Value &value)
+    {
+        return typeid(value) == typeid(ReadValue)
+                   ? static_cast<ReadValue &>(value)
+                   : static_cast<LocatorValue &>(value).rvalue;
+    }
+
+    ReadValue *get_rvalue(Value *value)
+    {
+        return value == nullptr ? nullptr : &get_rvalue(*value);
     }
 
 } // namespace Core

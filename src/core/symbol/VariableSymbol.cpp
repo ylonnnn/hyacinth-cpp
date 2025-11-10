@@ -2,6 +2,7 @@
 #include "ast/stmt/variable/VariableDefStmt.hpp"
 #include "core/symbol/IdentifierSymbol.hpp"
 #include "core/symbol/Symbol.hpp"
+#include "core/value/Value.hpp"
 #include "utils/style.hpp"
 
 namespace Core
@@ -33,7 +34,8 @@ namespace Core
                                                             : "Private")
            << ", " << (is_mutable ? "Mutable" : "Immutable") << ", "
            << (type == nullptr ? "nullptr" : type->to_string()) << ", "
-           << (value != nullptr ? value->to_string() : "null") << " }";
+           << (value != nullptr ? get_rvalue(*value).to_string() : "null")
+           << " }";
     }
 
 } // namespace Core

@@ -63,8 +63,8 @@ namespace utils
         Core::PositionRange &range = token.range;
         std::unique_ptr<Core::Value::T> val = parse_val_t(token);
 
-        Core::Value *value = Core::create_value(
-            std::move(val), nullptr, Core::ValueType::RValue, &range);
+        Core::ReadValue *value =
+            Core::create_value(std::move(val), nullptr, &range);
 
         value->type = Core::BaseType::infer(
             *range.start().program.get().environment, *value);

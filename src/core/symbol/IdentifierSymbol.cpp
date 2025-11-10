@@ -10,6 +10,23 @@ namespace Core
         : Symbol(name, SymbolAccessibility::Private, decl_node),
           is_mutable(is_mutable), type(type), value(value)
     {
+        if (value != nullptr)
+            lvalue = std::make_unique<LocatorValue>(get_rvalue(*value),
+                                                    *value->range);
+    }
+
+    LocatorValue *IdentifierSymbol::ref(PositionRange &range)
+    {
+        if (lvalue == nullptr)
+        {
+            if (value == nullptr)
+                return nullptr;
+
+            lvalue = std::make_unique<LocatorValue>(get_rvalue(*value), range);
+        }
+
+        lvalue->range = &range;
+        return lvalue.get();
     }
 
     void IdentifierSymbol::print(std::ostream &os, uint8_t tab) const
@@ -22,7 +39,8 @@ namespace Core
                                                             : "Private")
            << ", " << (is_mutable ? "Mutable" : "Immutable") << ", "
            << (type == nullptr ? "nullptr" : type->to_string()) << ", "
-           << (value != nullptr ? value->to_string() : "null") << " }";
+           << (value != nullptr ? get_rvalue(*value).to_string() : "null")
+           << " }";
     }
 
 } // namespace Core

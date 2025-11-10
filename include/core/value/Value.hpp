@@ -1,11 +1,12 @@
 #pragma once
 
-#include "core/position/Position.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <variant>
+
+#include "core/position/Position.hpp"
 
 namespace Core
 {
@@ -100,20 +101,37 @@ namespace Core
         using T = std::variant<null, integer, double, bool, character,
                                std::string, array>;
 
+        PositionRange *range = nullptr;
+
+        Value(PositionRange *range = nullptr);
+        virtual ~Value() = default;
+    };
+
+    struct ReadValue : Value
+    {
         std::unique_ptr<T> value;
         InstantiatedType *type = nullptr;
-        ValueType val_type = ValueType::RValue;
-        Core::PositionRange *range = nullptr;
 
-        Value(std::unique_ptr<T> &&value, InstantiatedType *type,
-              ValueType val_type = ValueType::RValue,
-              Core::PositionRange *range = nullptr);
+        ReadValue(std::unique_ptr<T> &&value, InstantiatedType *type,
+                  PositionRange *range = nullptr);
+        virtual ~ReadValue() = default;
 
         size_t hash() const;
         std::string to_string() const;
 
-        friend std::ostream &operator<<(std::ostream &os, const Value &val);
+        friend std::ostream &operator<<(std::ostream &os, const ReadValue &val);
     };
+
+    struct LocatorValue : Value
+    {
+        ReadValue &rvalue;
+
+        LocatorValue(ReadValue &rvalue, PositionRange &range);
+        virtual ~LocatorValue() = default;
+    };
+
+    ReadValue &get_rvalue(Value &value);
+    ReadValue *get_rvalue(Value *value);
 
     // struct InstantiatedType;
     // struct FunctionSymbol;
