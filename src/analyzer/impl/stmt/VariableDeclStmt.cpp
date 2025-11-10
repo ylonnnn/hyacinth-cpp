@@ -9,7 +9,6 @@
 #include "core/type/wrapper/ReferenceType.hpp"
 #include "core/value/Value.hpp"
 #include "core/value/ValuePool.hpp"
-#include "utils/dev.hpp"
 
 namespace Semantic
 {
@@ -99,18 +98,9 @@ namespace Semantic
             result.adapt(t_res);
             varsym->type = result.data;
 
-            return true;
+            // TODO: Handle Void Type
 
-            // result.error(ast_type,
-            // Diagnostic::ErrorTypes::Type::InvalidVariableType,
-            //              std::string("Type \"") + Diagnostic::ERR_GEN
-            //              +
-            //                  ast_type->to_string() +
-            //                  utils::Styles::Reset +
-            //                  "\" can only be used as a function
-            //                  return type.",
-            //              "Only functions can have return types of
-            //              this type");
+            return true;
         }
 
         // TODO: Move to Type::assignment_semantic
@@ -158,6 +148,17 @@ namespace Semantic
             Core::Value *val = result.value;
 
             if (val == nullptr)
+            {
+                if (ptr->is_constexpr)
+                    result.error(&ptr->range,
+                                 Diagnostic::ErrorType::NonConstantEvaluatable,
+                                 "constexpr variables must have compile-time "
+                                 "evaluatable values.");
+
+                return;
+            }
+
+            if (!ptr->is_constexpr)
                 return;
 
             // Type Inferrence
@@ -176,26 +177,6 @@ namespace Semantic
 
                 determine_assignment(varsym, result);
             }
-
-            //     // Define
-            //     var->define(const_cast<Core::Position *>(&stmt.position()));
-            //     var->value = std::move(v_res.value);
-
-            //     var->node->set_value(var->value);
-
-            //     // If type is not specified, it is inferred
-            //     // No type validation required
-            //     if (ast_type == nullptr)
-            //     {
-            //         result.data = v_res.data;
-            //         var->type = v_res.data;
-
-            //         return;
-            //     }
-
-            //     if (!result.data->assignable_with(*var->type) ||
-            //         (var->value != nullptr &&
-            //         !result.data->assignable(*var->value))) error();
         }
 
     } // namespace VariableAnalyzer
@@ -238,19 +219,6 @@ namespace Semantic
 
             return result;
         }
-
-        //                     Diagnostic::ErrorTypes::Type::InvalidVariableType,
-        //                     std::string("Variables must either have
-        //                     explicit
-        //                     ") +
-        //                         Diagnostic::ERR_GEN + "TYPE" +
-        //                         utils::Styles::Reset + " or " +
-        //                         Diagnostic::ERR_GEN + "VALUE" +
-        //                         utils::Styles::Reset + ".",
-        //                     "No explicit type nor value provided");
-
-        //             return result;
-        // }
 
         std::cout << varsym->name << " added\n";
         current->add_symbol(std::move(varsym));

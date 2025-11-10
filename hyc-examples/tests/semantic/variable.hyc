@@ -1,5 +1,3 @@
-var some_u8: uint<{8}> = 100;
-var some_u8_lval: uint<{3}> = some_u8;
-var some_u8_lval1 = some_u8;
-
-var test_arr: []char = []uint<{3}>{1, 2, some_u8_lval, some_u8_lval1};
+var constexpr test = 12;
+var test1 = test;
+var constexpr test_1: uint<{8}> = test1;
