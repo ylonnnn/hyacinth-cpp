@@ -4,28 +4,27 @@
 
 namespace Core
 {
-    // []T | [N]T
+    // &T
     // Arguments:
-    //      * N - array element count
-    //      * T - array element type
+    //      * T - the reference type
 
-    struct ArrayInstantiated : InstantiatedType
+    struct ReferenceInstantiated : InstantiatedType
     {
-        ArrayInstantiated(BaseType &base,
-                          std::vector<GenericArgument> &&arguments,
-                          PositionRange *range = nullptr);
+        ReferenceInstantiated(BaseType &base,
+                              std::vector<GenericArgument> &&arguments,
+                              PositionRange *range = nullptr);
 
         TypeResult assignable(Value *value) const override;
     };
 
-    struct ArrayType : BaseType
+    struct ReferenceType : BaseType
     {
-        using T = ArrayInstantiated;
+        using T = ReferenceInstantiated;
 
-        static ArrayType *instance(Environment *environment = nullptr);
+        static ReferenceType *instance(Environment *environment = nullptr);
 
-        ArrayType(Environment &environment);
-        ~ArrayType();
+        ReferenceType(Environment &environment);
+        ~ReferenceType();
 
         void default_operations() override;
 
@@ -42,7 +41,7 @@ namespace Core
                         Value *value) const override;
 
       private:
-        static std::unique_ptr<ArrayType> instance_;
+        static std::unique_ptr<ReferenceType> instance_;
     };
 
 } // namespace Core

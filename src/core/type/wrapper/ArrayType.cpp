@@ -1,8 +1,9 @@
-#include "core/type/wrapper/ArrayType.hpp"
+#include <cassert>
+
 #include "core/type/Type.hpp"
 #include "core/type/TypePool.hpp"
+#include "core/type/wrapper/ArrayType.hpp"
 #include "utils/dev.hpp"
-#include <cassert>
 
 namespace Core
 {
