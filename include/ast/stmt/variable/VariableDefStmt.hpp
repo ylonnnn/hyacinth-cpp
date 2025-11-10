@@ -7,11 +7,13 @@ namespace AST
 {
     struct VariableDefinitionStmt : VariableDeclarationStmt
     {
+        bool is_constexpr = false;
         std::unique_ptr<Expr> value;
 
         VariableDefinitionStmt(
-            Lexer::Token &name, IdentifierMutabilityState mut_state,
-            std::unique_ptr<Type> type, std::unique_ptr<Expr> value,
+            Lexer::Token &name, bool is_constexpr,
+            IdentifierMutabilityState mut_state, std::unique_ptr<Type> type,
+            std::unique_ptr<Expr> value,
             DeclarationAccessibility DeclarationAccessibility =
                 DeclarationAccessibility::Private);
 

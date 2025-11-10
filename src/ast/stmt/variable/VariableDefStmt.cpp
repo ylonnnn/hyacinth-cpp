@@ -5,13 +5,13 @@
 namespace AST
 {
     VariableDefinitionStmt::VariableDefinitionStmt(
-        Lexer::Token &name, IdentifierMutabilityState mut_state,
-        std::unique_ptr<Type> type, std::unique_ptr<Expr> value,
-        DeclarationAccessibility accessibility)
+        Lexer::Token &name, bool is_constexpr,
+        IdentifierMutabilityState mut_state, std::unique_ptr<Type> type,
+        std::unique_ptr<Expr> value, DeclarationAccessibility accessibility)
         : Node(name.range.start()),
           VariableDeclarationStmt(name, mut_state, std::move(type),
                                   accessibility),
-          value(std::move(value))
+          is_constexpr(is_constexpr), value(std::move(value))
     {
         is_definition_ = true;
 

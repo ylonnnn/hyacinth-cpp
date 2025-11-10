@@ -27,13 +27,21 @@ namespace Parser
     {
         using Lexer::TokenType;
 
-        // "var" "mut"? IDENTIFIER ( ":" TYPE )? ( "=" VALUE )? ;
+        // "var" "constexpr"? "mut"? IDENTIFIER ( ":" TYPE )? ( "=" VALUE )? ;
 
         auto &lexer = parser.lexer;
         result.diagnostics.reserve(16);
 
         // var (TokenType::Var)
         lexer.consume();
+
+        // constexpr ? (TokenType::Constexpr)
+        bool is_constexpr = false;
+        if (parser.expect(Lexer::TokenType::Constexpr, false))
+        {
+            lexer.consume();
+            is_constexpr = true;
+        }
 
         // mut? (TokenType::Mut)
         AST::IdentifierMutabilityState mut_state =
@@ -106,12 +114,27 @@ namespace Parser
             return;
 
         // Distinction
-        result.data = value == nullptr
-                          ? std::make_unique<AST::VariableDeclarationStmt>(
-                                *identifier, mut_state, std::move(type))
-                          : std::make_unique<AST::VariableDefinitionStmt>(
-                                *identifier, mut_state, std::move(type),
-                                std::move(value));
+
+        // Declaration
+        if (value == nullptr)
+        {
+            if (is_constexpr)
+            {
+                result.error(identifier->range,
+                             Diagnostic::ErrorType::NonConstantEvaluatable,
+                             "variable declaration cannot be 'constexpr'.");
+
+                return;
+            }
+            result.data = std::make_unique<AST::VariableDeclarationStmt>(
+                *identifier, mut_state, std::move(type));
+        }
+
+        // Definition
+        else
+            result.data = std::make_unique<AST::VariableDefinitionStmt>(
+                *identifier, is_constexpr, mut_state, std::move(type),
+                std::move(value));
     }
 
     void VariableDefinition::recover(Parser &parser)

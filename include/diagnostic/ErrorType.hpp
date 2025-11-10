@@ -20,6 +20,8 @@ namespace Diagnostic
 
         MissingValue,
 
+        NonConstantEvaluatable,
+
         // Semantic
         InvalidVariableDeclaration,
         UnknownSymbol,
