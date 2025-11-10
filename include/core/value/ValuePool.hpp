@@ -22,6 +22,8 @@ namespace Core
 
     LocatorValue *create_value(ReadValue &rvalue, PositionRange &range);
 
+    ReadValue *create_copy(Value &value);
+
     extern ValuePool VALUE_POOL;
 
 } // namespace Core

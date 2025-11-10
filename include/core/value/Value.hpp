@@ -99,7 +99,7 @@ namespace Core
     struct Value
     {
         using T = std::variant<null, integer, double, bool, character,
-                               std::string, array>;
+                               std::string, object, array>;
 
         PositionRange *range = nullptr;
 

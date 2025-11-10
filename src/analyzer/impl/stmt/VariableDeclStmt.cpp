@@ -5,7 +5,10 @@
 #include "ast/type/Type.hpp"
 #include "core/symbol/TypeSymbol.hpp"
 #include "core/symbol/VariableSymbol.hpp"
+#include "core/type/wrapper/PointerType.hpp"
+#include "core/type/wrapper/ReferenceType.hpp"
 #include "core/value/Value.hpp"
+#include "core/value/ValuePool.hpp"
 #include "utils/dev.hpp"
 
 namespace Semantic
@@ -110,6 +113,35 @@ namespace Semantic
             //              this type");
         }
 
+        void determine_assignment(Core::VariableSymbol *varsym,
+                                  AnalysisResult &result)
+        {
+            Core::Value *val = result.value;
+            if (val == nullptr) [[unlikely]]
+                return;
+
+            Core::InstantiatedType *type = result.data;
+
+            if (typeid(*type) == typeid(Core::ReferenceInstantiated))
+            {
+                auto ref = static_cast<Core::ReferenceInstantiated *>(type);
+                // TODO: Handle Reference Values
+            }
+
+            else if (typeid(*type) == typeid(Core::PointerInstantiated))
+            {
+                auto ptr = static_cast<Core::PointerInstantiated *>(type);
+                // TODO: Handle Pointer Values
+            }
+
+            // Create a copy
+            else
+            {
+                Core::ReadValue *rv_copy = Core::create_copy(*val);
+                varsym->value = rv_copy;
+            }
+        }
+
         void analyze_value([[maybe_unused]] Analyzer &analyzer,
                            Core::VariableSymbol *varsym, AnalysisResult &result)
         {
@@ -127,26 +159,22 @@ namespace Semantic
             if (val == nullptr)
                 return;
 
-            // Validate type
-            if (varsym->type != nullptr)
+            // Type Inferrence
+            if (varsym->type == nullptr)
+            {
+                varsym->type =
+                    Core::BaseType::infer(*analyzer.env_stack.current(), *val);
+                varsym->value = Core::create_copy(*val);
+            }
+
+            // Type Validation
+            else
             {
                 Core::TypeResult vv_res = varsym->type->assignable(val);
                 result.adapt(vv_res.status, std::move(vv_res.diagnostics));
 
-                if (vv_res.status == Core::ResultStatus::Success)
-                {
-                    Core::ReadValue *rval = Core::get_rvalue(val);
-                    if (rval != nullptr)
-                        rval->type = varsym->type;
-                }
+                determine_assignment(varsym, result);
             }
-
-            // Otherwise, infer type
-            else
-                varsym->type =
-                    Core::BaseType::infer(*analyzer.env_stack.current(), *val);
-
-            varsym->value = val;
 
             //     // Define
             //     var->define(const_cast<Core::Position *>(&stmt.position()));

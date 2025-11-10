@@ -1,4 +1,5 @@
 #include "core/value/ValuePool.hpp"
+#include "core/value/Value.hpp"
 
 namespace Core
 {
@@ -21,6 +22,13 @@ namespace Core
     {
         return static_cast<LocatorValue *>(
             VALUE_POOL.add(std::make_unique<LocatorValue>(rvalue, range)));
+    }
+
+    ReadValue *create_copy(Value &value)
+    {
+        ReadValue &rvalue = get_rvalue(value);
+        return create_value(std::make_unique<Value::T>(*rvalue.value),
+                            rvalue.type, value.range);
     }
 
     ValuePool VALUE_POOL;
