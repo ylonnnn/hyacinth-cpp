@@ -16,8 +16,9 @@ namespace Lexer
         Fn,
         Var,
 
-        // ==== RESERVED::QUALIFIER ====
+        // ==== RESERVED::MODIFIER ====
         Mut,
+        Constexpr,
 
         // ==== RESERVED::CONTROL ====
         Return,
@@ -122,8 +123,9 @@ namespace Lexer
         "Fn",
         "Var",
 
-        // ==== RESERVED::QUALIFIER ====
+        // ==== RESERVED::MODIFIER ====
         "Mut",
+        "Constexpr",
 
         // ==== RESERVED::CONTROL ====
         "Return",
@@ -223,8 +225,9 @@ namespace Lexer
         "fn",
         "var",
 
-        // ==== RESERVED::QUALIFIER ====
+        // ==== RESERVED::MODIFIER ====
         "mut",
+        "constexpr",
 
         // ==== RESERVED::CONTROL ====
         "return",

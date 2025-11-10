@@ -43,7 +43,9 @@ namespace Lexer
 
         // Keywords
         reserved.insert_or_assign("import"sv, TokenType::Import);
-        // reserved.insert_or_assign("lib"sv, Reserved::Lib);
+
+        reserved.insert_or_assign("mut"sv, TokenType::Mut);
+        reserved.insert_or_assign("constexpr"sv, TokenType::Constexpr);
 
         reserved.insert_or_assign("pub"sv, TokenType::Pub);
         reserved.insert_or_assign("prot"sv, TokenType::Prot);
@@ -56,7 +58,6 @@ namespace Lexer
         reserved.insert_or_assign("return"sv, TokenType::Return);
 
         reserved.insert_or_assign("var"sv, TokenType::Var);
-        reserved.insert_or_assign("mut"sv, TokenType::Mut);
     }
 
     bool Tokenizer::eof() const { return offset >= source.size(); }
