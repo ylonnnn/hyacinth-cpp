@@ -206,12 +206,17 @@ namespace Core
 
     TypeResult InstantiatedType::assignable(Value *value) const
     {
-        TypeResult result{ResultStatus::Success, nullptr, {}};
+        TypeResult result{ResultStatus::Success,
+                          const_cast<InstantiatedType *>(
+                              static_cast<const InstantiatedType *>(this)),
+                          {}};
+
+        if (value == nullptr)
+            return result;
 
         BaseType::Signal signal = base.assignable(arguments, value, result);
         PositionRange *range = value->range;
 
-        auto str_type = *to_string();
         if (range == nullptr)
             return result;
 
@@ -223,8 +228,8 @@ namespace Core
 
             result
                 .error(*range, Diagnostic::ErrorType::TypeMismatch,
-                       "expected value of type '" + str_type + "', received '" +
-                           rvalue->type->to_string() + "'.")
+                       "expected value of type '" + *to_string() +
+                           "', received '" + rvalue->type->to_string() + "'.")
                 ->add_detail(base.make_suggestion(arguments, value));
         }
 

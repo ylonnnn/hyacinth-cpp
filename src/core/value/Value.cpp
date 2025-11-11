@@ -66,7 +66,11 @@ namespace Core
         return "{}";
     }
 
-    array::array(InstantiatedType *element_type) : element_type(element_type) {}
+    array::array(InstantiatedType *element_type,
+                 std::vector<Value *> &&elements)
+        : element_type(element_type), elements_(std::move(elements))
+    {
+    }
 
     size_t array::size() const { return elements_.size(); }
 

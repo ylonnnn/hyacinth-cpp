@@ -74,7 +74,7 @@ namespace Core
     {
         InstantiatedType *element_type = nullptr;
 
-        array(InstantiatedType *element_type);
+        array(InstantiatedType *element_type, std::vector<Value *> &&elements);
 
         size_t size() const;
 

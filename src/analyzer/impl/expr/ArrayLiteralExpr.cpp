@@ -1,6 +1,8 @@
 #include "analyzer/Analyzer.hpp"
 #include "analyzer/impl/Expr.hpp"
 #include "core/type/wrapper/ArrayType.hpp"
+#include "core/value/Value.hpp"
+#include "core/value/ValuePool.hpp"
 
 namespace Semantic
 {
@@ -38,6 +40,9 @@ namespace Semantic
             el_type = *ptr;
         }
 
+        std::vector<Core::Value *> elements;
+        elements.reserve(node.elements.size());
+
         // Element Analysis
         for (const auto &el : node.elements)
         {
@@ -53,9 +58,15 @@ namespace Semantic
                 continue;
             }
 
-            Core::TypeResult ev_res = el_type->assignable(e_res.value);
-            result.adapt(ev_res.status, std::move(ev_res.diagnostics));
+            elements.push_back(e_res.value);
+            if (e_res.value == nullptr)
+                continue;
         }
+
+        result.value =
+            Core::create_value(std::make_unique<Core::Value::T>(
+                                   Core::array(el_type, std::move(elements))),
+                               type, &node.range);
 
         return result;
     }
