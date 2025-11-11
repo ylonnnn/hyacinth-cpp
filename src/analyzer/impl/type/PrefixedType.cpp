@@ -32,6 +32,8 @@ namespace Semantic
                 result.data = Core::ArrayType::instance()->create_instance(
                     {type}, &node.range);
 
+                break;
+
             case AST::PrefixedTypeKind::Reference:
             {
                 if (typeid(*type) == typeid(Core::ReferenceInstantiated))
@@ -42,6 +44,8 @@ namespace Semantic
 
                 result.data = Core::ReferenceType::instance()->create_instance(
                     {type}, &node.range);
+
+                break;
             }
 
             default:
