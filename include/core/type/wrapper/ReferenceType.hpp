@@ -15,6 +15,8 @@ namespace Core
                               PositionRange *range = nullptr);
 
         TypeResult assignable(Value *value) const override;
+        TypeResult assignable(const InstantiatedType &type,
+                              PositionRange *range = nullptr) const override;
     };
 
     struct ReferenceType : BaseType
@@ -30,6 +32,8 @@ namespace Core
 
         T *create_instance(std::vector<GenericArgument> &&arguments,
                            PositionRange *range = nullptr) override;
+
+        Value *transfer_semantics(Value *value) const override;
 
         Signal assignable(const std::vector<GenericArgument> &arguments,
                           Value *value, TypeResult &result) const override;

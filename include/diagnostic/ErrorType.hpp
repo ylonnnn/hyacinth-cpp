@@ -33,6 +33,8 @@ namespace Diagnostic
         TypeMismatch,
         InvalidArgumentCount,
         InvalidArgument,
+
+        UnexpectedRValue,
     };
 
 }

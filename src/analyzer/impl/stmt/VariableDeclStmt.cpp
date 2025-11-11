@@ -103,36 +103,6 @@ namespace Semantic
             return true;
         }
 
-        // TODO: Move to Type::assignment_semantic
-        void determine_assignment(Core::VariableSymbol *varsym,
-                                  AnalysisResult &result)
-        {
-            Core::Value *val = result.value;
-            if (val == nullptr) [[unlikely]]
-                return;
-
-            Core::InstantiatedType *type = result.data;
-
-            if (typeid(*type) == typeid(Core::ReferenceInstantiated))
-            {
-                auto ref = static_cast<Core::ReferenceInstantiated *>(type);
-                varsym->value = val;
-            }
-
-            else if (typeid(*type) == typeid(Core::PointerInstantiated))
-            {
-                auto ptr = static_cast<Core::PointerInstantiated *>(type);
-                // TODO: Handle Pointer Values
-            }
-
-            // Create a copy
-            else
-            {
-                Core::ReadValue *rv_copy = Core::create_copy(*val);
-                varsym->value = rv_copy;
-            }
-        }
-
         void analyze_value([[maybe_unused]] Analyzer &analyzer,
                            Core::VariableSymbol *varsym, AnalysisResult &result)
         {
@@ -156,9 +126,16 @@ namespace Semantic
                                  "evaluatable values.");
 
                 // Type Validation
-                Core::TypeResult tv_res =
-                    varsym->type->assignable(*v_res.data, &ptr->value->range);
-                result.adapt(tv_res.status, std::move(tv_res.diagnostics));
+                auto inferred = varsym->type == nullptr;
+                if (inferred)
+                    varsym->type = result.data;
+
+                else
+                {
+                    Core::TypeResult tv_res = varsym->type->assignable(
+                        *v_res.data, &ptr->value->range);
+                    result.adapt(tv_res.status, std::move(tv_res.diagnostics));
+                }
 
                 return;
             }
@@ -177,7 +154,13 @@ namespace Semantic
                 }
 
                 if (ptr->is_constexpr)
+                {
                     varsym->value = varsym->type->base.transfer_semantics(val);
+
+                    // For copied values
+                    if (varsym->value != val)
+                        get_rvalue(varsym->value)->type = varsym->type;
+                }
             }
         }
 
@@ -222,7 +205,7 @@ namespace Semantic
             return result;
         }
 
-        std::cout << varsym->name << " added\n";
+        std::cout << varsym->name << " added " << varsym->value << "\n";
         current->add_symbol(std::move(varsym));
 
         return result;

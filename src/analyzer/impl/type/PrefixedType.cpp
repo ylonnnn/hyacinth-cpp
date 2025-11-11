@@ -1,6 +1,7 @@
 #include "ast/type/PrefixedType.hpp"
 #include "analyzer/impl/Type.hpp"
 #include "core/type/wrapper/ArrayType.hpp"
+#include "core/type/wrapper/ReferenceType.hpp"
 #include "utils/dev.hpp"
 
 namespace Semantic
@@ -30,6 +31,18 @@ namespace Semantic
             case AST::PrefixedTypeKind::Array:
                 result.data = Core::ArrayType::instance()->create_instance(
                     {type}, &node.range);
+
+            case AST::PrefixedTypeKind::Reference:
+            {
+                if (typeid(*type) == typeid(Core::ReferenceInstantiated))
+                {
+                    // TODO: throw error: cannot have nested references
+                    return result;
+                }
+
+                result.data = Core::ReferenceType::instance()->create_instance(
+                    {type}, &node.range);
+            }
 
             default:
                 break;
