@@ -69,7 +69,7 @@ namespace Semantic
         add_type(std::make_unique<Core::IntegerType>(*root, false));
 
         // float<{}>
-        // add_type(std::make_unique<Core::FloatType>(*root));
+        add_type(std::make_unique<Core::FloatType>(*root));
 
         // char
         // add_type(std::make_unique<Core::CharType>(*root));

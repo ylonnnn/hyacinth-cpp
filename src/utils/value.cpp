@@ -23,10 +23,10 @@ namespace utils
             base = pref_ctrl == 'b'   ? 2
                    : pref_ctrl == 'o' ? 8
                    : pref_ctrl == 'x' ? 16
-                                      : -1;
+                                      : UINT32_MAX;
         }
 
-        if (base == -1)
+        if (base == UINT32_MAX)
             return 0;
 
         // If the base is not the base of decimal, remove the prefix from the
@@ -50,11 +50,9 @@ namespace utils
                 value.erase(std::remove(value.begin(), value.end(), '_'),
                             value.end());
 
-                auto val = static_cast<uint64_t>(parse_numeric(value));
-                std::cout << val << "\n";
-
                 return std::make_unique<Core::Value::T>(
-                    Core::integer(val, token.value[0] == '-'));
+                    Core::integer(static_cast<uint64_t>(parse_numeric(value)),
+                                  token.value[0] == '-'));
             }
 
             case TokenType::Float:
@@ -63,7 +61,7 @@ namespace utils
                             value.end());
 
                 return std::make_unique<Core::Value::T>(
-                    double(static_cast<double>(parse_numeric(value))));
+                    static_cast<double>(parse_numeric(value)));
             }
 
             case TokenType::Bool:

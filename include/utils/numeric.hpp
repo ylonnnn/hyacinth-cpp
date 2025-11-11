@@ -31,7 +31,7 @@ namespace utils
             return (c - '0');
 
         char ch = std::tolower(c);
-        return ch >= 'a' && ch <= 'f' ? (ch - 'a') : 0;
+        return ch >= 'a' && ch <= 'f' ? 10 + (ch - 'a') : 0;
     }
 
     static inline double to_numeric(const std::string &val, uint32_t base = 10)

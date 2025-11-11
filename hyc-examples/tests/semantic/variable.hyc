@@ -1,1 +1,8 @@
-var constexpr test: uint<{01}> = 0b01001;
+var bin_int: uint<{01}> = 0b01001;
+var bin_float= 0b101.11;
+
+var oct_int: uint<{3}> = 0o7236;
+var oct_float = 0o7236.272;
+
+var hex_int: uint<{5}> = 0xA3af;
+var hex_float = 0xAB8F.77CA;

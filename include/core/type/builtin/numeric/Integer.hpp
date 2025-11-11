@@ -13,9 +13,9 @@ namespace Core
                             std::vector<GenericArgument> &&arguments,
                             Core::PositionRange *range = nullptr);
 
+        using NumericInstantiated::assignable;
+
         TypeResult assignable(Value *value) const override;
-        TypeResult assignable(const InstantiatedType &type,
-                              PositionRange *range = nullptr) const override;
     };
 
     struct IntegerType : NumericBase

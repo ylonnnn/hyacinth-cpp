@@ -85,12 +85,6 @@ namespace Core
         return InstantiatedType::assignable(value);
     }
 
-    TypeResult FloatInstantiated::assignable(const InstantiatedType &type,
-                                             PositionRange *range) const
-    {
-        return InstantiatedType::assignable(type, range);
-    }
-
     FloatType ::FloatType(Environment &environment)
         : NumericBase(environment, "float"), bw_type_(environment)
     {
