@@ -205,7 +205,8 @@ namespace Semantic
             return result;
         }
 
-        std::cout << varsym->name << " added " << varsym->value << "\n";
+        std::cout << varsym->name << " added " << varsym->value << " ("
+                  << get_rvalue(varsym->value) << ")" << "\n";
         current->add_symbol(std::move(varsym));
 
         return result;

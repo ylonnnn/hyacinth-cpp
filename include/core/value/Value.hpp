@@ -124,9 +124,9 @@ namespace Core
 
     struct LocatorValue : Value
     {
-        ReadValue &rvalue;
+        Value &value;
 
-        LocatorValue(ReadValue &rvalue, PositionRange &range);
+        LocatorValue(Value &value, PositionRange &range);
         virtual ~LocatorValue() = default;
     };
 

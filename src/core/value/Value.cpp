@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstddef>
 #include <functional>
 
@@ -137,16 +138,23 @@ namespace Core
         return os << val.to_string();
     }
 
-    LocatorValue::LocatorValue(ReadValue &rvalue, PositionRange &range)
-        : Value(&range), rvalue(rvalue)
+    LocatorValue::LocatorValue(Value &value, PositionRange &range)
+        : Value(&range), value(value)
     {
     }
 
     ReadValue &get_rvalue(Value &value)
     {
-        return typeid(value) == typeid(ReadValue)
-                   ? static_cast<ReadValue &>(value)
-                   : static_cast<LocatorValue &>(value).rvalue;
+        Value *curr = &value;
+        while (curr != nullptr)
+        {
+            if (typeid(*curr) == typeid(ReadValue))
+                return static_cast<ReadValue &>(*curr);
+
+            curr = &static_cast<LocatorValue *>(curr)->value;
+        }
+
+        __builtin_unreachable();
     }
 
     ReadValue *get_rvalue(Value *value)
