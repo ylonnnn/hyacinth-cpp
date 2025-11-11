@@ -11,6 +11,9 @@ namespace Core
                             Core::PositionRange *range = nullptr);
 
         virtual TypeResult assignable(Value *value) const override = 0;
+        virtual TypeResult
+        assignable(const InstantiatedType &type,
+                   PositionRange *range = nullptr) const override = 0;
     };
 
     struct NumericBase : BaseType

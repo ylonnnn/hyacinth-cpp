@@ -33,16 +33,16 @@ namespace Core
         virtual void default_operations();
 
         virtual T *create_instance(std::vector<GenericArgument> &&arguments,
-                                   Core::PositionRange *range = nullptr);
+                                   PositionRange *range = nullptr);
 
         void add_parameter(TypeParameterType param_type, std::string &&name,
                            InstantiatedType *type);
         TypeResult
         validate_arguments(const std::vector<GenericArgument> &arguments,
-                           const Core::PositionRange &range);
+                           const PositionRange &range);
 
         // Semantics
-        virtual Core::Value *transfer_semantics(Core::Value *value) const;
+        virtual Value *transfer_semantics(Value *value) const;
 
         virtual Signal assignable(const std::vector<GenericArgument> &arguments,
                                   Value *value, TypeResult &result) const = 0;
@@ -65,13 +65,15 @@ namespace Core
     {
         BaseType &base;
         std::vector<GenericArgument> arguments;
-        Core::PositionRange *range = nullptr;
+        PositionRange *range = nullptr;
 
         InstantiatedType(BaseType &base,
                          std::vector<GenericArgument> &&arguments,
-                         Core::PositionRange *range = nullptr);
+                         PositionRange *range = nullptr);
 
         virtual TypeResult assignable(Value *value) const;
+        virtual TypeResult assignable(const InstantiatedType &type,
+                                      PositionRange *range = nullptr) const;
 
         size_t hash(bool rehash = false);
         size_t *hash() const;

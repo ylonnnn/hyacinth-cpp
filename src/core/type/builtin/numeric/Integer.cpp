@@ -26,6 +26,37 @@ namespace Core
         return InstantiatedType::assignable(value);
     }
 
+    TypeResult IntegerInstantiated::assignable(const InstantiatedType &type,
+                                               PositionRange *range) const
+    {
+        if (range == nullptr)
+            range = type.range;
+
+        TypeResult result = InstantiatedType::assignable(type, range);
+
+        const GenericArgument &bw_arg = arguments[0],
+                              &t_bw_arg = type.arguments[0];
+
+        auto ptr = std::get_if<Value *>(&bw_arg),
+             t_ptr = std::get_if<Value *>(&t_bw_arg);
+        if (ptr == nullptr || t_ptr == nullptr) [[unlikely]]
+            return result;
+
+        ReadValue &rv = get_rvalue(**ptr), &t_rv = get_rvalue(**t_ptr);
+        auto rv_ptr = std::get_if<integer>(rv.value.get()),
+             t_rv_ptr = std::get_if<integer>(t_rv.value.get());
+        if (rv_ptr == nullptr || t_rv_ptr == nullptr) [[unlikely]]
+            return result;
+
+        uint64_t bw = rv_ptr->as<uint64_t>(), t_bw = t_rv_ptr->as<uint64_t>();
+        if (t_bw > bw)
+            result.error(*range, Diagnostic::ErrorType::TypeMismatch,
+                         "expected value of type '" + *to_string() +
+                             "', received '" + *type.to_string() + "'.");
+
+        return result;
+    }
+
     // bool IntegerType::Wrapper::assignable_with(const Type &type) const
     // {
     //     if (arguments.empty() || type.arguments.empty())

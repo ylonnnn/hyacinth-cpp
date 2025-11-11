@@ -1,2 +1,2 @@
 var test: uint<{8}>;
-var test_1: uint<{5}> = test;
+var test_1: uint<{10}> = test;

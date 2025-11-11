@@ -231,6 +231,21 @@ namespace Core
         return result;
     }
 
+    TypeResult InstantiatedType::assignable(const InstantiatedType &type,
+                                            PositionRange *range) const
+    {
+        TypeResult result{ResultStatus::Success, nullptr, {}};
+        if (range == nullptr)
+            range = type.range;
+
+        if (&base != &type.base)
+            result.error(*range, Diagnostic::ErrorType::TypeMismatch,
+                         "expected value of type '" + *to_string() +
+                             "', received '" + *type.to_string() + "'.");
+
+        return result;
+    }
+
     size_t InstantiatedType::hash(bool rehash)
     {
         if (rehash || !hash_info_.first)

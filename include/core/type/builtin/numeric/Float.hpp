@@ -32,6 +32,8 @@ namespace Core
                           Core::PositionRange *range = nullptr);
 
         TypeResult assignable(Value *value) const override;
+        TypeResult assignable(const InstantiatedType &type,
+                              PositionRange *range = nullptr) const override;
     };
 
     struct FloatType : NumericBase

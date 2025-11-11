@@ -155,24 +155,26 @@ namespace Semantic
                                  "constexpr variables must have compile-time "
                                  "evaluatable values.");
 
+                // Type Validation
+                Core::TypeResult tv_res =
+                    varsym->type->assignable(*v_res.data, &ptr->value->range);
+                result.adapt(tv_res.status, std::move(tv_res.diagnostics));
+
                 return;
             }
 
-            // Type Inferrence
-            if (varsym->type == nullptr)
-            {
-                varsym->type =
-                    Core::BaseType::infer(*analyzer.env_stack.current(), *val);
-
-                if (ptr->is_constexpr)
-                    varsym->value = Core::create_copy(*val);
-            }
-
-            // Type Validation
             else
             {
-                Core::TypeResult vv_res = varsym->type->assignable(val);
-                result.adapt(vv_res.status, std::move(vv_res.diagnostics));
+                auto inferred = varsym->type == nullptr;
+                if (inferred)
+                    varsym->type = Core::BaseType::infer(
+                        *analyzer.env_stack.current(), *val);
+
+                else
+                {
+                    Core::TypeResult vv_res = varsym->type->assignable(val);
+                    result.adapt(vv_res.status, std::move(vv_res.diagnostics));
+                }
 
                 if (ptr->is_constexpr)
                     varsym->value = varsym->type->base.transfer_semantics(val);
