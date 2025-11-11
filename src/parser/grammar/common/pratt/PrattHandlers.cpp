@@ -306,7 +306,7 @@ namespace Parser
                                                         ParseResult &result)
     {
         auto &lexer = parser.lexer;
-        lexer.consume(); // Consume [
+        Core::Position &st_pos = lexer.next()->range.start(); // Consume [
 
         // Validate ]
         parser.expect_or_error(Lexer::TokenType::RightBracket, result,
@@ -315,7 +315,10 @@ namespace Parser
         auto nud = make_type_pref_nud_handler(TypeBindingPower::Array,
                                               AST::PrefixedTypeKind::Array);
 
-        return nud(parser, result);
+        auto node = nud(parser, result);
+        node->range.start(st_pos);
+
+        return node;
     }
 
     NudHandler<AST::PrefixedType>
