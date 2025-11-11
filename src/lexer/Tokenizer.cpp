@@ -220,7 +220,7 @@ namespace Lexer
             consume(), c = peek();
 
             // Potential digit
-            if (std::isalnum(c))
+            if (std::isalpha(c))
             {
                 base = c == 'b' ? 2 : c == 'o' ? 8 : c == 'x' ? 16 : UINT32_MAX;
 
@@ -234,6 +234,9 @@ namespace Lexer
                     return;
                 }
             }
+
+            else
+                base = std::isdigit(c) ? 10 : UINT32_MAX;
         }
 
         if (base == UINT32_MAX)

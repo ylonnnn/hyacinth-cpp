@@ -6,10 +6,37 @@
 #include "core/value/ValuePool.hpp"
 #include "lexer/Token.hpp"
 #include "utils/char.hpp"
+#include "utils/numeric.hpp"
 #include "utils/value.hpp"
 
 namespace utils
 {
+    double parse_numeric(const std::string &val)
+    {
+        uint32_t base = 10;
+        std::string input = val;
+
+        char pref_ctrl = val[1];
+
+        if (val[0] == '0' && !std::isdigit(pref_ctrl))
+        {
+            base = pref_ctrl == 'b'   ? 2
+                   : pref_ctrl == 'o' ? 8
+                   : pref_ctrl == 'x' ? 16
+                                      : -1;
+        }
+
+        if (base == -1)
+            return 0;
+
+        // If the base is not the base of decimal, remove the prefix from the
+        // input string
+        if (base != 10)
+            input = input.substr(2);
+
+        return utils::to_numeric(input, base);
+    }
+
     std::unique_ptr<Core::Value::T> parse_val_t(Lexer::Token &token)
     {
         using Lexer::TokenType;
@@ -23,7 +50,8 @@ namespace utils
                 value.erase(std::remove(value.begin(), value.end(), '_'),
                             value.end());
 
-                auto val = std::stoull(value);
+                auto val = static_cast<uint64_t>(parse_numeric(value));
+                std::cout << val << "\n";
 
                 return std::make_unique<Core::Value::T>(
                     Core::integer(val, token.value[0] == '-'));
@@ -35,7 +63,7 @@ namespace utils
                             value.end());
 
                 return std::make_unique<Core::Value::T>(
-                    double(std::stod(value)));
+                    double(static_cast<double>(parse_numeric(value))));
             }
 
             case TokenType::Bool:

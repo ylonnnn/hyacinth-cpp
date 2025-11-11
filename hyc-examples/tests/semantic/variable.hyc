@@ -1,2 +1,1 @@
-var constexpr test: uint<{9}> = 123;
-var constexpr test_1: &uint<{10}> = test;
+var constexpr test: uint<{01}> = 0b01001;
