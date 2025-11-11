@@ -6,16 +6,18 @@
 
 namespace Core
 {
+    value_base_type::operator std::string() const { return to_string(); }
+
     size_t null::hash() const { return std::hash<std::nullptr_t>{}(nullptr); }
 
-    null::operator std::string() const { return "null"; }
+    std::string null::to_string() const { return "null"; }
 
     integer::integer(uint64_t value, bool is_neg)
         : value(value), is_negative(is_neg)
     {
     }
 
-    integer::operator std::string() const
+    std::string integer::to_string() const
     {
         return std::to_string(is_negative ? static_cast<int64_t>(value)
                                           : value);
@@ -57,9 +59,9 @@ namespace Core
         return hash_val;
     }
 
-    object::operator std::string() const
+    std::string object::to_string() const
     {
-        // TODO: object::operator std::string()
+        // TODO: object::to_string()
         // T { [field]: [value] }
         return "{}";
     }
@@ -88,11 +90,22 @@ namespace Core
         return hash_val;
     }
 
-    array::operator std::string() const
+    std::string array::to_string() const
     {
-        // TODO: array::operator std::string()
+        // TODO: array::to_string()
         // []T{...}
         return "{}";
+    }
+
+    pointer::pointer(Value *pointee) : pointee(pointee) {}
+
+    size_t pointer::hash() const { return std::hash<Value *>{}(pointee); }
+
+    std::string pointer::to_string() const
+    {
+        // TODO: pointer::to_string()
+        // *T
+        return "*_";
     }
 
     Value::Value(PositionRange *range) : range(range) {}

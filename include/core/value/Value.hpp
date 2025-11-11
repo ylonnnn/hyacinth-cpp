@@ -15,6 +15,9 @@ namespace Core
     struct value_base_type
     {
         virtual size_t hash() const = 0;
+        virtual std::string to_string() const = 0;
+
+        operator std::string() const;
     };
 
     struct Value;
@@ -22,8 +25,7 @@ namespace Core
     struct null : value_base_type
     {
         size_t hash() const override;
-
-        operator std::string() const;
+        std::string to_string() const override;
     };
 
     struct callable;
@@ -48,8 +50,7 @@ namespace Core
         }
 
         size_t hash() const override;
-
-        operator std::string() const;
+        std::string to_string() const override;
     };
 
     struct object : value_base_type
@@ -63,8 +64,7 @@ namespace Core
         const Value *get(const std::string &key) const;
 
         size_t hash() const override;
-
-        operator std::string() const;
+        std::string to_string() const override;
 
       private:
         std::unordered_map<std::string, Value *> entries_;
@@ -81,11 +81,20 @@ namespace Core
         Value *get(size_t idx);
         const Value *get(size_t idx) const;
 
-        size_t hash() const;
-        operator std::string() const;
+        size_t hash() const override;
+        std::string to_string() const override;
 
       private:
         std::vector<Value *> elements_;
+    };
+
+    struct pointer : value_base_type
+    {
+        Value *pointee = nullptr;
+        pointer(Value *pointee = nullptr);
+
+        size_t hash() const override;
+        std::string to_string() const override;
     };
 
     using character = uint32_t;
