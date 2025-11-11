@@ -1,3 +1,2 @@
-var constexpr test: uint<{10}> = 123;
+var constexpr test: uint<{9}> = 123;
 var constexpr test_1: &uint<{10}> = test;
-var constexpr test_2: uint<{10}> = test_1;

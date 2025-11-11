@@ -40,12 +40,15 @@ namespace Core
 
         ReadValue &rval = get_rvalue(*value);
 
-        return ReferenceInstantiated::assignable(*rval.type, rval.range);
+        return ReferenceInstantiated::assignable(*rval.type, value->range);
     }
 
     TypeResult ReferenceInstantiated::assignable(const InstantiatedType &type,
                                                  PositionRange *range) const
     {
+        if (range == nullptr)
+            range = type.range;
+
         TypeResult result{ResultStatus::Success,
                           const_cast<InstantiatedType *>(
                               static_cast<const InstantiatedType *>(this)),
